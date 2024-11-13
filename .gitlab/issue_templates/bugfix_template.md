@@ -7,5 +7,5 @@ Beschrijf wat het probleem was
 Beschrijf hoe je het probleem opgelost hebt
 
 ## Definition of ready checklist
-* [] Link met originele issue(s)
-* [] "Bugfix" label toegevoegd?
+* [ ] Link met originele issue(s)
+* [ ] "Bugfix" label toegevoegd?
