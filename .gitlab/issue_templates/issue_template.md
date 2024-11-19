@@ -34,4 +34,4 @@ Unhappy path:
 
 ## Definition of done checklist
 
-* [ ]
+* [ ] x
