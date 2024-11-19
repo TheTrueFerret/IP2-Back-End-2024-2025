@@ -33,4 +33,5 @@ Unhappy path:
 * [ ] Alle instructies uit de template werden verwijderd
 
 ## Definition of done checklist
+
 * [ ]
