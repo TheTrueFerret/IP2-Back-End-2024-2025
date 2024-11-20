@@ -1,33 +1,32 @@
 package kdg.be.backend.domain.chatting;
 
-//import jakarta.persistence.*;
-import kdg.be.backend.domain.User;
+import jakarta.persistence.*;
+import kdg.be.backend.domain.GameUser;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.message.Message;
 
 import java.util.Collection;
 import java.util.UUID;
 
-//@Entity
+@Entity
 @Getter
 @Setter
 public class ChatHistory {
-    //@Id
-//    @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     // relaties
-//    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
-//    @OneToMany
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameUser gameUser;
+    @OneToMany
     private Collection<ChatMessage> messages;
 
     public ChatHistory() {
-    } // jpa
+    }  // jpa
 
-    public ChatHistory(User user, Collection<ChatMessage> messages) {
-        this.user = user;
+    public ChatHistory(GameUser gameUser, Collection<ChatMessage> messages) {
+        this.gameUser = gameUser;
         this.messages = messages;
     }
 }

@@ -1,28 +1,28 @@
 package kdg.be.backend.domain;
 
-////import jakarta.persistence.*;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.UUID;
 
-//@Entity
+@Entity
 @Getter
 @Setter
 public class TileSet {
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private int startCoordinate;
     private int endCoordinate;
 
-    // relaties
-////    @OneToMany
+     // relaties
+    @OneToMany
     private LinkedList<Tile> tiles;
 
     public TileSet() {
-    } // jpa
+    }  // jpa
 
     public TileSet(int startCoordinate, int endCoordinate, LinkedList<Tile> tiles) {
         this.startCoordinate = startCoordinate;

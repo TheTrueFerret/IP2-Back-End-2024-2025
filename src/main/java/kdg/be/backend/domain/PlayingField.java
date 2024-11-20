@@ -1,26 +1,26 @@
 package kdg.be.backend.domain;
 
-//import jakarta.persistence.*;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Collection;
 import java.util.UUID;
 
-//@Entity
+@Entity
 @Getter
 @Setter
 public class PlayingField {
-    //@Id
-//    @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // relaties
-//    @OneToMany
+     // relaties
+    @OneToMany
     private Collection<TileSet> tileSets;
 
     public PlayingField() {
-    } // jpa
+    }  // jpa
 
     public PlayingField(Collection<TileSet> tileSets) {
         this.tileSets = tileSets;
