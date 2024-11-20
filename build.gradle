@@ -38,3 +38,7 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+bootBuildImage {
+	imageName = 'chahid20/springboot-ip2-app'
+}

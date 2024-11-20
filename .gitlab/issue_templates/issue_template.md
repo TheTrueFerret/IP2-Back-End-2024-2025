@@ -31,3 +31,7 @@ Unhappy path:
 * [ ] Gewicht vastgelegd
 * [ ] Prioriteit vastgelegd
 * [ ] Alle instructies uit de template werden verwijderd
+
+## Definition of done checklist
+
+* [ ] x
