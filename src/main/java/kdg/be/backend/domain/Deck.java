@@ -18,14 +18,11 @@ public class Deck {
      // relaties
     @OneToMany
     private List<Tile> tiles;
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Player player;
 
     public Deck() {
     }  // jpa
 
-    public Deck(List<Tile> tiles, Player player) {
+    public Deck(List<Tile> tiles) {
         this.tiles = tiles;
-        this.player = player;
     }
 }
