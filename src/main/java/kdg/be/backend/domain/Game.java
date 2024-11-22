@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,10 +19,15 @@ public class Game {
     private int playerAmount;
     private int startTileAmount;
     private String joinCode;
+    private LocalDateTime dateTime;
 
-     // relaties
+    // relaties
     @ManyToOne(fetch = FetchType.LAZY)
     private PlayingField playingField;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private TilePool tilePool;
+
     @OneToMany
     private List<Player> players;
 
@@ -35,5 +41,6 @@ public class Game {
         this.joinCode = joinCode;
         this.playingField = playingField;
         this.players = players;
+        this.dateTime = LocalDateTime.now();
     }
 }

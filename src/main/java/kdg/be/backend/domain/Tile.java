@@ -13,18 +13,14 @@ public class Tile {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    //        private Color color;
+    private TileColor tileColor;
     private int numberValue;
-
-    // relaties
-    @ManyToOne(fetch = FetchType.LAZY)
-    private TileSet tileSet;
 
     public Tile() {
     }
 
-    public Tile(int numberValue, TileSet tileSet) {
+    public Tile(int numberValue, TileColor tileColor) {
         this.numberValue = numberValue;
-        this.tileSet = tileSet;
+        this.tileColor = tileColor;
     }
 }
