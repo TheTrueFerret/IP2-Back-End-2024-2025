@@ -1,0 +1,11 @@
+### Test: Get Tiles by Player ID (Player 1)
+GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000014
+Accept: application/json
+
+### Test: Get Tiles by Player ID (Player 2)
+GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000015
+Accept: application/json
+
+### Test: Get Players by Game ID
+GET http://localhost:8080/api/game/players/00000000-0000-0000-0000-000000000011
+Accept: application/json

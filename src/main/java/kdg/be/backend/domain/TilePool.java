@@ -16,21 +16,19 @@ public class TilePool {
     private UUID id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private Queue<Tile> tiles; // Queue to represent the pool of tiles
+    private List<Tile> tiles;
 
     public TilePool() {
-        this.tiles = new LinkedList<>();
+        this.tiles = new ArrayList<>();
     }
 
-    public TilePool(Queue<Tile> tiles) {
+    public TilePool(List<Tile> tiles) {
         this.tiles = tiles;
     }
 
     // Shuffle the tiles
     public void shuffleTiles() {
-        List<Tile> tileList = new ArrayList<>(tiles);
-        Collections.shuffle(tileList);
-        this.tiles = new LinkedList<>(tileList);
+        Collections.shuffle(tiles);
     }
 
     // Draw a tile from the pool
@@ -38,7 +36,8 @@ public class TilePool {
         if (tiles.isEmpty()) {
             throw new IllegalStateException("No tiles left in the pool!");
         }
-        return tiles.poll();
+        // Remove and return the first tile (or any specific logic for "drawing")
+        return tiles.removeFirst();
     }
 
     // Add tiles to the pool (if replenishment is needed)
