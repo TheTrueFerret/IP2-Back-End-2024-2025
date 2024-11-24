@@ -81,7 +81,7 @@ public class GameService {
         try {
             return lobbyRepository.findLobbyById(lobbyId)
                     .map(lobby -> {
-                        if (lobby.getStatus() != LobbyStatus.STARTED) {
+                        if (lobby.getStatus() != LobbyStatus.READY) {
                             throw new IllegalStateException("Cannot start game if lobby is not started.");
                         }
 
@@ -116,6 +116,7 @@ public class GameService {
                         }
 
                         game.setPlayers(players);
+                        validateEqualTileCounts(players, startTileAmount);
                         gameRepository.save(game);
 
                         log.info("Game started with lobby id: {}", lobbyId);
@@ -125,5 +126,16 @@ public class GameService {
             log.error("Game could not start: {}", e.getMessage());
             return Optional.empty();
         }
+    }
+
+    private void validateEqualTileCounts(List<Player> players, int startTileAmount) {
+        for (Player player : players) {
+            int playerTileCount = player.getDeck().getTiles().size();
+            if (playerTileCount != startTileAmount) {
+                throw new IllegalStateException("Tile distribution error: Players do not have equal tile counts.");
+            }
+        }
+
+        log.info("All players have equal tile counts: {}", startTileAmount);
     }
 }

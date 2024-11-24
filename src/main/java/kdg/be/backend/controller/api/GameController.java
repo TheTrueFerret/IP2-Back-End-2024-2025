@@ -55,7 +55,7 @@ public class GameController {
         return gameService.startGame(lobbyId, req.roundTime(), req.startTileAmount())
                 .map(GameDtoMapper::mapToGameDto)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
+
 }

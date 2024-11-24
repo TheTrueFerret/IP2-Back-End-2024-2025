@@ -131,7 +131,7 @@ public class LobbyService {
                         if (lobby.getUsers().size() < lobby.getMinimumPlayers()) {
                             throw new DataIntegrityViolationException("Not enough players to ready up");
                         }
-                        lobby.setStatus(LobbyStatus.STARTED);
+                        lobby.setStatus(LobbyStatus.READY);
                         return lobbyRepository.save(lobby);
                     });
         } catch (DataIntegrityViolationException e) {
