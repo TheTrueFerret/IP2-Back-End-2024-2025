@@ -16,9 +16,7 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private int roundTime;
-    private int playerAmount;
     private int startTileAmount;
-    private String joinCode;
     private LocalDateTime dateTime;
 
     // relaties
@@ -34,13 +32,12 @@ public class Game {
     public Game() {
     }  // jpa
 
-    public Game(int roundTime, int playerAmount, int startTileAmount, String joinCode, PlayingField playingField, List<Player> players) {
+    public Game(int roundTime, int startTileAmount, LocalDateTime dateTime, PlayingField playingField, TilePool tilePool, List<Player> players) {
         this.roundTime = roundTime;
-        this.playerAmount = playerAmount;
         this.startTileAmount = startTileAmount;
-        this.joinCode = joinCode;
+        this.dateTime = dateTime;
         this.playingField = playingField;
+        this.tilePool = tilePool;
         this.players = players;
-        this.dateTime = LocalDateTime.now();
     }
 }
