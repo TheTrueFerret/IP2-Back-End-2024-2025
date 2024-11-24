@@ -27,4 +27,5 @@ public class GameService {
     public List<Player> getPlayersOfGame(UUID gameId) {
         return playerRepository.findPlayersByGameId(gameId);
     }
+    //test
 }
