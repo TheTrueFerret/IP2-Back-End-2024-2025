@@ -9,3 +9,12 @@ Accept: application/json
 ### Test: Get Players by Game ID
 GET http://localhost:8080/api/game/players/00000000-0000-0000-0000-000000000011
 Accept: application/json
+
+### POST game starten met lobbyId, roundTime en startTileAmount
+POST http://localhost:8080/api/game/start/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006
+Content-Type: application/json
+
+{
+  "roundTime": 60,
+  "startTileAmount": 14
+}
