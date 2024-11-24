@@ -120,7 +120,7 @@ class LobbyControllerTest {
 
     @Test
     void testLeaveLobbyShouldReturnOk() throws Exception {
-        mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
+        mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=c4a2fa67-6a4d-4d9b-9c59-4f96b6fbc104")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(result -> {
