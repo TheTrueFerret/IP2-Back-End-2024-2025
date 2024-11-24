@@ -1,6 +1,6 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.PlayerDTO;
+import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
@@ -27,14 +27,14 @@ public class GameController {
 
     @GetMapping("/players/{gameId}")
     @Transactional
-    public List<PlayerDTO> getPlayersOfGame(@PathVariable UUID gameId) {
+    public List<PlayerDto> getPlayersOfGame(@PathVariable UUID gameId) {
         List<Player> players = gameService.getPlayersOfGame(gameId);
         return mapToPlayerDTOs(players);
     }
 
-    private List<PlayerDTO> mapToPlayerDTOs(List<Player> players) {
+    private List<PlayerDto> mapToPlayerDTOs(List<Player> players) {
         return players.stream()
-                .map(player -> new PlayerDTO(
+                .map(player -> new PlayerDto(
                         player.getId(),
                         player.getGameUser().getUsername(), // Assuming getGameUser() fetches the username
                         player.getGame().getId()            // Assuming getGame() fetches the game ID
