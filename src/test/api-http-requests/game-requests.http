@@ -18,3 +18,12 @@ Content-Type: application/json
   "roundTime": 60,
   "startTileAmount": 14
 }
+
+### GET player turn in game player
+GET http://localhost:8080/api/game/turn
+Content-Type: application/json
+
+{
+  "playerId": "fb97d1dc-0d52-47a0-bb49-8739c3f27f37",
+  "gameId": "dec474b3-aaf4-43ce-ab13-02cc7bded0d4"
+}

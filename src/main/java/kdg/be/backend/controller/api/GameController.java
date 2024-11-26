@@ -6,6 +6,7 @@ import kdg.be.backend.controller.dto.LobbyDto;
 import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
+import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
@@ -38,6 +39,10 @@ public class GameController {
                 .collect(Collectors.toList());
     }
 
+    private PlayerDto mapToPlayerDTO(Player player) {
+        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
+    }
+
     @GetMapping("/tiles/player/{playerId}")
     public List<Tile> getTilesOfPlayer(@PathVariable UUID playerId) {
         return gameService.getTilesOfPlayer(playerId);
@@ -58,4 +63,10 @@ public class GameController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
+    @GetMapping("/turn")
+    public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody CreatePlayerTurnRequest req) {
+        return gameService.managePlayerTurns(req.gameId(), req.playerId())
+                .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }

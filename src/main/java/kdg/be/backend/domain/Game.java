@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter
@@ -18,6 +17,8 @@ public class Game {
     private int roundTime;
     private int startTileAmount;
     private LocalDateTime dateTime;
+    @ElementCollection
+    private List<UUID> playerTurnOrder;
 
     // relaties
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,5 +40,6 @@ public class Game {
         this.playingField = playingField;
         this.tilePool = tilePool;
         this.players = players;
+        this.playerTurnOrder = new ArrayList<>();
     }
 }

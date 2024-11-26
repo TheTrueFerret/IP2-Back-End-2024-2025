@@ -75,7 +75,7 @@ VALUES ('00000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-0000000
 ----------------------------------------------------------------------------------------------------------------------
 
 INSERT INTO lobby (id, status, host_user_id, minimum_players, maximum_players, join_code)
-VALUES ('a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006', 'WAITING', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001', 2, 6,
+VALUES ('a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006', 'READY', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001', 2, 6,
         'JOIN123'), -- Host is Player3
        ('ef673b41-d76d-4b96-99d8-41beef0c3707', 'WAITING', 'd61e872f-7784-4e27-996b-cad743916105', 2, 2,
         'JOINME'); -- Host is Player7
