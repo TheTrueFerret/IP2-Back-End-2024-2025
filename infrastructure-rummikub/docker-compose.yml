@@ -26,8 +26,8 @@ services:
   rummikub_idp_keycloak:
       image: quay.io/keycloak/keycloak:25.0.5
       environment:
-        - KEYCLOAK_ADMIN=user
-        - KEYCLOAK_ADMIN_PASSWORD=password
+        - KEYCLOAK_ADMIN=admin
+        - KEYCLOAK_ADMIN_PASSWORD=Rummikub123
         - KC_DB=postgres
         - KC_DB_URL_HOST=rummikub_idp_postgres
         - KC_DB_URL_DATABASE=keycloak

@@ -5,6 +5,7 @@ import kdg.be.backend.domain.chatting.ChatHistory;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ public class GameUser {
     private String username;
     private String avatar;
 
-     // relaties
+    // relaties
     @OneToMany
     private List<Achievement> achievements;
     @OneToMany
@@ -29,11 +30,11 @@ public class GameUser {
     public GameUser() {
     }  // jpa
 
-    public GameUser(String username, String avatar, List<Achievement> achievements, List<GameUser> friendList, ChatHistory chatHistory) {
+    public GameUser(String username, String avatar) {
         this.username = username;
         this.avatar = avatar;
-        this.achievements = achievements;
-        this.friendList = friendList;
-        this.chatHistory = chatHistory;
+        this.achievements = new ArrayList<>();
+        this.friendList = new ArrayList<>();
+        this.chatHistory = new ChatHistory();
     }
 }
