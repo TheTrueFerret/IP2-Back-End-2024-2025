@@ -30,9 +30,18 @@ public class GameUser {
     public GameUser() {
     }  // jpa
 
-    public GameUser(String username, String avatar) {
+    public GameUser(String username, String avatar, List<Achievement> achievements, List<GameUser> friendList, ChatHistory chatHistory) {
         this.username = username;
         this.avatar = avatar;
+        this.achievements = achievements;
+        this.friendList = friendList;
+        this.chatHistory = chatHistory;
+    }
+
+    public GameUser(UUID  id, String username) {
+        this.id = id;
+        this.username = username;
+        this.avatar = "default";
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         this.chatHistory = new ChatHistory();

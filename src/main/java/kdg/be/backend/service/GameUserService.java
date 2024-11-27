@@ -17,7 +17,7 @@ public class GameUserService {
     }
 
     public void createGameUser(GameUserDTO gameUserDTO) {
-        GameUser gameUser = new GameUser(gameUserDTO.getUsername(), gameUserDTO.getId());
+        GameUser gameUser = new GameUser(gameUserDTO.getId(), gameUserDTO.getUsername());
         gameUserRepository.save(gameUser);
     }
 
