@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class GameUser {
     private List<Achievement> achievements;
     @OneToMany
     private List<GameUser> friendList;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatHistory chatHistory;
 
     public GameUser() {
@@ -41,9 +42,9 @@ public class GameUser {
     public GameUser(UUID  id, String username) {
         this.id = id;
         this.username = username;
-        this.avatar = "default";
+        this.avatar = "default.png";
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
-        this.chatHistory = new ChatHistory();
+        this.chatHistory = new ChatHistory(this, new ArrayList<>());
     }
 }

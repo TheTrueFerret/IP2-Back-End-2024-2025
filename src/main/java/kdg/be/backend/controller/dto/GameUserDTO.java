@@ -1,17 +1,13 @@
 package kdg.be.backend.controller.dto;
 
-import kdg.be.backend.domain.GameUser;
-
-import java.util.UUID;
-
 public class GameUserDTO {
-    private UUID id;
+    private String id;
     private String username;
 
     public GameUserDTO() {
     }
 
-    public GameUserDTO(String username, UUID id) {
+    public GameUserDTO(String username, String id) {
         this.id = id;
         this.username = username;
     }
@@ -20,7 +16,7 @@ public class GameUserDTO {
         return username;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 }
