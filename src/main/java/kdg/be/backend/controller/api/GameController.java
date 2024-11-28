@@ -60,7 +60,11 @@ public class GameController {
         return gameService.startGame(lobbyId, req.roundTime(), req.startTileAmount())
                 .map(GameDtoMapper::mapToGameDto)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @GetMapping("/turn")
@@ -68,5 +72,9 @@ public class GameController {
         return gameService.managePlayerTurns(req.gameId(), req.playerId())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

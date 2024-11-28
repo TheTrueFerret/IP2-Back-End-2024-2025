@@ -77,10 +77,10 @@ public class GameService {
 
     @Transactional
     public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount) {
-        try {
             return lobbyRepository.findLobbyById(lobbyId)
                     .map(lobby -> {
                         if (lobby.getStatus() != LobbyStatus.READY) {
+                            log.error("Cannot start game if lobby is not started.");
                             throw new IllegalStateException("Cannot start game if lobby is not started.");
                         }
 
@@ -121,10 +121,6 @@ public class GameService {
                         log.info("Game started with lobby id: {}", lobbyId);
                         return game;
                     });
-        } catch (IllegalStateException e) {
-            log.error("Game could not start: {}", e.getMessage());
-            return Optional.empty();
-        }
     }
 
     private void validateEqualTileCounts(List<Player> players, int startTileAmount) {

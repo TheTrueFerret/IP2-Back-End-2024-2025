@@ -33,12 +33,12 @@ public class LobbyService {
     }
 
     public Optional<Lobby> createLobby(UUID hostGameUserId, int minimumPlayers, int maximumPlayers, String joinCode) {
-        try {
             return Optional.of(gameUserRepository.findById(hostGameUserId)
                     .map(hostGameUser -> {
                         log.info("Game user found, continue creating a new lobby");
 
                         if (lobbyRepository.findLobbyByHostGameUserId(hostGameUser.getId()).isPresent()) {
+                            log.error("Lobby already exists for game user");
                             throw new DataIntegrityViolationException("Lobby already exists for game user: " + hostGameUser.getUsername() + " " + hostGameUserId);
                         }
 
@@ -57,14 +57,9 @@ public class LobbyService {
                         log.info("New lobby created with ID: {}", savedLobby.getId());
                         return savedLobby;
                     }).orElseThrow(() -> new NullPointerException("Game user not found")));
-        } catch (DataIntegrityViolationException | NullPointerException e) {
-            log.error(e.getMessage());
-            return Optional.empty();
-        }
     }
 
     public Optional<Lobby> addPlayerToLobby(UUID lobbyId, UUID playerId, String joinCode) {
-        try {
             return Optional.of(lobbyRepository.findLobbyById(lobbyId)
                     .map(lobby -> {
                         if (lobby.getUsers().size() >= lobby.getMaximumPlayers()) {
@@ -80,6 +75,7 @@ public class LobbyService {
 
                         for (GameUser userInLobby : lobby.getUsers()) {
                             if (userInLobby.getId().equals(user.getId())) {
+                                log.error("User could not join the lobby");
                                 throw new DataIntegrityViolationException("User is already in the lobby");
                             }
                         }
@@ -88,14 +84,9 @@ public class LobbyService {
                         log.info("User {} joined lobby {}", lobby.getHostUser().getUsername(), lobby.getId());
                         return lobbyRepository.save(lobby);
                     }).orElseThrow(() -> new NullPointerException("Lobby not found")));
-        } catch (DataIntegrityViolationException | NullPointerException e) {
-            log.error("User could not join the lobby: {}", e.getMessage());
-            return Optional.empty();
-        }
     }
 
     public Optional<Lobby> removePlayerFromLobby(UUID lobbyId, UUID playerId) {
-        try {
             return Optional.of(lobbyRepository.findLobbyById(lobbyId)
                     .map(lobby -> {
                         GameUser user = gameUserRepository.findById(playerId)
@@ -113,19 +104,15 @@ public class LobbyService {
                         }
 
                         if (!userFound) {
+                            log.error("User could not leave the lobby");
                             throw new DataIntegrityViolationException("User not found in lobby");
                         }
 
                         return lobbyRepository.save(lobby);
                     }).orElseThrow(() -> new NullPointerException("Lobby not found")));
-        } catch (DataIntegrityViolationException | NullPointerException e) {
-            log.error("User could not leave the lobby: {}", e.getMessage());
-            return Optional.empty();
-        }
     }
 
     public Optional<Lobby> readyLobby(UUID lobbyId) {
-        try {
             return lobbyRepository.findLobbyById(lobbyId)
                     .map(lobby -> {
                         if (lobby.getUsers().size() < lobby.getMinimumPlayers()) {
@@ -134,9 +121,5 @@ public class LobbyService {
                         lobby.setStatus(LobbyStatus.READY);
                         return lobbyRepository.save(lobby);
                     });
-        } catch (DataIntegrityViolationException e) {
-            log.error("Lobby could not ready up: {}", e.getMessage());
-            return Optional.empty();
-        }
     }
 }
