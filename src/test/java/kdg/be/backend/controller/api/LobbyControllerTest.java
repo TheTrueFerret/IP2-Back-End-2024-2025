@@ -1,13 +1,16 @@
 package kdg.be.backend.controller.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kdg.be.backend.TestContainerIPConfiguration;
 import kdg.be.backend.service.GameService;
 import kdg.be.backend.service.LobbyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
+@Import(TestContainerIPConfiguration.class)
 @AutoConfigureMockMvc
 class LobbyControllerTest {
 
@@ -35,8 +39,14 @@ class LobbyControllerTest {
                 .andExpect(jsonPath("$.joinCode").exists())
                 .andExpect(jsonPath("$.status").exists()).andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                        assertTrue(response.contains("Cannot start game"), "Error message should indicate the reason for failure");
+                    }
                 });
     }
 
@@ -49,8 +59,13 @@ class LobbyControllerTest {
                 .andExpect(jsonPath("$[0].status").exists())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -74,8 +89,13 @@ class LobbyControllerTest {
                 .andExpect(jsonPath("$.maximumPlayers").value(2))
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -94,13 +114,18 @@ class LobbyControllerTest {
                 .andExpect(jsonPath("$.joinCode").value("JOIN123"))
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
     @Test
-    void testJoinFullLobbyShouldReturnConflict() throws Exception {
+    void testJoinFullLobbyShouldReturnBadRequest() throws Exception {
         String requestBody = """
             {
                 "joinCode": "JOINME"
@@ -110,11 +135,16 @@ class LobbyControllerTest {
         mockMvc.perform(patch("/api/lobby/join/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=00000000-0000-0000-0000-000000000009")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -125,8 +155,13 @@ class LobbyControllerTest {
                 .andExpect(status().isOk())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -137,8 +172,13 @@ class LobbyControllerTest {
                 .andExpect(status().isOk())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -153,11 +193,16 @@ class LobbyControllerTest {
         mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -172,11 +217,16 @@ class LobbyControllerTest {
         mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 
@@ -184,11 +234,16 @@ class LobbyControllerTest {
     void testLeaveLobbyWhenUserNotInLobbyShouldReturnBadRequest() throws Exception {
         mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Response Body: " + prettyResponse);
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
                 });
     }
 }

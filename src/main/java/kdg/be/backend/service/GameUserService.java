@@ -1,6 +1,5 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.GameUserDTO;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.repository.ChatHistoryRepository;
