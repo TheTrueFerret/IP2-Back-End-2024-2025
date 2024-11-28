@@ -19,12 +19,14 @@ public class ChatMessage {
     private UUID id;
     private LocalDateTime dateTime;
     private String message;
+    private SenderType senderType;
 
     public ChatMessage() {
     }  // jpa
 
-    public ChatMessage(LocalDateTime dateTime, String message) {
+    public ChatMessage(LocalDateTime dateTime, String message, SenderType senderType) {
         this.dateTime = dateTime;
         this.message = message;
+        this.senderType = senderType;
     }
 }

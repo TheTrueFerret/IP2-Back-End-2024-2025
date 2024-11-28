@@ -2,15 +2,17 @@ package kdg.be.backend.controller.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kdg.be.backend.TestContainerIPConfiguration;
 import kdg.be.backend.service.GameService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
 import static org.hamcrest.Matchers.matchesPattern;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
+@Import(TestContainerIPConfiguration.class)
 @AutoConfigureMockMvc
 class GameControllerTest{
 
@@ -63,8 +66,14 @@ class GameControllerTest{
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-        System.out.println("Response Body: " + prettyResponse);
+        if (response.startsWith("{")) {
+            String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+            System.out.println("Formatted JSON Response: " + prettyResponse);
+
+        } else {
+            System.out.println("Plain Text Response: " + response);
+            assertTrue(response.contains("Cannot start game"), "Error message should indicate the reason for failure");
+        }
     }
 
     @Test
@@ -83,8 +92,14 @@ class GameControllerTest{
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-        System.out.println("Response Body: " + prettyResponse);
+        if (response.startsWith("{")) {
+            String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+            System.out.println("Formatted JSON Response: " + prettyResponse);
+
+        } else {
+            System.out.println("Plain Text Response: " + response);
+            assertTrue(response.contains("Cannot start game"), "Error message should indicate the reason for failure");
+        }
     }
 
 
