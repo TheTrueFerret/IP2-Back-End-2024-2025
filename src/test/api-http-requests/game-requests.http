@@ -24,6 +24,6 @@ GET http://localhost:8080/api/game/turn
 Content-Type: application/json
 
 {
-  "playerId": "fb97d1dc-0d52-47a0-bb49-8739c3f27f37",
-  "gameId": "dec474b3-aaf4-43ce-ab13-02cc7bded0d4"
+  "playerId": "bf1e8a50-fa77-420b-81dc-34ddf40744df",
+  "gameId": "857dbe8a-803c-41ba-85dc-13703e91ba13"
 }

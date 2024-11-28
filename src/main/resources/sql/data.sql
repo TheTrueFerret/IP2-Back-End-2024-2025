@@ -60,7 +60,7 @@ VALUES ('00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-0000000
        ('00000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000007');
 
 
-INSERT INTO game (id, round_time, start_tile_amount, date_time, playing_field_id,
+INSERT INTO game (id, turn_time, start_tile_amount, date_time, playing_field_id,
                   tile_pool_id)
 VALUES ('00000000-0000-0000-0000-000000000011', 60, 14, now(), '00000000-0000-0000-0000-000000000001',
         '00000000-0000-0000-0000-000000000010');
