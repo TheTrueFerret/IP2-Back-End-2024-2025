@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kdg.be.backend.domain.GameUser;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -17,7 +18,7 @@ public class ChatHistory {
     private UUID id;
 
     // relaties
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private GameUser gameUser;
     @OneToMany
     private Collection<ChatMessage> messages;
