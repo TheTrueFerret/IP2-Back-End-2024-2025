@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
@@ -13,6 +14,9 @@ public class Player {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+    private LocalTime turnStartTime;
+    private LocalTime turnEndTime;
+    private LocalTime turnMoveTime;
 
      // relaties
     @ManyToOne(fetch = FetchType.LAZY)

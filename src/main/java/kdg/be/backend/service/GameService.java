@@ -10,10 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -24,7 +23,7 @@ public class GameService {
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
 
-    private static final Logger log = LoggerFactory.getLogger(LobbyService.class);
+    private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
     public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository) {
         this.tileRepository = tileRepository;
@@ -90,10 +89,8 @@ public class GameService {
                         TilePool tilePool = new TilePool(tiles);
                         tilePool.shuffleTiles();
 
-
                         PlayingField playingField = new PlayingField(new ArrayList<>());
                         playingFieldRepository.save(playingField);
-
 
                         Game game = new Game(
                                 roundTime,
@@ -104,6 +101,7 @@ public class GameService {
                                 new ArrayList<>()
                         );
 
+                        gameRepository.save(game);
 
                         List<Player> players = new ArrayList<>();
                         for (GameUser user : lobby.getUsers()) {
@@ -117,6 +115,7 @@ public class GameService {
 
                         game.setPlayers(players);
                         validateEqualTileCounts(players, startTileAmount);
+                        initializePlayerTurns(game, players);
                         gameRepository.save(game);
 
                         log.info("Game started with lobby id: {}", lobbyId);
@@ -133,5 +132,103 @@ public class GameService {
         }
 
         log.info("All players have equal tile counts: {}", startTileAmount);
+    }
+
+    private void initializePlayerTurns(Game game, List<Player> players) {
+        List<UUID> randomizedPlayersIds = new ArrayList<>();
+
+        for (Player player : game.getPlayers()) {
+            randomizedPlayersIds.add(player.getId());
+        }
+
+        Collections.shuffle(randomizedPlayersIds);
+        game.setPlayerTurnOrder(randomizedPlayersIds);
+
+        String playerNames = randomizedPlayersIds.stream()
+                .map(playerRepository::findPlayerById)
+                .map(optionalPlayer -> optionalPlayer.map(Player::getGameUser)
+                        .map(GameUser::getUsername)
+                        .orElse("Unknown"))
+                .collect(Collectors.joining(", "));
+        log.info("Player turn order initialized for game with players: {}", playerNames);
+
+        players.forEach(player -> {
+            if (playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), player.getId()).isPresent()) {
+                player.setTurnStartTime(LocalTime.now());
+                player.setTurnEndTime(LocalTime.now().plusSeconds(game.getTurnTime()));
+            }
+            playerRepository.save(player);
+        });
+
+        playerRepository.findPlayerInGameByGameIdAndPlayerId(
+                        game.getId(),
+                        randomizedPlayersIds.getFirst())
+                .ifPresentOrElse(player -> log.info("First turn for player: {} starts at {} and ends at (+{} seconds) {}", player.getGameUser().getUsername(), player.getTurnStartTime(), game.getTurnTime(), player.getTurnEndTime()),
+                        () -> log.error("No player found for the first turn with gameId {} and playerId {}", game.getId(), randomizedPlayersIds.getFirst())
+                );
+    }
+
+    public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId) {
+        try {
+            return gameRepository.findGameById(gameId)
+                    .map(game -> {
+                        Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
+                                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
+
+                        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                                .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
+
+                        if (!player.getId().equals(playerTurnOrders.getFirst())) {
+                            throw new IllegalStateException(player.getGameUser().getUsername() + ": it's not your turn, wait until its your turn to make a move");
+                        }
+
+                        if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
+                            makePlayerMove(player);
+                        } else {
+                            log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
+                                    , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
+                        }
+
+                        return getNextPlayer(playerTurnOrders, game, player);
+                    });
+        } catch (NullPointerException | IllegalStateException e) {
+            log.error("Game handle turns could not start: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private Player getNextPlayer(List<UUID> turnOrders, Game game, Player currentPlayer) {
+        Deque<UUID> nextPlayerTurnOrders = new ArrayDeque<>(turnOrders);
+
+        UUID firstPlayerId = nextPlayerTurnOrders.pollFirst();
+        if (firstPlayerId != null && !firstPlayerId.equals(currentPlayer.getId())) {
+            throw new IllegalStateException("It is not your turn: " + currentPlayer.getGameUser().getUsername());
+        }
+        nextPlayerTurnOrders.offerLast(firstPlayerId);
+
+        game.setPlayerTurnOrder(new ArrayList<>(nextPlayerTurnOrders));
+        gameRepository.save(game);
+
+        UUID nextPlayerId = nextPlayerTurnOrders.peekFirst();
+        Player nextPlayer = playerRepository.findPlayerById(nextPlayerId)
+                .orElseThrow(() -> new NullPointerException("Next player not found"));
+
+        playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
+                .ifPresent(player -> {
+                    nextPlayer.setTurnStartTime(player.getTurnEndTime());
+                    nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
+                    playerRepository.save(nextPlayer);
+                });
+
+        log.info("The next turn is for player: {}, make a move within the time limit: from {} to {}",
+                nextPlayer.getGameUser().getUsername(), nextPlayer.getTurnStartTime(), nextPlayer.getTurnEndTime());
+        return nextPlayer;
+    }
+
+    private void makePlayerMove(Player player) {
+        //todo als het mijn beurt is
+        log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
+                player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
+                LocalTime.now());
     }
 }

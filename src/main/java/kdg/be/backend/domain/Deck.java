@@ -16,7 +16,7 @@ public class Deck {
     private UUID id;
 
      // relaties
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tile> tiles;
 
     public Deck() {

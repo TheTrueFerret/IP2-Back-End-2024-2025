@@ -31,7 +31,7 @@ public class GameDtoMapper {
                 .toList();
 
         return new GameDto(
-                game.getRoundTime(),
+                game.getTurnTime(),
                 game.getStartTileAmount(),
                 playingFieldDto,
                 tilePoolDto,
