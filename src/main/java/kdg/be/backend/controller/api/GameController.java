@@ -62,6 +62,7 @@ public class GameController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -72,6 +73,7 @@ public class GameController {
         return gameService.managePlayerTurns(req.gameId(), req.playerId())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
