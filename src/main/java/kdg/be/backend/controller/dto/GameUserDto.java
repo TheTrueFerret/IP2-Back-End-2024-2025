@@ -1,7 +1,6 @@
 package kdg.be.backend.controller.dto;
 
 import kdg.be.backend.domain.GameUser;
-import kdg.be.backend.domain.chatting.ChatHistory;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -15,10 +14,6 @@ public class GameUserDto {
     private String avatar;
     private List<AchievementDto> achievements;
     private List<GameUserDto> friendList;
-    private ChatHistory chatHistory;
-
-    public GameUserDto() {
-    }
 
     public GameUserDto(String username, UUID id) {
         this.id = id;
