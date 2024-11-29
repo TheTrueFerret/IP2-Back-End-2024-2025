@@ -13,7 +13,8 @@ public class TileService {
         boolean valid = true;
         for (int i = 0; i < tiles.size(); i++) {
             if (!tiles.getFirst().equals(tiles.get(i))) {
-                if (tiles.get(i).getNumberValue() != tiles.get(i - 1).getNumberValue() + 1) {
+                if (tiles.get(i).getNumberValue() != tiles.get(i - 1).getNumberValue() - 1
+                        && tiles.get(i).getTileColor().equals(tiles.get(i - 1).getTileColor()) ) {
                     return false;
                 }
             }
