@@ -35,5 +35,3 @@ public class GameUserDto {
         gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getTitle(), achievement.getDescription(), achievement.isCompleted())));
     }
 }
-
-public record GameUserDto(String id, String username) { }

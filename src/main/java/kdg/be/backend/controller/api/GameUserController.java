@@ -4,7 +4,6 @@ import kdg.be.backend.controller.dto.GameUserDto;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;

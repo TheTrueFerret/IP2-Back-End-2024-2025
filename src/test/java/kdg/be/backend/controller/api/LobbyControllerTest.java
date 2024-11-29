@@ -2,7 +2,6 @@ package kdg.be.backend.controller.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kdg.be.backend.TestContainerIPConfiguration;
-import kdg.be.backend.service.GameService;
 import kdg.be.backend.service.LobbyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -154,6 +152,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testLeaveLobbyShouldReturnOk() throws Exception {
         mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=c4a2fa67-6a4d-4d9b-9c59-4f96b6fbc104")
                         .contentType(MediaType.APPLICATION_JSON))
