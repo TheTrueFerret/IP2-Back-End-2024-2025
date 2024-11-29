@@ -32,7 +32,7 @@ public class GameUserController {
             logger.info("Game user already exists");
             return ResponseEntity.badRequest().body("Game user already exists");
         } else {
-            GameUserDTO gameUserDTO = new GameUserDTO(username, id);
+            GameUserDto gameUserDTO = new GameUserDTO(username, id);
             gameUserService.createGameUser(gameUserDTO.getUsername(), gameUserDTO.getId());
             logger.info("Game user " + username + " created");
             return ResponseEntity.ok("Game user " + username + " created");

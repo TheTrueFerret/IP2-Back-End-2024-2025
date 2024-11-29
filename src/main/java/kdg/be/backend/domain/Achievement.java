@@ -1,9 +1,6 @@
 package kdg.be.backend.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +14,11 @@ public class Achievement {
     private String title;
     private String description;
     private boolean completed;
+
+    //relatie
+    @ManyToOne
+    private GameUser gameUser;
+
 
     public Achievement() {
     }  // jpa
