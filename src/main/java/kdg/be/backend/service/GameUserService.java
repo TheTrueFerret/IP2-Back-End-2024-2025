@@ -1,9 +1,10 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.GameUserDTO;
+
+import jakarta.transaction.Transactional;
+import kdg.be.backend.controller.dto.GameUserDto;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
-import kdg.be.backend.repository.ChatHistoryRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +15,15 @@ import java.util.UUID;
 public class GameUserService {
 
     GameUserRepository gameUserRepository;
-    ChatHistoryRepository chatHistoryRepository;
+    AchievementService achievementService;
 
-    public GameUserService(GameUserRepository gameUserRepository, ChatHistoryRepository chatHistoryRepository) {
+    public GameUserService(GameUserRepository gameUserRepository, AchievementService achievementService) {
         this.gameUserRepository = gameUserRepository;
-        this.chatHistoryRepository = chatHistoryRepository;
+        this.achievementService = achievementService;
     }
 
-    public void createGameUser(String username, String id) {
-        GameUser gameUser = new GameUser(UUID.fromString(id), username);
+    public void createGameUser(GameUserDto gameUserDto) {
+        GameUser gameUser = new GameUser(gameUserDto.getId(), gameUserDto.getUsername());
         ChatHistory chatHistory = new ChatHistory(gameUser, new ArrayList<>());
         gameUser.setChatHistory(chatHistory);
 
@@ -31,5 +32,16 @@ public class GameUserService {
 
     public boolean gameUserExists(UUID id) {
         return gameUserRepository.existsById(id);
+    }
+
+    @Transactional
+    public GameUser getGameUser(UUID uuid) {
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(uuid);
+        if (gameUser == null) {
+            return null;
+        }
+        gameUser.setAchievements(achievementService.getAchievements(gameUser.getId()));
+        gameUser.setAchievements(achievementService.getAchievements(gameUser.getId()));
+        return gameUser;
     }
 }

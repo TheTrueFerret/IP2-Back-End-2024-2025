@@ -1,23 +1,11 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.service.GameUserService;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,6 +20,7 @@ class GameUserControllerTest {
     private MockMvc mockMvc;
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void createGameUser() throws Exception {
         String body = """
                 {
@@ -40,16 +29,14 @@ class GameUserControllerTest {
                 }
                 """;
 
-        String jwtToken = getToken();
-
         mockMvc.perform(post("/api/gameuser/user")
-                        .header("Authorization", "Bearer " + jwtToken)
                         .contentType("application/json")
                         .content(body))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappyCreateGameUser() throws Exception {
         String body = """
                 {
@@ -57,16 +44,14 @@ class GameUserControllerTest {
                 }
                 """;
 
-        String jwtToken = getToken();
-
         mockMvc.perform(post("/api/gameuser/user")
-                        .header("Authorization", "Bearer " + jwtToken)
                         .contentType("application/json")
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void getGameUser() throws Exception {
         String body = """
                 {
@@ -74,16 +59,18 @@ class GameUserControllerTest {
                 }
                 """;
 
-        String jwtToken = getToken();
-
         mockMvc.perform(get("/api/gameuser/userProfile")
-                        .header("Authorization", "Bearer " + jwtToken)
                         .contentType("application/json")
                         .content(body))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()).andDo(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    assertTrue(content.contains("id"));
+                    assertTrue(content.contains("username"));
+                });
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void unhappyGetGameUser() throws Exception {
         String body = """
                 {
@@ -91,32 +78,9 @@ class GameUserControllerTest {
                 }
                 """;
 
-        String jwtToken = getToken();
-
         mockMvc.perform(get("/api/gameuser/userProfile")
-                        .header("Authorization", "Bearer " + jwtToken)
                         .contentType("application/json")
                         .content(body))
                 .andExpect(status().isNotFound());
-    }
-
-
-    private String getToken() throws JSONException {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
-
-        String body = "client_id=RummikubApp&client_secret=nNhIIzSj3s8IYRIZouVkGEuQJHQpuGUG&username=test&password=test&grant_type=password&scope=openid";
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                "http://localhost:8180/realms/Rummikub/protocol/openid-connect/token",
-                HttpMethod.POST,
-                request,
-                String.class
-        );
-
-        JSONObject jsonObject = new JSONObject(response.getBody());
-        return jsonObject.getString("access_token");
     }
 }
