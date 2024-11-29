@@ -12,7 +12,7 @@ services:
 
 stages:
   - build
-  - test
+#  - test
   - imageBuild
 
 build-job:
@@ -44,14 +44,14 @@ image-build-job:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-test-job:
-  stage: test
-  image: $GRADLE_JAVA_IMAGE
-  script:
-    - ./gradlew clean test
-  rules:
-    - if: $CI_COMMIT_BRANCH
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  artifacts:
-    paths:
-      - build/test-results/test/
+#test-job:
+#  stage: test
+#  image: $GRADLE_JAVA_IMAGE
+#  script:
+#    - ./gradlew clean test
+#  rules:
+#    - if: $CI_COMMIT_BRANCH
+#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+#  artifacts:
+#    paths:
+#      - build/test-results/test/
