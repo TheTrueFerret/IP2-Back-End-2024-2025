@@ -3,7 +3,6 @@ package kdg.be.backend.service;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.domain.TileSet;
 import kdg.be.backend.domain.enums.TileColor;
-import kdg.be.backend.service.dto.CheckResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +19,7 @@ class TileServiceTest {
     private TileService tileService;
 
     @Test
-    void TileServiceTestOnColorReturnTrue() {
+    void TileServiceTestOnColorDontThrow() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(1, TileColor.RED),
@@ -31,13 +30,11 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(5);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertTrue(status.isValid());
-        assertEquals("The tile set is valid.", status.message());
+        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestOnNumbersReturnTrue() {
+    void TileServiceTestOnNumbersDontThrow() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(11, TileColor.RED),
@@ -46,13 +43,11 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(3);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertTrue(status.isValid());
-        assertEquals("The tile set is valid.", status.message());
+        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestReturnFalseSetTooSmall() {
+    void TileServiceTestThrowException() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(11, TileColor.RED),
@@ -60,13 +55,11 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(2);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertFalse(status.isValid());
-        assertEquals("The tile set must contain at least 3 tiles.", status.message());
+        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestReturnFalseSetWrongColors() {
+    void TileServiceTestThrowExceptionSetWrongColors() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(1, TileColor.RED),
@@ -77,26 +70,22 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(5);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertFalse(status.isValid());
-        assertEquals("Tiles of different colors must have the same number.", status.message());
+        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestReturnFalseSetWrongNumbers() {
+    void TileServiceTestThrowExceptionSetWrongNumbers() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(new Tile(1, TileColor.RED), new Tile(2, TileColor.RED), new Tile(3, TileColor.RED), new Tile(7, TileColor.RED), new Tile(8, TileColor.RED)));
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(5);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertFalse(status.isValid());
-        assertEquals("Tiles of the same color must be in sequential order.", status.message());
+        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
     }
 
     //Joker checks
     @Test
-    void TileServiceTestWithJokerInSequenceReturnTrue() {
+    void TileServiceTestWithJokerInSequenceDontThrow() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(1, TileColor.RED),
@@ -108,13 +97,11 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(5);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertTrue(status.isValid());
-        assertEquals("The tile set is valid.", status.message());
+        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestWithJokerDifferentColorsReturnTrue() {
+    void TileServiceTestWithJokerDifferentColorsDontThrow() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(11, TileColor.RED),
@@ -125,13 +112,11 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(4);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertTrue(status.isValid());
-        assertEquals("The tile set is valid.", status.message());
+        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestWithJokerMisplacedReturnFalse() {
+    void TileServiceTestWithJokerMisplacedThrowException() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(1, TileColor.RED),
@@ -142,13 +127,11 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(4);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertFalse(status.isValid());
-        assertEquals("Tiles of the same color must be in sequential order.", status.message());
+        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
     }
 
     @Test
-    void TileServiceTestWithJokersReturnFalse() {
+    void TileServiceTestWithJokersThrowException() {
         TileSet tileSet = new TileSet();
         LinkedList<Tile> tiles = new LinkedList<>(List.of(
                 new Tile(9, TileColor.RED),
@@ -158,9 +141,7 @@ class TileServiceTest {
         tileSet.setTiles(tiles);
         tileSet.setStartCoordinate(1);
         tileSet.setEndCoordinate(3);
-        CheckResult status = tileService.checkTileSet(tiles);
-        assertFalse(status.isValid());
-        assertEquals("Joker does not correctly match numbers between different colors.", status.message());
+        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
     }
 
 }

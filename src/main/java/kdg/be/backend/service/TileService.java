@@ -1,7 +1,6 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.domain.Tile;
-import kdg.be.backend.service.dto.CheckResult;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -10,9 +9,9 @@ import java.util.LinkedList;
 public class TileService {
 
 
-    public CheckResult checkTileSet(LinkedList<Tile> tiles) {
+    public void checkTileSet(LinkedList<Tile> tiles) {
         if (tiles.size() < 3) {
-            return new CheckResult(false, "The tile set must contain at least 3 tiles.");
+            throw new IllegalStateException("The tile set must contain at least 3 tiles.");
         }
 
         for (int i = 0; i < tiles.size(); i++) {
@@ -34,13 +33,13 @@ public class TileService {
                         // Jokers bridging a sequence for the same color tiles
                         if (nextTile.getTileColor().equals(previousTile.getTileColor())) {
                             if (nextTile.getNumberValue() != previousTile.getNumberValue() + 2) {
-                                return new CheckResult(false, "Joker does not correctly bridge a sequence for tiles of the same color.");
+                                throw new IllegalStateException("Joker does not correctly bridge a sequence for tiles of the same color.");
                             }
                         }
                         // Jokers matching numbers between different colors tiles
                         else {
                             if (nextTile.getNumberValue() != previousTile.getNumberValue()) {
-                                return new CheckResult(false, "Joker does not correctly match numbers between different colors.");
+                                throw new IllegalStateException("Joker does not correctly match numbers between different colors.");
                             }
                         }
                     }
@@ -50,16 +49,15 @@ public class TileService {
 
                 if (currentTile.getTileColor().equals(previousTile.getTileColor())) {
                     if (currentTile.getNumberValue() != previousTile.getNumberValue() + 1) {
-                        return new CheckResult(false, "Tiles of the same color must be in sequential order.");
+                        throw new IllegalStateException("Tiles of the same color must be in sequential order.");
                     }
                 } else {
                     if (currentTile.getNumberValue() != previousTile.getNumberValue()) {
-                        return new CheckResult(false, "Tiles of different colors must have the same number.");
+                        throw new IllegalStateException("Tiles of different colors must have the same number.");
                     }
                 }
             }
         }
-        return new CheckResult(true, "The tile set is valid.");
     }
 
 }
