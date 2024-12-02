@@ -33,6 +33,8 @@ public class GameDtoMapper {
         return new GameDto(
                 game.getTurnTime(),
                 game.getStartTileAmount(),
+                game.getDateTime(),
+                game.getPlayerTurnOrder(),
                 playingFieldDto,
                 tilePoolDto,
                 playerDtos

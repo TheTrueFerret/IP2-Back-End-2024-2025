@@ -1,29 +1,45 @@
+### Get access token with normal user
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=test&password=test&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
 ### Test: Get Tiles by Player ID (Player 1)
 GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000014
 Accept: application/json
+Authorization: Bearer {{access_token}}
 
 ### Test: Get Tiles by Player ID (Player 2)
 GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000015
 Accept: application/json
+Authorization: Bearer {{access_token}}
 
 ### Test: Get Players by Game ID
 GET http://localhost:8080/api/game/players/00000000-0000-0000-0000-000000000011
 Accept: application/json
+Authorization: Bearer {{access_token}}
 
 ### POST game starten met lobbyId, roundTime en startTileAmount
 POST http://localhost:8080/api/game/start/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006
 Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
 {
   "roundTime": 60,
-  "startTileAmount": 14
+  "startTileAmount": 11111
 }
 
 ### GET player turn in game player
 GET http://localhost:8080/api/game/turn
 Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
 {
-  "playerId": "bf1e8a50-fa77-420b-81dc-34ddf40744df",
-  "gameId": "857dbe8a-803c-41ba-85dc-13703e91ba13"
+  "playerId": "0b2c30a1-b7f3-47d2-a9fe-f8f6a3b94a78",
+  "gameId": "269cb824-33c7-4ac5-9901-0de2bdeff336"
 }

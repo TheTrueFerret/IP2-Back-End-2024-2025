@@ -39,7 +39,7 @@ class GameControllerTest{
     void testStartGame_HappyPath() throws Exception {
         String requestBody = """
             {
-                "roundTime": 60,
+                "turnTime": 60,
                 "startTileAmount": 14
             }
             """;
@@ -79,7 +79,7 @@ class GameControllerTest{
     void testStartGame_UnhappyPath_LobbyNotStarted() throws Exception {
         String requestBody = """
             {
-                "roundTime": 60,
+                "turnTime": 60,
                 "startTileAmount": 14
             }
             """;
