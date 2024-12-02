@@ -2,7 +2,6 @@ package kdg.be.backend.controller.api;
 
 import jakarta.validation.Valid;
 import kdg.be.backend.controller.dto.GameDto;
-import kdg.be.backend.controller.dto.LobbyDto;
 import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
@@ -63,11 +62,6 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-
     @GetMapping("/turn")
     public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody CreatePlayerTurnRequest req) {
         return gameService.managePlayerTurns(req.gameId(), req.playerId())
@@ -75,8 +69,18 @@ public class GameController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<String> handleNullPointerException(NullPointerException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

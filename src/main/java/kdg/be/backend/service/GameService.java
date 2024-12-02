@@ -169,7 +169,7 @@ public class GameService {
     }
 
     public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId) {
-        try {
+//        try {
             return gameRepository.findGameById(gameId)
                     .map(game -> {
                         Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
@@ -191,10 +191,10 @@ public class GameService {
 
                         return getNextPlayer(playerTurnOrders, game, player);
                     });
-        } catch (NullPointerException | IllegalStateException e) {
-            log.error("Game handle turns could not start: {}", e.getMessage());
-            return Optional.empty();
-        }
+//        } catch (NullPointerException | IllegalStateException e) {
+//            log.error("Game handle turns could not start: {}", e.getMessage());
+//            return Optional.empty();
+//        }
     }
 
     private Player getNextPlayer(List<UUID> turnOrders, Game game, Player currentPlayer) {
@@ -227,6 +227,7 @@ public class GameService {
 
     private void makePlayerMove(Player player) {
         //todo als het mijn beurt is
+        // tegels leggen, validatie op gelegde tegels, tegels trekken, enz ...
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
