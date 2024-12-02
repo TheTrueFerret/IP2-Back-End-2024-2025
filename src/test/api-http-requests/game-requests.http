@@ -31,7 +31,7 @@ Authorization: Bearer {{access_token}}
 
 {
   "roundTime": 60,
-  "startTileAmount": 14
+  "startTileAmount": 11111
 }
 
 ### GET player turn in game player
