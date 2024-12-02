@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -18,15 +20,28 @@ public class TileSet {
     private int endCoordinate;
 
      // relaties
-    @OneToMany
-    private LinkedList<Tile> tiles;
+    @ManyToMany
+    private Set<Tile> tiles;
 
     public TileSet() {
     }  // jpa
 
-    public TileSet(int startCoordinate, int endCoordinate, LinkedList<Tile> tiles) {
+    public TileSet(int startCoordinate, int endCoordinate, Set<Tile> tiles) {
         this.startCoordinate = startCoordinate;
         this.endCoordinate = endCoordinate;
         this.tiles = tiles;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TileSet tileSet = (TileSet) o;
+        return Objects.equals(id, tileSet.id);
     }
 }
