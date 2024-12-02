@@ -1,0 +1,47 @@
+###
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=test&password=test&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
+###
+POST http://localhost:8080/api/playing-fields/add-tile
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "playingFieldId": "00000000-0000-0000-0000-000000000001",
+  "tileSetId": "00000000-0000-0000-0000-000000000002",
+  "tileId": "00000000-0000-0000-0000-000000000006"
+}
+
+### Test for Creating a Tileset
+
+POST http://localhost:8080/api/tilesets
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "startCoordinate": 0,
+  "endCoordinate": 5,
+  "tileIds": [
+    "00000000-0000-0000-0000-000000000004",
+    "00000000-0000-0000-0000-000000000007"
+  ]
+}
+
+### Test for getting tilesets by field
+GET http://localhost:8080/api/tilesets/playingfield/00000000-0000-0000-0000-000000000001
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### Test for assigning tilesets to a playingfield zet eerst in de data sql de eerse record in commentaar van playing_field_tile_sets
+PUT http://localhost:8080/api/tilesets/00000000-0000-0000-0000-000000000002/assign-to-playingfield/00000000-0000-0000-0000-000000000019
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+

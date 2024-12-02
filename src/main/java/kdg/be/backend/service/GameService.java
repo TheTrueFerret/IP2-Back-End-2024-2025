@@ -231,4 +231,8 @@ public class GameService {
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
     }
+
+    public Game getGameById(UUID id) {
+        return gameRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Game not found"));
+    }
 }
