@@ -76,12 +76,22 @@ public class GameService {
     }
 
     @Transactional
-    public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount) {
+    public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
         return lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
+                    if (!lobby.getHostUser().getId().equals(hostUserId)){
+                        log.error("Only the host of the lobby can start the game!");
+                        throw new IllegalStateException("Only the host of the lobby can start the game!");
+                    }
+
                     if (lobby.getStatus() != LobbyStatus.READY) {
                         log.error("Cannot start game if lobby is not started.");
                         throw new IllegalStateException("Cannot start game if lobby is not started.");
+                    }
+
+                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1){
+                        log.error("There can only exist 1 game instance for every lobby");
+                        throw new IllegalStateException("There can only exist 1 game instance for every lobby");
                     }
 
                     List<Tile> tiles = createTiles(startTileAmount);
@@ -98,7 +108,8 @@ public class GameService {
                             LocalDateTime.now(),
                             playingField,
                             tilePool,
-                            new ArrayList<>()
+                            new ArrayList<>(),
+                            lobby
                     );
 
                     gameRepository.save(game);
@@ -169,7 +180,7 @@ public class GameService {
     }
 
     public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId) {
-        return gameRepository.findGameById(gameId)
+        return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
                     Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
                             .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
@@ -189,7 +200,7 @@ public class GameService {
                     }
 
                     return getNextPlayer(playerTurnOrders, game, player);
-                });
+                }).orElseThrow(() -> new NullPointerException("Game not found")));
     }
 
     private Player getNextPlayer(List<UUID> turnOrders, Game game, Player currentPlayer) {

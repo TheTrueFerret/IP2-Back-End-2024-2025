@@ -24,14 +24,15 @@ GET http://localhost:8080/api/game/players/00000000-0000-0000-0000-000000000011
 Accept: application/json
 Authorization: Bearer {{access_token}}
 
-### POST game starten met lobbyId, roundTime en startTileAmount
-POST http://localhost:8080/api/game/start/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006
+### POST game starten met lobbyId, roundTime en startTileAmount en hostUserId -> lobby moet op "ready" staan
+POST http://localhost:8080/api/game/start/ef673b41-d76d-4b96-99d8-41beef0c3707
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "roundTime": 60,
-  "startTileAmount": 11111
+  "turnTime": 60,
+  "startTileAmount": 14,
+  "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
 }
 
 ### GET player turn in game player
@@ -40,6 +41,6 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "playerId": "0b2c30a1-b7f3-47d2-a9fe-f8f6a3b94a78",
-  "gameId": "269cb824-33c7-4ac5-9901-0de2bdeff336"
+  "playerId": "b55e3acc-b16f-45c1-bef9-5dc16b256c5c",
+  "gameId": "10b81f05-59a2-466e-994c-31192a5c735d"
 }

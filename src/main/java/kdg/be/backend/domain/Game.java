@@ -30,10 +30,13 @@ public class Game {
     @OneToMany(mappedBy = "game",  cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players;
 
+    @ManyToOne
+    private Lobby lobby;
+
     public Game() {
     }  // jpa
 
-    public Game(int turnTime, int startTileAmount, LocalDateTime dateTime, PlayingField playingField, TilePool tilePool, List<Player> players) {
+    public Game(int turnTime, int startTileAmount, LocalDateTime dateTime, PlayingField playingField, TilePool tilePool, List<Player> players, Lobby lobby) {
         this.turnTime = turnTime;
         this.startTileAmount = startTileAmount;
         this.dateTime = dateTime;
@@ -41,5 +44,6 @@ public class Game {
         this.tilePool = tilePool;
         this.players = players;
         this.playerTurnOrder = new ArrayList<>();
+        this.lobby = lobby;
     }
 }
