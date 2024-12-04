@@ -7,4 +7,4 @@ import java.util.List;
 import java.util.UUID;
 
 public record GameDto(int turnTime, int startTileAmount, LocalDateTime dateTime, List<UUID> playerTurnOrder, PlayingFieldDto playingField, TilePoolDto tilePool,
-                      List<PlayerDto> players) { }
+                      List<PlayerDto> players, LobbyDto lobby) { }

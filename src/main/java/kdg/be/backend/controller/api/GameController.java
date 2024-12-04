@@ -9,6 +9,7 @@ import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,7 @@ public class GameController {
 
     @PostMapping("/start/{lobbyId}")
     public ResponseEntity<GameDto> startGame(@PathVariable UUID lobbyId, @Valid @RequestBody CreateGameSettingsRequest req) {
-        return gameService.startGame(lobbyId, req.roundTime(), req.startTileAmount())
+        return gameService.startGame(lobbyId, req.turnTime(), req.startTileAmount())
                 .map(GameDtoMapper::mapToGameDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -91,6 +92,14 @@ public class GameController {
     public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(IncorrectResultSizeDataAccessException.class)
+    public ResponseEntity<Map<String, String>> handleIncorrectResultSizeDataAccessException(IncorrectResultSizeDataAccessException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", IncorrectResultSizeDataAccessException.class.getSimpleName());
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }

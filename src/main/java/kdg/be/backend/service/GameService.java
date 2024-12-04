@@ -84,6 +84,11 @@ public class GameService {
                         throw new IllegalStateException("Cannot start game if lobby is not started.");
                     }
 
+                    if (gameRepository.findGameByLobbyId(lobbyId).isPresent()){
+                        log.error("There can only exist 1 game instance for every lobby");
+                        throw new IllegalStateException("There can only exist 1 game instance for every lobby");
+                    }
+
                     List<Tile> tiles = createTiles(startTileAmount);
                     tileRepository.saveAll(tiles);
                     TilePool tilePool = new TilePool(tiles);
@@ -98,7 +103,8 @@ public class GameService {
                             LocalDateTime.now(),
                             playingField,
                             tilePool,
-                            new ArrayList<>()
+                            new ArrayList<>(),
+                            lobby
                     );
 
                     gameRepository.save(game);

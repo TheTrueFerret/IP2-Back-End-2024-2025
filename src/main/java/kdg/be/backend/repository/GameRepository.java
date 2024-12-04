@@ -26,4 +26,11 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             WHERE g.id = :id
             """)
     Optional<List<UUID>> findPlayerTurnOrdersByGameId(UUID id);
+
+    @Query("""
+            SELECT g.playerTurnOrder
+            FROM Game g
+            WHERE g.lobby.id = :lobbyId
+            """)
+    Optional<Game> findGameByLobbyId(UUID lobbyId);
 }

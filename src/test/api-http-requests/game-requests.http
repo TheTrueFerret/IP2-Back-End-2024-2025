@@ -30,8 +30,8 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "roundTime": 60,
-  "startTileAmount": 11111
+  "turnTime": 60,
+  "startTileAmount": 14
 }
 
 ### GET player turn in game player
