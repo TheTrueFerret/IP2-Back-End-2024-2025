@@ -42,11 +42,12 @@ class GameControllerTest {
         String requestBody = """
                 {
                     "turnTime": 60,
-                    "startTileAmount": 14
+                    "startTileAmount": 14,
+                    "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
                 }
                 """;
 
-        mockMvc.perform(patch("/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707"))
+        mockMvc.perform(patch("/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
                 .andExpect(status().isOk());
 
         MvcResult result = mockMvc.perform(post("/api/game/start/ef673b41-d76d-4b96-99d8-41beef0c3707")
@@ -92,7 +93,8 @@ class GameControllerTest {
         String requestBody = """
                 {
                     "turnTime": 60,
-                    "startTileAmount": 14
+                    "startTileAmount": 14,
+                    "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
                 }
                 """;
 
@@ -119,7 +121,8 @@ class GameControllerTest {
         String requestBody = """
                 {
                     "turnTime": 60,
-                    "startTileAmount": 14
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111111"
                 }
                 """;
 
@@ -163,7 +166,8 @@ class GameControllerTest {
         String startGameRequest = """
                 {
                     "turnTime": 60,
-                    "startTileAmount": 14
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
                 }
                 """;
 
@@ -212,7 +216,8 @@ class GameControllerTest {
         String startGameRequest = """
                 {
                     "turnTime": 60,
-                    "startTileAmount": 14
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111115"
                 }
                 """;
 

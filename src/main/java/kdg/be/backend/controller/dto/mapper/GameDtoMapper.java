@@ -50,7 +50,7 @@ public class GameDtoMapper {
     }
 
     private static LobbyDto mapToLobbyDto(Lobby lobby) {
-        return new LobbyDto(lobby.getStatus(), mapToGameUser(lobby.getHostUser()), lobby.getUsers().stream().map(GameDtoMapper::mapToGameUser).toList(), lobby.getJoinCode(), lobby.getMinimumPlayers(), lobby.getMaximumPlayers());
+        return new LobbyDto(lobby.getId(), lobby.getStatus(), mapToGameUser(lobby.getHostUser()), lobby.getUsers().stream().map(GameDtoMapper::mapToGameUser).toList(), lobby.getJoinCode(), lobby.getMinimumPlayers(), lobby.getMaximumPlayers());
     }
 
     private static GameUserDto mapToGameUser(GameUser gameUser) {

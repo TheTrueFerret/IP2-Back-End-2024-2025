@@ -28,10 +28,10 @@ public class LobbyController {
         List<GameUserDto> gameUserDtos = lobby
                 .getUsers()
                 .stream()
-                .map(user -> new GameUserDto(user.getUsername(), user.getAvatar()))
+                .map(user -> new GameUserDto(user.getUsername(), user.getId()))
                 .toList();
 
-        return new LobbyDto(lobby.getStatus(), GameUserDtoMapper.mapToDto(lobby.getHostUser()), gameUserDtos, lobby.getJoinCode(), lobby.getMinimumPlayers(), lobby.getMaximumPlayers());
+        return new LobbyDto(lobby.getId(), lobby.getStatus(), GameUserDtoMapper.mapToDto(lobby.getHostUser()), gameUserDtos, lobby.getJoinCode(), lobby.getMinimumPlayers(), lobby.getMaximumPlayers());
     }
 
     @GetMapping("/{id}")
@@ -74,8 +74,8 @@ public class LobbyController {
     }
 
     @PatchMapping("/start/{id}")
-    public ResponseEntity<LobbyDto> startGame(@PathVariable UUID id) {
-        return lobbyService.readyLobby(id)
+    public ResponseEntity<LobbyDto> startGame(@PathVariable UUID id, @RequestParam UUID userId) {
+        return lobbyService.readyLobby(id, userId)
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }

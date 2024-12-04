@@ -28,9 +28,9 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     Optional<List<UUID>> findPlayerTurnOrdersByGameId(UUID id);
 
     @Query("""
-            SELECT g.playerTurnOrder
+            SELECT count(g)
             FROM Game g
             WHERE g.lobby.id = :lobbyId
             """)
-    Optional<Game> findGameByLobbyId(UUID lobbyId);
+    int countGamesByLobbyId(UUID lobbyId);
 }
