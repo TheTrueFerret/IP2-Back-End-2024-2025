@@ -13,12 +13,12 @@ import java.util.UUID;
 @Service
 public class GameUserService {
 
-    GameUserRepository gameUserRepository;
-    AchievementService achievementService;
+    private final GameUserRepository gameUserRepository;
+    private final GameUserAchievementService gameUserAchievementService;
 
-    public GameUserService(GameUserRepository gameUserRepository, AchievementService achievementService) {
+    public GameUserService(GameUserRepository gameUserRepository, GameUserAchievementService gameUserAchievementService) {
         this.gameUserRepository = gameUserRepository;
-        this.achievementService = achievementService;
+        this.gameUserAchievementService = gameUserAchievementService;
     }
 
     public void createGameUser(GameUserDto gameUserDto) {
@@ -39,7 +39,7 @@ public class GameUserService {
         if (gameUser == null) {
             return null;
         }
-        gameUser.setAchievements(achievementService.getAchievements(gameUser.getId()));
+        gameUser.setAchievements(gameUserAchievementService.getAchievementsForUser(gameUser.getId()));
         return gameUser;
     }
 }

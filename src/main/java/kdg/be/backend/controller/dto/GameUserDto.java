@@ -32,6 +32,6 @@ public class GameUserDto {
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         gameUser.getFriendList().forEach(friend -> this.friendList.add(new GameUserDto(friend)));
-        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getTitle(), achievement.getDescription(), achievement.isCompleted())));
+        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
     }
 }

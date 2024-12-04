@@ -27,7 +27,7 @@ public class Game {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private TilePool tilePool;
 
-    @OneToMany
+    @OneToMany(mappedBy = "game",  cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players;
 
     public Game() {
