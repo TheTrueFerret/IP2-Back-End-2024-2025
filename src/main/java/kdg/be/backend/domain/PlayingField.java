@@ -16,7 +16,7 @@ public class PlayingField {
     private UUID id;
 
      // relaties
-    @OneToMany
+    @OneToMany(mappedBy = "playingField")
     private Collection<TileSet> tileSets;
 
     public PlayingField() {

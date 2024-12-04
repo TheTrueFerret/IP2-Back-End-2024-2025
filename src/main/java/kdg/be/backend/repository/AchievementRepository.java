@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface AchievementRepository extends JpaRepository<Achievement, UUID> {
+public interface AchievementRepository extends JpaRepository<Achievement, Long> {
 
-    @Query("SELECT a FROM Achievement a " +
-            "WHERE a.gameUser.id = :userId")
+    @Query("SELECT g.achievement FROM GameUserAchievement g " +
+            "WHERE g.gameUser.id = :userId")
     List<Achievement> findAchievementsByUserId(UUID userId);
 }
