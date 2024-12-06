@@ -23,7 +23,6 @@ public class PlayingFieldController {
         this.playingFieldService = playingFieldService;
     }
 
-    //TODO: playingfield post voor nieuwe te maken
     @PostMapping("/add-tile")
     public ResponseEntity<TileSetDto> addTileToTileSet(@RequestBody AddTileToTilesetRequestDTO request) {
         // Call the service to add the tile to the TileSet
@@ -43,7 +42,7 @@ public class PlayingFieldController {
     private TileSetDto toDto(TileSet tileSet) {
         // Map the TileSet entity to TileSetDto
         List<TileDto> tileDtos = tileSet.getTiles().stream()
-                .map(tile -> new TileDto(tile.getNumberValue(), tile.getTileColor()))
+                .map(tile -> new TileDto(tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow()))
                 .collect(Collectors.toList());
 
         return new TileSetDto(tileSet.getStartCoordinate(), tileSet.getEndCoordinate(), tileDtos);

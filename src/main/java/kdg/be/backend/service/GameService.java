@@ -48,13 +48,13 @@ public class GameService {
 
         for (int number = 1; number <= 13; number++) {
             for (TileColor color : colors) {
-                tiles.add(new Tile(number, color));
-                tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
+                tiles.add(new Tile());
+                tiles.add(new Tile()); // Dubbele set per kleur en nummer
             }
         }
 
-        tiles.add(new Tile(0, TileColor.BLACK)); // Joker 1
-        tiles.add(new Tile(0, TileColor.RED)); // Joker 2
+        tiles.add(new Tile()); // Joker 1
+        tiles.add(new Tile()); // Joker 2
 
         log.info("AMOUNT OF TILES GENERATED: {}", tiles.size());
 

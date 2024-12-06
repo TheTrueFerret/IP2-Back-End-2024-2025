@@ -40,8 +40,4 @@ GET http://localhost:8080/api/tilesets/playingfield/00000000-0000-0000-0000-0000
 Accept: application/json
 Authorization: Bearer {{access_token}}
 
-### Test for assigning tilesets to a playingfield zet eerst in de data sql de eerse record in commentaar van playing_field_tile_sets
-PUT http://localhost:8080/api/tilesets/00000000-0000-0000-0000-000000000002/assign-to-playingfield/00000000-0000-0000-0000-000000000019
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
 

@@ -40,6 +40,9 @@ public class PlayingFieldService {
 
         // Add the tile to the tile set
         tileSet.getTiles().add(tile);
+        tile.setTileSet(tileSet);
+
+        tileRepository.save(tile);
         tileSetRepository.save(tileSet);
 
         return tileSet; // Return the updated TileSet entity
