@@ -19,7 +19,7 @@ public class TileSet {
     private int startCoordinate;
     private int endCoordinate;
 
-    @OneToMany(mappedBy = "tileSet",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tileSet",cascade = CascadeType.MERGE, orphanRemoval = true)
     private Set<Tile> tiles;
 
     @ManyToOne

@@ -32,12 +32,12 @@ public class TileSetService {
 
 
     public TileSet createTileset(CreateTilesetRequest request) {
-        // Create the Tileset
+        // Create the Tileset, mogelijks misschien kijken of de tile ids al in een andere tileset zitten zo ja verwijderen van die tileset?
         TileSet newTileSet = new TileSet();
         newTileSet.setStartCoordinate(request.startCoordinate());
         newTileSet.setEndCoordinate(request.endCoordinate());
 
-        PlayingField playingField = playingFieldRepository.findById(request.playingFieldId()).orElseThrow(() -> new IllegalArgumentException("Can not find playingField to connect tileset."));
+        PlayingField playingField = playingFieldRepository.findByIdWithTileSets(request.playingFieldId()).orElseThrow(() -> new IllegalArgumentException("Can not find playingField to connect tileset."));
         newTileSet.setPlayingField(playingField);
 
 
@@ -62,7 +62,7 @@ public class TileSetService {
     public List<TileSet> getTilesetsByPlayingField(UUID playingFieldId) {
         List<TileSet> tileSets = tileSetRepository.findAllByPlayingFieldIdWithTiles(playingFieldId);
         if (tileSets.isEmpty()) {
-            throw new RuntimeException("No TileSets found for Playing Field: " + playingFieldId);
+            throw new IllegalArgumentException("No TileSets found for Playing Field: " + playingFieldId);
         }
         return tileSets;
     }
