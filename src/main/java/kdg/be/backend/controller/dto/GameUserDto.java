@@ -1,6 +1,6 @@
 package kdg.be.backend.controller.dto;
 
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.user.GameUser;
 import lombok.Getter;
 
 import java.util.ArrayList;

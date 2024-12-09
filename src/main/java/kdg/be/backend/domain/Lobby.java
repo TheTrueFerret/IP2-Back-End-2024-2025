@@ -2,6 +2,7 @@ package kdg.be.backend.domain;
 
 import jakarta.persistence.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
+import kdg.be.backend.domain.user.GameUser;
 import lombok.Getter;
 import lombok.Setter;
 

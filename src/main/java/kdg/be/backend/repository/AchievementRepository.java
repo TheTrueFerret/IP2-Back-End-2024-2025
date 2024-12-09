@@ -1,6 +1,6 @@
 package kdg.be.backend.repository;
 
-import kdg.be.backend.domain.Achievement;
+import kdg.be.backend.domain.user.Achievement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

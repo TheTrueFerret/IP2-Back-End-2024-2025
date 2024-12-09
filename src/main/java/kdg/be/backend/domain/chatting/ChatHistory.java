@@ -1,10 +1,9 @@
 package kdg.be.backend.domain.chatting;
 
 import jakarta.persistence.*;
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.user.GameUser;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
 
 import java.util.Collection;
 import java.util.UUID;

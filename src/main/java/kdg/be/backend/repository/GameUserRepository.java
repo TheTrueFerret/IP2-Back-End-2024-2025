@@ -1,8 +1,7 @@
 package kdg.be.backend.repository;
 
 
-import jakarta.transaction.Transactional;
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.user.GameUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +17,8 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
             "WHERE g.id = :id")
     GameUser findGameUserWithDetails(@Param("id") UUID id);
 
+    @Query("SELECT g FROM GameUser g " +
+            "LEFT JOIN FETCH g.friendList " +
+            "WHERE g.username = :username")
+    GameUser findGameUserByUsername(String username);
 }

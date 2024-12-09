@@ -1,6 +1,6 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.domain.Achievement;
+import kdg.be.backend.domain.user.Achievement;
 import kdg.be.backend.repository.AchievementRepository;
 import org.springframework.stereotype.Service;
 

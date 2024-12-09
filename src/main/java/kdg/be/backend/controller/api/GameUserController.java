@@ -1,7 +1,7 @@
 package kdg.be.backend.controller.api;
 
 import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,5 +55,44 @@ public class GameUserController {
             logger.warning("Game user not found by id.");
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/friendRequest/{friendUsername}")
+    public ResponseEntity<String> friendRequest(@RequestParam UUID userId, @PathVariable String friendUsername) {
+        if (userId == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        if (gameUserService.addFriendRequest(userId, friendUsername)) {
+            logger.info("FriendRequest for  " + friendUsername + " added");
+            return ResponseEntity.ok("Friend " + friendUsername + " added");
+        } else {
+            logger.warning("Friend " + friendUsername + " not added");
+            return ResponseEntity.badRequest().body("Friend " + friendUsername + " not added");
+        }
+    }
+
+    @PostMapping("/friend/{friendUsername}")
+    public ResponseEntity<String> friend(@RequestParam UUID userId, @PathVariable String friendUsername) {
+        if (userId == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        if (gameUserService.addFriend(userId, friendUsername)) {
+            logger.info("Friend " + friendUsername + " added");
+            return ResponseEntity.ok("Friend " + friendUsername + " added");
+        } else {
+            logger.warning("Friend " + friendUsername + " not added");
+            return ResponseEntity.badRequest().body("Friend " + friendUsername + " not added");
+        }
+    }
+
+    @GetMapping("/friendRequests")
+    public ResponseEntity<String> friendRequests(@RequestParam UUID userId) {
+        if (userId == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(gameUserService.getFriendRequests(userId));
     }
 }

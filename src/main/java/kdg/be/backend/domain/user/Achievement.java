@@ -1,4 +1,4 @@
-package kdg.be.backend.domain;
+package kdg.be.backend.domain.user;
 
 import jakarta.persistence.*;
 import lombok.Getter;

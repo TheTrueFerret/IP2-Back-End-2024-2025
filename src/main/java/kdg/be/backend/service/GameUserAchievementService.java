@@ -1,8 +1,8 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.domain.Achievement;
-import kdg.be.backend.domain.GameUser;
-import kdg.be.backend.domain.GameUserAchievement;
+import kdg.be.backend.domain.user.Achievement;
+import kdg.be.backend.domain.user.GameUser;
+import kdg.be.backend.domain.user.GameUserAchievement;
 import kdg.be.backend.repository.AchievementRepository;
 import kdg.be.backend.repository.GameUserAchievementRepository;
 import kdg.be.backend.repository.GameUserRepository;
