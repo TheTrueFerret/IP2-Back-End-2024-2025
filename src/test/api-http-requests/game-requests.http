@@ -41,6 +41,6 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "playerId": "4c83ccd2-d552-4bd3-9e96-75c4d28261a1",
-  "gameId": "ec07d52f-37ac-414f-ab7a-fa762bb1e3bf"
+  "playerId": "e3005f5c-0060-4729-8447-20864890c7d2",
+  "gameId": "066aeceb-ed88-410e-9325-7ca2aa3b2483"
 }
