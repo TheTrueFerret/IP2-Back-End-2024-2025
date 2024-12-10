@@ -40,15 +40,14 @@ public class GameUserController {
     }
 
     @GetMapping("/userProfile")
-    public ResponseEntity<GameUserDto> getGameUser(@RequestBody Map<String, String> data) {
-        UUID id = data.get("id") != null ? UUID.fromString(data.get("id")) : null;
-        if (id == null) {
+    public ResponseEntity<GameUserDto> getGameUser(@RequestParam UUID userId) {
+        if (userId == null) {
             logger.warning("Invalid  data");
             return ResponseEntity.badRequest().build();
         }
-        GameUser gameUser = gameUserService.getGameUser(id);
+        GameUser gameUser = gameUserService.getGameUser(userId);
         if (gameUser != null) {
-            GameUserDto gameUserDto = new GameUserDto(gameUserService.getGameUser(id));
+            GameUserDto gameUserDto = new GameUserDto(gameUserService.getGameUser(userId));
             logger.info("Game user " + gameUserDto.getUsername() + " found");
             return ResponseEntity.ok(gameUserDto);
         } else {
