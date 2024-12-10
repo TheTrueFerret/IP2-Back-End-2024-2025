@@ -24,26 +24,26 @@ public class TileService {
         return tileRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Tile not found"));
     }
 
-    public void checkTileSet(LinkedList<Tile> tiles) {
-        if (tiles.size() < 3) {
+    public void checkTileSet(LinkedList<Tile> tileGroup) {
+        if (tileGroup.size() < 3) {
             throw new IllegalStateException("The tile set must contain at least 3 tiles.");
         }
 
-        for (int i = 0; i < tiles.size(); i++) {
+        for (int i = 0; i < tileGroup.size(); i++) {
             // Skip the first tile
             if (i > 0) {
-                Tile currentTile = tiles.get(i);
-                Tile previousTile = tiles.get(i - 1);
+                Tile currentTile = tileGroup.get(i);
+                Tile previousTile = tileGroup.get(i - 1);
 
                 //If last tile is a joker, skip check
-                if (i == tiles.size() - 1 && currentTile.getNumberValue() == 0 || previousTile.getNumberValue() == 0) {
+                if (i == tileGroup.size() - 1 && currentTile.getNumberValue() == 0 || previousTile.getNumberValue() == 0) {
                     continue;
                 }
 
                 if (currentTile.getNumberValue() == 0) {
                     // Check if joker is last tile
-                    if (i < tiles.size() - 1) {
-                        Tile nextTile = tiles.get(i + 1);
+                    if (i < tileGroup.size() - 1) {
+                        Tile nextTile = tileGroup.get(i + 1);
 
                         // Jokers bridging a sequence for the same color tiles
                         if (nextTile.getTileColor().equals(previousTile.getTileColor())) {
