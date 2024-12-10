@@ -231,6 +231,14 @@ public class GameService {
         return nextPlayer;
     }
 
+    public boolean makeMove(UUID userId, UUID gameId, List<Tile> tiles, List<List<Tile>> lists){
+        //TODO: is het mijn beurt?
+        //JA? validatie op gelegde tegels klopt dit?
+        //JA? tegels leggen en beurt aan de volgende speler geven
+
+        return true;
+    }
+
     private void makePlayerMove(Player player) {
         //todo als het mijn beurt is
         // tegels leggen, validatie op gelegde tegels, tegels trekken, enz ...

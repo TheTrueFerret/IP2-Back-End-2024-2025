@@ -6,6 +6,7 @@ import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
+import kdg.be.backend.controller.dto.requests.GameStateRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
@@ -70,6 +71,17 @@ public class GameController {
         return gameService.managePlayerTurns(req.gameId(), req.playerId())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/send-turn")
+    public ResponseEntity<String> sendTurn(@RequestBody GameStateRequest req) {
+        if (req.userId() == null || req.gameId() == null || req.playerDeck() == null || req.playingField() == null) {
+            ResponseEntity.badRequest().body("Invalid request body: value is null.");
+        }
+        if (gameService.makeMove(req.userId(), req.gameId(), req.playerDeck(), req.playingField())) {
+            return ResponseEntity.ok("Turn sent");
+        }
+        return ResponseEntity.ok("Turn sent");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
