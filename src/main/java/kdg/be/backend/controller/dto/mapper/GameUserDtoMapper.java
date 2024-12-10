@@ -5,6 +5,6 @@ import kdg.be.backend.domain.GameUser;
 
 public class GameUserDtoMapper {
     public static GameUserDto mapToDto(GameUser gameUser) {
-        return new GameUserDto(gameUser.getUsername(), gameUser.getAvatar());
+        return new GameUserDto(gameUser.getUsername(), gameUser.getId());
     }
 }

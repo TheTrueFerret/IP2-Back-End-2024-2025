@@ -21,8 +21,9 @@ public class GameUser {
     private String avatar;
 
     // relaties
-    @OneToMany
-    private List<Achievement> achievements;
+    @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GameUserAchievement> achievements = new ArrayList<>();
+
     @OneToMany
     private List<GameUser> friendList;
     @OneToOne(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -31,10 +32,9 @@ public class GameUser {
     public GameUser() {
     }  // jpa
 
-    public GameUser(String username, String avatar, List<Achievement> achievements, List<GameUser> friendList, ChatHistory chatHistory) {
+    public GameUser(String username, String avatar, List<GameUser> friendList, ChatHistory chatHistory) {
         this.username = username;
         this.avatar = avatar;
-        this.achievements = achievements;
         this.friendList = friendList;
         this.chatHistory = chatHistory;
     }

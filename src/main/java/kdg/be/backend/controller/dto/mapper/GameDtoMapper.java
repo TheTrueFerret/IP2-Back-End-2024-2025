@@ -1,9 +1,6 @@
 package kdg.be.backend.controller.dto.mapper;
 
-import kdg.be.backend.controller.dto.DeckDto;
-import kdg.be.backend.controller.dto.GameDto;
-import kdg.be.backend.controller.dto.PlayerDto;
-import kdg.be.backend.controller.dto.PlayingFieldDto;
+import kdg.be.backend.controller.dto.*;
 import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.controller.dto.tiles.TilePoolDto;
 import kdg.be.backend.controller.dto.tiles.TileSetDto;
@@ -33,9 +30,12 @@ public class GameDtoMapper {
         return new GameDto(
                 game.getTurnTime(),
                 game.getStartTileAmount(),
+                game.getDateTime(),
+                game.getPlayerTurnOrder(),
                 playingFieldDto,
                 tilePoolDto,
-                playerDtos
+                playerDtos,
+                mapToLobbyDto(game.getLobby())
         );
     }
 
@@ -47,6 +47,14 @@ public class GameDtoMapper {
                         .map(GameDtoMapper::mapToTileDto)
                         .toList()
         );
+    }
+
+    private static LobbyDto mapToLobbyDto(Lobby lobby) {
+        return new LobbyDto(lobby.getId(), lobby.getStatus(), mapToGameUser(lobby.getHostUser()), lobby.getUsers().stream().map(GameDtoMapper::mapToGameUser).toList(), lobby.getJoinCode(), lobby.getMinimumPlayers(), lobby.getMaximumPlayers());
+    }
+
+    private static GameUserDto mapToGameUser(GameUser gameUser) {
+        return new GameUserDto(gameUser.getUsername(), gameUser.getId());
     }
 
     private static TileDto mapToTileDto(Tile tile) {

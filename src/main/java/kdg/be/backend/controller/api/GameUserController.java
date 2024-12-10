@@ -1,8 +1,9 @@
 package kdg.be.backend.controller.api;
 
+import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -31,9 +32,28 @@ public class GameUserController {
             logger.info("Game user already exists");
             return ResponseEntity.badRequest().body("Game user already exists");
         } else {
-            gameUserService.createGameUser(username, id);
+            GameUserDto gameUserDto = new GameUserDto(username, UUID.fromString(id));
+            gameUserService.createGameUser(gameUserDto);
             logger.info("Game user " + username + " created");
             return ResponseEntity.ok("Game user " + username + " created");
+        }
+    }
+
+    @GetMapping("/userProfile")
+    public ResponseEntity<GameUserDto> getGameUser(@RequestBody Map<String, String> data) {
+        UUID id = data.get("id") != null ? UUID.fromString(data.get("id")) : null;
+        if (id == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        GameUser gameUser = gameUserService.getGameUser(id);
+        if (gameUser != null) {
+            GameUserDto gameUserDto = new GameUserDto(gameUserService.getGameUser(id));
+            logger.info("Game user " + gameUserDto.getUsername() + " found");
+            return ResponseEntity.ok(gameUserDto);
+        } else {
+            logger.warning("Game user not found by id.");
+            return ResponseEntity.notFound().build();
         }
     }
 }

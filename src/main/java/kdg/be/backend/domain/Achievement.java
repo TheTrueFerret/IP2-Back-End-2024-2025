@@ -1,11 +1,11 @@
 package kdg.be.backend.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,6 +17,9 @@ public class Achievement {
     private String title;
     private String description;
     private boolean completed;
+
+    @OneToMany(mappedBy = "achievement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GameUserAchievement> users = new ArrayList<>();
 
     public Achievement() {
     }  // jpa

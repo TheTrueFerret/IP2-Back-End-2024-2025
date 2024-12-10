@@ -1,8 +1,9 @@
 package kdg.be.backend.service;
 
+
+import kdg.be.backend.controller.dto.GameUserDto;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
-import kdg.be.backend.repository.ChatHistoryRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,16 +13,16 @@ import java.util.UUID;
 @Service
 public class GameUserService {
 
-    GameUserRepository gameUserRepository;
-    ChatHistoryRepository chatHistoryRepository;
+    private final GameUserRepository gameUserRepository;
+    private final GameUserAchievementService gameUserAchievementService;
 
-    public GameUserService(GameUserRepository gameUserRepository, ChatHistoryRepository chatHistoryRepository) {
+    public GameUserService(GameUserRepository gameUserRepository, GameUserAchievementService gameUserAchievementService) {
         this.gameUserRepository = gameUserRepository;
-        this.chatHistoryRepository = chatHistoryRepository;
+        this.gameUserAchievementService = gameUserAchievementService;
     }
 
-    public void createGameUser(String username, String id) {
-        GameUser gameUser = new GameUser(UUID.fromString(id), username);
+    public void createGameUser(GameUserDto gameUserDto) {
+        GameUser gameUser = new GameUser(gameUserDto.getId(), gameUserDto.getUsername());
         ChatHistory chatHistory = new ChatHistory(gameUser, new ArrayList<>());
         gameUser.setChatHistory(chatHistory);
 
@@ -30,5 +31,15 @@ public class GameUserService {
 
     public boolean gameUserExists(UUID id) {
         return gameUserRepository.existsById(id);
+    }
+
+
+    public GameUser getGameUser(UUID uuid) {
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(uuid);
+        if (gameUser == null) {
+            return null;
+        }
+        gameUser.setAchievements(gameUserAchievementService.getAchievementsForUser(gameUser.getId()));
+        return gameUser;
     }
 }

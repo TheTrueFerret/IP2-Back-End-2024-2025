@@ -15,7 +15,7 @@ public class TilePool {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tilePool", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tile> tiles;
 
     public TilePool() {

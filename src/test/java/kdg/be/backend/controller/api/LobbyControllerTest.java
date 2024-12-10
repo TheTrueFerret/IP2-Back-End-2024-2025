@@ -2,7 +2,6 @@ package kdg.be.backend.controller.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kdg.be.backend.TestContainerIPConfiguration;
-import kdg.be.backend.service.GameService;
 import kdg.be.backend.service.LobbyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +9,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -33,6 +31,7 @@ class LobbyControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testGetLobbyByLobbyIdShouldReturnOk() throws Exception {
         mockMvc.perform(get("/api/lobby/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006"))
                 .andExpect(status().isOk())
@@ -51,6 +50,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testGetAllLobbiesShouldReturnOk() throws Exception {
         mockMvc.perform(get("/api/lobby"))
                 .andExpect(status().isOk())
@@ -71,6 +71,7 @@ class LobbyControllerTest {
 
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testCreateLobbyShouldReturnCreated() throws Exception {
         String requestBody = """
             {
@@ -100,6 +101,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinLobbyShouldReturnOk() throws Exception {
         String requestBody = """
             {
@@ -125,6 +127,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinFullLobbyShouldReturnBadRequest() throws Exception {
         String requestBody = """
             {
@@ -149,6 +152,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testLeaveLobbyShouldReturnOk() throws Exception {
         mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=c4a2fa67-6a4d-4d9b-9c59-4f96b6fbc104")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -166,8 +170,9 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testStartLobbyShouldReturnOk() throws Exception {
-        mockMvc.perform(patch("/api/lobby/start/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006")
+        mockMvc.perform(patch("/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(result -> {
@@ -183,12 +188,14 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinLobbyWithInvalidJoinCodeShouldReturnBadRequest() throws Exception {
         String requestBody = """
             {
                 "joinCode": "INVALIDCODE"
             }
         """;
+
 
         mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -207,6 +214,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinLobbyWithInvalidUserIdShouldReturnBadRequest() throws Exception {
         String requestBody = """
             {
@@ -231,6 +239,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testLeaveLobbyWhenUserNotInLobbyShouldReturnBadRequest() throws Exception {
         mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
                         .contentType(MediaType.APPLICATION_JSON))

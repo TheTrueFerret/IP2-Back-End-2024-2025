@@ -1,14 +1,28 @@
+### Get access token with normal user
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=test&password=test&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
 ### GET lobby by lobby ID
 GET http://localhost:8080/api/lobby/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006
 Accept: application/json
+Authorization: Bearer {{access_token}}
 
 ### GET ALL lobbies
 GET http://localhost:8080/api/lobby
 Accept: application/json
+Authorization: Bearer {{access_token}}
 
 ### POST lobby by user ID
 POST http://localhost:8080/api/lobby/create?userId=1c14c66a-b034-4531-a1e2-dfb07e7f5707
 Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
 {
   "joinCode": "TEST",
@@ -19,6 +33,7 @@ Content-Type: application/json
 ### PATCH add user ID to loby ID
 PATCH http://localhost:8080/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008
 Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
 {
   "joinCode": "JOIN123"
@@ -27,6 +42,7 @@ Content-Type: application/json
 ### PATCH add user ID to loby ID (check if lobby is full)
 PATCH http://localhost:8080/api/lobby/join/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=00000000-0000-0000-0000-000000000009
 Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
 {
   "joinCode": "JOINME"
@@ -35,7 +51,9 @@ Content-Type: application/json
 ### PATCH remove user ID from loby ID
 PATCH http://localhost:8080/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008
 Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
 ### POST ready up the lobby by lobby ID
-PATCH http://localhost:8080/api/lobby/start/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006
+PATCH http://localhost:8080/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105
 Content-Type: application/json
+Authorization: Bearer {{access_token}}

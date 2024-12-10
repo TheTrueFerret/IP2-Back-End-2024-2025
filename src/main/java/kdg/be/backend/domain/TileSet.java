@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -17,16 +19,32 @@ public class TileSet {
     private int startCoordinate;
     private int endCoordinate;
 
-     // relaties
-    @OneToMany
-    private LinkedList<Tile> tiles;
+    @OneToMany(mappedBy = "tileSet",cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Tile> tiles;
+
+    @ManyToOne
+    private PlayingField playingField;
 
     public TileSet() {
     }  // jpa
 
-    public TileSet(int startCoordinate, int endCoordinate, LinkedList<Tile> tiles) {
+    public TileSet(int startCoordinate, int endCoordinate, Set<Tile> tiles, PlayingField playingField) {
         this.startCoordinate = startCoordinate;
         this.endCoordinate = endCoordinate;
         this.tiles = tiles;
+        this.playingField = playingField;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TileSet tileSet = (TileSet) o;
+        return Objects.equals(id, tileSet.id);
     }
 }
