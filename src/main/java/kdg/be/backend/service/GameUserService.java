@@ -29,8 +29,10 @@ public class GameUserService {
         gameUserRepository.saveAndFlush(gameUser);
     }
 
-    public boolean gameUserExists(UUID id) {
-        return gameUserRepository.existsById(id);
+    public boolean gameUserExists(UUID id, String username) {
+        boolean exists = gameUserRepository.existsById(id);
+        boolean existsByUsername = gameUserRepository.existsByUsername(username);
+        return exists || existsByUsername;
     }
 
 

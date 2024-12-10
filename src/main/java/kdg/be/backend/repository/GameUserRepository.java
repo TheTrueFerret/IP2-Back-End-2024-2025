@@ -1,7 +1,6 @@
 package kdg.be.backend.repository;
 
 
-import jakarta.transaction.Transactional;
 import kdg.be.backend.domain.GameUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +17,6 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
             "WHERE g.id = :id")
     GameUser findGameUserWithDetails(@Param("id") UUID id);
 
+
+    boolean existsByUsername(String username);
 }
