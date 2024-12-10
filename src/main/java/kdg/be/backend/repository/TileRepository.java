@@ -24,4 +24,7 @@ public interface TileRepository extends JpaRepository<Tile, UUID> {
 
     @Query("SELECT t FROM Tile t WHERE t.deck.id = :deckId")
     List<Tile> findTilesByDeckId(@Param("deckId") UUID deckId);
+
+    @Query("SELECT t FROM Tile t LEFT JOIN FETCH t.tileSet ts LEFT JOIN FETCH ts.tiles WHERE t.id IN :tileIds")
+    List<Tile> findAllByIdWithTileSetAndTiles(@Param("tileIds") List<UUID> tileIds);
 }

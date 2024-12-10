@@ -23,7 +23,7 @@ public class Tile {
     // relaties
     @ManyToOne
     private TilePool tilePool;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private TileSet tileSet;
     @ManyToOne
     private Deck deck;

@@ -32,52 +32,6 @@ class TilesetControllerTest {
     @Autowired
     private TileSetService tileSetService;
 
-    @Test
-    @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testCreateTilesetShouldReturnOk() throws Exception {
-        UUID playingFieldId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        List<UUID> tileIds = List.of(
-                UUID.fromString("00000000-0000-0000-0000-000000000004"),
-                UUID.fromString("00000000-0000-0000-0000-000000000005")
-        );
-
-        String requestBody = objectMapper.writeValueAsString(
-                new CreateTilesetRequest(1, 5, tileIds, playingFieldId)
-        );
-
-        mockMvc.perform(post("/api/tilesets")
-                        .contentType("application/json")
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.startCoordinate").value(1))
-                .andExpect(jsonPath("$.endCoordinate").value(5))
-                .andExpect(jsonPath("$.tiles").isArray())
-                .andExpect(jsonPath("$.tiles").isNotEmpty()).andDo(result -> {
-                    String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Formatted JSON Response: " + prettyResponse);
-                });;
-    }
-
-    @Test
-    @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testCreateTilesetWithInvalidPlayingFieldShouldReturnBadRequest() throws Exception {
-        List<UUID> tileIds = List.of(UUID.fromString("00000000-0000-0000-0000-000000000004"));
-        String requestBody = objectMapper.writeValueAsString(
-                new CreateTilesetRequest(1, 5, tileIds, UUID.fromString("00000000-0000-0000-0000-000000000008"))
-        );
-
-        mockMvc.perform(post("/api/tilesets")
-                        .contentType("application/json")
-                        .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Can not find playingField to connect tileset."))
-                .andDo(result -> {
-                    String response = result.getResponse().getContentAsString();
-                    String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                    System.out.println("Formatted JSON Response: " + prettyResponse);
-                });
-    }
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")

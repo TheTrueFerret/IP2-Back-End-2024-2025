@@ -1,5 +1,6 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.controller.dto.MoveType;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.domain.enums.TileColor;
@@ -22,16 +23,20 @@ public class GameService {
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
+    private final TileSetService tileSetService;
+    private final PlayingFieldService playingFieldService;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, TileSetService tileSetService, PlayingFieldService playingFieldService) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
         this.playingFieldRepository = playingFieldRepository;
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
+        this.tileSetService = tileSetService;
+        this.playingFieldService = playingFieldService;
     }
 
     public List<Tile> getTilesOfPlayer(UUID playerId) {
@@ -185,7 +190,7 @@ public class GameService {
                 );
     }
 
-    public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId) {
+    public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId,  MoveType moveType, int startCoordinate, int endCoordinate, UUID tileSet, List<UUID> tileIds, UUID playingFieldId) {
         return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
                     Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
@@ -199,7 +204,7 @@ public class GameService {
                     }
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player);
+                        makePlayerMove(player, moveType, startCoordinate, endCoordinate, tileSet, tileIds, playingFieldId);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -237,9 +242,16 @@ public class GameService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player) {
-        //todo als het mijn beurt is
-        // tegels leggen, validatie op gelegde tegels, tegels trekken, enz ...
+    private void makePlayerMove(Player player, MoveType moveType, int startCoordinate, int endCoordinate, UUID tileSetId, List<UUID> tileIds, UUID playingFieldId) {
+        switch (moveType) {
+            case CREATE_TILESET -> {
+                tileSetService.createTileset(startCoordinate, endCoordinate, tileIds, playingFieldId);
+            }
+            case ADD_TILE_TO_TILESET -> {
+                playingFieldService.addTileToTileSet(playingFieldId, tileSetId, tileIds.getFirst());
+            }
+            default -> throw new IllegalArgumentException("Unknown move type.");
+        }
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());

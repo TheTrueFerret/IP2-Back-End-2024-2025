@@ -23,6 +23,7 @@ public class PlayingFieldController {
         this.playingFieldService = playingFieldService;
     }
 
+    //TODO: De bedoeling is dat dit eigenlijk wordt gebruikt in manageturnplayer in de gamecontroller maar had dit gewoon als extra
     @PostMapping("/add-tile")
     public ResponseEntity<TileSetDto> addTileToTileSet(@RequestBody AddTileToTilesetRequestDTO request) {
         // Call the service to add the tile to the TileSet

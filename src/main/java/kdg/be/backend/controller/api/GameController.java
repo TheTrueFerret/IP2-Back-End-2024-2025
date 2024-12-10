@@ -66,7 +66,7 @@ public class GameController {
 
     @GetMapping("/turn")
     public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody CreatePlayerTurnRequest req) {
-        return gameService.managePlayerTurns(req.gameId(), req.playerId())
+        return gameService.managePlayerTurns(req.gameId(), req.playerId(), req.moveType(), req.startCoordinate(), req.endCoordinate(), req.tileSet(), req.tileIds(), req.playingFieldId())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

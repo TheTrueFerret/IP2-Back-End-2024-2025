@@ -26,12 +26,6 @@ public class TilesetController {
         this.tilesetService = tilesetService;
     }
 
-    @PostMapping
-    public ResponseEntity<TileSetDto> createTileset(@RequestBody CreateTilesetRequest request) {
-        TileSet tileSet = tilesetService.createTileset(request);
-        return ResponseEntity.ok(toDTO(tileSet));
-    }
-
     @GetMapping("/playingfield/{playingFieldId}")
     public ResponseEntity<List<TileSetDto>> getTilesetsByPlayingField(@PathVariable UUID playingFieldId) {
         List<TileSet> tileSets = tilesetService.getTilesetsByPlayingField(playingFieldId);

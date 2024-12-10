@@ -11,6 +11,7 @@ import kdg.be.backend.repository.TileSetRepository;
 import org.springframework.stereotype.Service;
 
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,32 +32,54 @@ public class TileSetService {
     }
 
 
-    public TileSet createTileset(CreateTilesetRequest request) {
-        // Create the Tileset, mogelijks misschien kijken of de tile ids al in een andere tileset zitten zo ja verwijderen van die tileset?
+    public void createTileset(int startCoordinate, int endCoordinate, List<UUID> tileIds, UUID playingFieldId) {
+        // Create the TileSet
         TileSet newTileSet = new TileSet();
-        newTileSet.setStartCoordinate(request.startCoordinate());
-        newTileSet.setEndCoordinate(request.endCoordinate());
+        newTileSet.setStartCoordinate(startCoordinate);
+        newTileSet.setEndCoordinate(endCoordinate);
 
-        PlayingField playingField = playingFieldRepository.findByIdWithTileSets(request.playingFieldId()).orElseThrow(() -> new IllegalArgumentException("Can not find playingField to connect tileset."));
+        // Fetch the PlayingField
+        PlayingField playingField = playingFieldRepository.findByIdWithTileSets(playingFieldId)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find PlayingField to connect TileSet."));
         newTileSet.setPlayingField(playingField);
 
-
-        // Fetch and associate Tiles with the Tileset
-        List<Tile> tiles = tileRepository.findAllById(request.tileIds());
-        if (tiles.size() != request.tileIds().size()) {
+        // Fetch and associate Tiles with the TileSet
+        List<Tile> tiles = tileRepository.findAllByIdWithTileSetAndTiles(tileIds);
+        if (tiles.size() != tileIds.size()) {
             throw new RuntimeException("Some tiles not found.");
         }
-        Set<Tile> tilesToSet = tiles.stream().collect(Collectors.toSet());
+        // Save the TileSet to generate its ID
+        tileSetRepository.save(newTileSet); // This saves the TileSet and generates its ID
+
+        // Initialize the collection of tiles for the new TileSet
+        Set<Tile> tilesToSet = new HashSet<>();
+        for (Tile tile : tiles) {
+
+            // Detach the tile from its current TileSet if it belongs to one
+            TileSet currentTileSet = tile.getTileSet();
+            if (currentTileSet != null) {
+                currentTileSet.getTiles().remove(tile);  // Remove the tile from the old TileSet
+                tileSetRepository.save(currentTileSet);  // Persist the changes to the old TileSet
+            }
+
+            // Associate the tile with the new TileSet
+            tile.setTileSet(newTileSet);  // Set the new TileSet
+            tilesToSet.add(tile);  // Add the tile to the new TileSet's collection
+        }
+
+        // Set the collection of tiles to the new TileSet
         newTileSet.setTiles(tilesToSet);
 
-        //Voeg de tileset ook aan de playingfield toe
+        // Log the new TileSet and its associated Tiles
+
+        // Add the TileSet to the PlayingField
         playingField.getTileSets().add(newTileSet);
-        playingFieldRepository.save(playingField);
 
-
-        // Save the new TileSet
-        return tileSetRepository.save(newTileSet);
+        // Save the updated PlayingField and TileSet again to persist changes
+        playingFieldRepository.save(playingField);  // Save the PlayingField with the new TileSet
+        tileSetRepository.save(newTileSet);
     }
+
 
 
     public List<TileSet> getTilesetsByPlayingField(UUID playingFieldId) {
@@ -69,7 +92,7 @@ public class TileSetService {
 
 
     public TileSet getTileSetById(UUID tileSetId) {
-        return tileSetRepository.findById(tileSetId)
+        return tileSetRepository.findByIdWithTiles(tileSetId)
                 .orElseThrow(() -> new IllegalArgumentException("TileSet not found"));
     }
 
