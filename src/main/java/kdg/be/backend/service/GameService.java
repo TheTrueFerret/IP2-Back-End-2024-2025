@@ -1,6 +1,8 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.controller.dto.MoveType;
+import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
+import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.domain.enums.TileColor;
@@ -23,19 +25,17 @@ public class GameService {
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
-    private final TileSetService tileSetService;
     private final PlayingFieldService playingFieldService;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, TileSetService tileSetService, PlayingFieldService playingFieldService) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
         this.playingFieldRepository = playingFieldRepository;
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
-        this.tileSetService = tileSetService;
         this.playingFieldService = playingFieldService;
     }
 
@@ -190,13 +190,13 @@ public class GameService {
                 );
     }
 
-    public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId,  MoveType moveType, int startCoordinate, int endCoordinate, UUID tileSet, List<UUID> tileIds, UUID playingFieldId) {
-        return Optional.of(gameRepository.findGameById(gameId)
+    public Optional<Player> managePlayerTurns(PlayerMoveRequest request) {
+        return Optional.of(gameRepository.findGameById(request.gameId())
                 .map(game -> {
-                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
+                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(request.gameId(), request.playerId())
                             .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
 
-                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(request.gameId())
                             .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
                     if (!player.getId().equals(playerTurnOrders.getFirst())) {
@@ -204,7 +204,7 @@ public class GameService {
                     }
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player, moveType, startCoordinate, endCoordinate, tileSet, tileIds, playingFieldId);
+                        makePlayerMove(player, request.tileSets());
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -242,16 +242,8 @@ public class GameService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player, MoveType moveType, int startCoordinate, int endCoordinate, UUID tileSetId, List<UUID> tileIds, UUID playingFieldId) {
-        switch (moveType) {
-            case CREATE_TILESET -> {
-                tileSetService.createTileset(startCoordinate, endCoordinate, tileIds, playingFieldId);
-            }
-            case ADD_TILE_TO_TILESET -> {
-                playingFieldService.addTileToTileSet(playingFieldId, tileSetId, tileIds.getFirst());
-            }
-            default -> throw new IllegalArgumentException("Unknown move type.");
-        }
+    private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> receivedTileSets) {
+        playingFieldService.handlePlayerMoves(receivedTileSets);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());

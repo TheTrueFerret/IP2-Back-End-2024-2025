@@ -6,6 +6,7 @@ import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
+import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
@@ -65,8 +66,8 @@ public class GameController {
     }
 
     @GetMapping("/turn")
-    public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody CreatePlayerTurnRequest req) {
-        return gameService.managePlayerTurns(req.gameId(), req.playerId(), req.moveType(), req.startCoordinate(), req.endCoordinate(), req.tileSet(), req.tileIds(), req.playingFieldId())
+    public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody PlayerMoveRequest req) {
+        return gameService.managePlayerTurns(req)
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

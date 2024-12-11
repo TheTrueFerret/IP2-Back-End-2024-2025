@@ -35,31 +35,85 @@ Authorization: Bearer {{access_token}}
   "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
 }
 
-### GET player turn in game player create tileset move
+### call om de zet te cheken op basis van heel de playingfield
 GET http://localhost:8080/api/game/turn
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "playerId": "357f0515-f8c5-4feb-804d-85de2169b2ce",
-  "gameId": "7d2999e4-0abd-4972-b132-a72ef94c5c64",
-  "moveType": "CREATE_TILESET",
-  "startCoordinate": 5,
-  "endCoordinate": 11,
-  "tileIds": ["00000000-0000-0000-0000-000000000004"],
-  "playingFieldId": "00000000-0000-0000-0000-000000000001"
+  "gameId": "d605ce40-5389-452e-bad9-70058323a88d",
+  "playerId": "65f21fa0-8dec-43d2-9197-703e0ba2257e",
+  "tileSets": [
+    {
+      "startCoordinate": 1,
+      "endCoordinate": 3,
+      "tiles": [
+        {
+          "tileId": "00000000-0000-0000-0000-000000000004",
+          "numberValue": 1,
+          "color": "BLUE",
+          "gridColumn": 4,
+          "gridRow": 5
+        },
+        {
+          "tileId": "00000000-0000-0000-0000-000000000007",
+          "numberValue": 4,
+          "color": "ORANGE",
+          "gridColumn": 7,
+          "gridRow": 10
+        }
+      ]
+    },
+    {
+      "startCoordinate": 11,
+      "endCoordinate": 13,
+      "tiles": [
+        {
+          "tileId": "00000000-0000-0000-0000-000000000006",
+          "numberValue": 3,
+          "color": "BLACK",
+          "gridColumn": 7,
+          "gridRow": 8
+        },
+        {
+          "tileId": "00000000-0000-0000-0000-000000000005",
+          "numberValue": 2,
+          "color": "RED",
+          "gridColumn": 4,
+          "gridRow": 6
+        }
+      ]
+    }
+  ]
 }
 
-### GET player turn in game player add tile to tileset move
-GET http://localhost:8080/api/game/turn
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
 
-{
-  "playerId": "80dbc07a-ad1a-4b9a-a244-f2fe84eae2c3",
-  "gameId": "9507ac63-eb93-4816-bc25-7fee52d6764c",
-  "moveType": "ADD_TILE_TO_TILESET",
-  "tileSet": "00000000-0000-0000-0000-000000000002",
-  "tileIds": ["00000000-0000-0000-0000-000000000006"],
-  "playingFieldId": "00000000-0000-0000-0000-000000000001"
-}
+#### GET player turn in game player create tileset move
+#GET http://localhost:8080/api/game/turn
+#Content-Type: application/json
+#Authorization: Bearer {{access_token}}
+#
+#{
+#  "playerId": "917572bc-e704-4202-afea-d94478daf9c4",
+#  "gameId": "b9e766b7-16b6-4fc6-a80c-cbf6dad75fb3",
+#  "moveType": "CREATE_TILESET",
+#  "startCoordinate": 5,
+#  "endCoordinate": 11,
+#  "tileIds": ["00000000-0000-0000-0000-000000000004"],
+#  "playingFieldId": "00000000-0000-0000-0000-000000000001"
+#}
+#
+#GET player turn in game player add tile to tileset move
+#GET http://localhost:8080/api/game/turn
+#Content-Type: application/json
+#Authorization: Bearer {{access_token}}
+#
+#{
+#  "playerId": "917572bc-e704-4202-afea-d94478daf9c4",
+#  "gameId": "b9e766b7-16b6-4fc6-a80c-cbf6dad75fb3",
+#  "moveType": "ADD_TILE_TO_TILESET",
+#  "tileSet": "00000000-0000-0000-0000-000000000002",
+#  "tileIds": ["00000000-0000-0000-0000-000000000006"],
+#  "playingFieldId": "00000000-0000-0000-0000-000000000001"
+#}
+

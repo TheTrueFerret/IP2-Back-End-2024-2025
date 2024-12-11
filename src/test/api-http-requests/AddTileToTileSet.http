@@ -9,17 +9,6 @@ client_id=RummikubApp&username=test&password=test&grant_type=password&scope=open
     client.global.set("access_token", response.body.access_token);
 %}
 
-###
-POST http://localhost:8080/api/playing-fields/add-tile
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
-
-{
-  "playingFieldId": "00000000-0000-0000-0000-000000000001",
-  "tileSetId": "00000000-0000-0000-0000-000000000002",
-  "tileId": "00000000-0000-0000-0000-000000000006"
-}
-
 ### Test for Creating a Tileset
 
 POST http://localhost:8080/api/tilesets
