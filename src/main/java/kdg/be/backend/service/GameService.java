@@ -204,7 +204,7 @@ public class GameService {
                     }
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player, request.tileSets());
+                        makePlayerMove(player, request);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -242,8 +242,9 @@ public class GameService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> receivedTileSets) {
-        playingFieldService.handlePlayerMoves(receivedTileSets);
+    private void makePlayerMove(Player player, PlayerMoveRequest request) {
+        playingFieldService.handlePlayerMoves(request.tileSets());
+        playingFieldService.handlePlayerDeck(player.getId(), request.playerDeckDto());
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());

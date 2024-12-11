@@ -41,10 +41,11 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "gameId": "d605ce40-5389-452e-bad9-70058323a88d",
-  "playerId": "65f21fa0-8dec-43d2-9197-703e0ba2257e",
+  "gameId": "29066fbc-7589-43a7-a85a-da4b02022b01",
+  "playerId": "7d9a32c4-a73e-42cc-a7a7-5408cf89f903",
   "tileSets": [
     {
+      "tileSetId": "00000000-0000-0000-0000-000000000002",
       "startCoordinate": 1,
       "endCoordinate": 3,
       "tiles": [
@@ -65,6 +66,7 @@ Authorization: Bearer {{access_token}}
       ]
     },
     {
+      "tileSetId": "00000000-0000-0000-0000-000000000003",
       "startCoordinate": 11,
       "endCoordinate": 13,
       "tiles": [
@@ -84,7 +86,18 @@ Authorization: Bearer {{access_token}}
         }
       ]
     }
-  ]
+  ],
+  "playerDeckDto": {
+    "tilesInDeck": [
+      {
+        "tileId": "00000000-0000-0000-0000-000000000055",
+        "numberValue": 5,
+        "color": "BLUE",
+        "gridColumn": 0,
+        "gridRow": 0
+      }
+    ]
+  }
 }
 
 
