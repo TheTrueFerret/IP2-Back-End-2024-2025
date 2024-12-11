@@ -242,6 +242,10 @@ public class GameService {
         return nextPlayer;
     }
 
+    private Optional<Tile> pullTileFromTilePool(UUID gameId, UUID playerId){
+        Player currentPlayerTurn = managePlayerTurns()
+    }
+
     private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> receivedTileSets) {
         playingFieldService.handlePlayerMoves(receivedTileSets);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
