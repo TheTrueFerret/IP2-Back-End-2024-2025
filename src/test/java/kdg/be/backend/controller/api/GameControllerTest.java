@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +47,7 @@ class GameControllerTest {
                 }
                 """;
 
-        mockMvc.perform(patch("/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
+        mockMvc.perform(patch("/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
                 .andExpect(status().isOk());
 
         MvcResult result = mockMvc.perform(post("/api/game/start/ef673b41-d76d-4b96-99d8-41beef0c3707")
@@ -161,9 +160,8 @@ class GameControllerTest {
     }
 
     @Test
-    @Transactional
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testManagePlayerTurnWithCreateTileSetTurn_ShouldBeOk() throws Exception {
+    void testmakePlayerMove_ShouldBeOk() throws Exception {
         // Stap 1: Start het spel
         String startGameRequest = """
                 {
@@ -195,87 +193,68 @@ class GameControllerTest {
 
         // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
         String playerTurnRequest = """
+        {
+          "gameId": "%s",
+          "playerId": "%s",
+          "tileSets": [
             {
-                "playerId": "%s",
-                "gameId": "%s",
-                "moveType": "%s",
-                "startCoordinate": %d,
-                "endCoordinate": %d,
-                "tileIds": ["%s"],
-                "playingFieldId": "%s"
-            }
-            """.formatted(
-                firstPlayerTurnId,
-                gameId,
-                "CREATE_TILESET",
-                5,
-                10,
-                "00000000-0000-0000-0000-000000000004",
-                "00000000-0000-0000-0000-000000000001"
-        );
-
-        mockMvc.perform(get("/api/game/turn")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(playerTurnRequest))
-                .andExpect(status().isOk())
-                .andDo(result -> {
-                    String jsonResponse = result.getResponse().getContentAsString();
-                    System.out.println("Beurtbeheer response: " + jsonResponse);
-                });
-    }
-
-    @Test
-    @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testManagePlayerTurnWithAddTileToTileSetTurn_ShouldBeOk() throws Exception {
-        // Stap 1: Start het spel
-        String startGameRequest = """
+              "tileSetId": "00000000-0000-0000-0000-000000000002",
+              "startCoordinate": 1,
+              "endCoordinate": 3,
+              "tiles": [
                 {
-                    "turnTime": 60,
-                    "startTileAmount": 14,
-                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                  "tileId": "00000000-0000-0000-0000-000000000004",
+                  "numberValue": 1,
+                  "color": "BLUE",
+                  "gridColumn": 4,
+                  "gridRow": 5
+                },
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000007",
+                  "numberValue": 4,
+                  "color": "ORANGE",
+                  "gridColumn": 7,
+                  "gridRow": 10
                 }
-                """;
-
-        MvcResult startGameResult = mockMvc.perform(post("/api/game/start/31111111-1111-1111-1111-111111111111")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(startGameRequest))
-                .andExpect(status().isOk())
-                .andReturn();
-
-
-        String startGameResponse = startGameResult.getResponse().getContentAsString();
-        String gameIdString = JsonPath.parse(startGameResponse).read("$.players[0].gameId", String.class);
-        UUID gameId = UUID.fromString(gameIdString);
-
-        List<String> playerOrder = JsonPath.parse(startGameResponse).read("$.playerTurnOrder", List.class);
-
-        // Controleer dat de lijst van playerTurnOrder niet leeg is
-        assertFalse(playerOrder.isEmpty(), "Player order should not be empty");
-
-        // Stap 3: Simuleer de beurt van de eerste speler (de eerste in de lijst is die gene die aan het beurt is)
-        UUID firstPlayerTurnId = UUID.fromString(playerOrder.getFirst());
-
-
-        // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
-        String playerTurnRequest = """
+              ]
+            },
             {
-                "playerId": "%s",
-                "gameId": "%s",
-                "moveType": "%s",
-                "tileSet": "%s",
-                "tileIds": ["%s"],
-                "playingFieldId": "%s"
+              "tileSetId": "00000000-0000-0000-0000-000000000003",
+              "startCoordinate": 11,
+              "endCoordinate": 13,
+              "tiles": [
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000006",
+                  "numberValue": 3,
+                  "color": "BLACK",
+                  "gridColumn": 7,
+                  "gridRow": 8
+                },
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000005",
+                  "numberValue": 2,
+                  "color": "RED",
+                  "gridColumn": 4,
+                  "gridRow": 6
+                }
+              ]
             }
-            """.formatted(
-                firstPlayerTurnId,
-                gameId,
-                "ADD_TILE_TO_TILESET",
-                "00000000-0000-0000-0000-000000000002",
-                "00000000-0000-0000-0000-000000000006",
-                "00000000-0000-0000-0000-000000000001"
-        );
+          ],
+          "playerDeckDto": {
+            "tilesInDeck": [
+              {
+                "tileId": "00000000-0000-0000-0000-000000000055",
+                "numberValue": 5,
+                "color": "BLUE",
+                "gridColumn": 0,
+                "gridRow": 0
+              }
+            ]
+          }
+        }
+        """.formatted(gameId, firstPlayerTurnId);
 
-        mockMvc.perform(get("/api/game/turn")
+        mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(playerTurnRequest))
                 .andExpect(status().isOk())
@@ -287,7 +266,7 @@ class GameControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testManagePlayerTurn_ShouldBeBadRequest() throws Exception {
+    void testManagePlayerMoves_ShouldBeBadRequest() throws Exception {
         // Stap 1: Start het spel
         String startGameRequest = """
                 {
@@ -325,7 +304,7 @@ class GameControllerTest {
                 }
                 """.formatted(firstPlayerTurnId, gameId);
 
-        mockMvc.perform(get("/api/game/turn")
+        mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(playerTurnRequest))
                 .andExpect(status().isBadRequest())

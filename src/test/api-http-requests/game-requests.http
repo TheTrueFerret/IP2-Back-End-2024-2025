@@ -36,15 +36,16 @@ Authorization: Bearer {{access_token}}
 }
 
 ### call om de zet te cheken op basis van heel de playingfield
-GET http://localhost:8080/api/game/turn
+POST http://localhost:8080/api/game/turn/player-make-move
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "gameId": "d605ce40-5389-452e-bad9-70058323a88d",
-  "playerId": "65f21fa0-8dec-43d2-9197-703e0ba2257e",
+  "gameId": "a765c25e-51a7-4536-b4d7-822c32f5847c",
+  "playerId": "c77445dc-bbbc-4b36-a624-b642d9e47e9f",
   "tileSets": [
     {
+      "tileSetId": "00000000-0000-0000-0000-000000000002",
       "startCoordinate": 1,
       "endCoordinate": 3,
       "tiles": [
@@ -65,6 +66,7 @@ Authorization: Bearer {{access_token}}
       ]
     },
     {
+      "tileSetId": "00000000-0000-0000-0000-000000000003",
       "startCoordinate": 11,
       "endCoordinate": 13,
       "tiles": [
@@ -84,7 +86,18 @@ Authorization: Bearer {{access_token}}
         }
       ]
     }
-  ]
+  ],
+  "playerDeckDto": {
+    "tilesInDeck": [
+      {
+        "tileId": "00000000-0000-0000-0000-000000000055",
+        "numberValue": 5,
+        "color": "BLUE",
+        "gridColumn": 0,
+        "gridRow": 0
+      }
+    ]
+  }
 }
 
 

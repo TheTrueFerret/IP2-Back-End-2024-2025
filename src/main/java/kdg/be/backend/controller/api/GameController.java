@@ -5,10 +5,7 @@ import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
-import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
-import kdg.be.backend.controller.dto.requests.CreateSimpleRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
-import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
@@ -67,25 +64,11 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("/turn")
-    public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody PlayerMoveRequest req) {
-        return gameService.managePlayerTurns(req)
+    @PostMapping("/turn/player-make-move")
+    public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
+        return gameService.managePlayerMoves(req)
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    /*
-    Params: gameId, playerId
-    Return: Tile
-    Description: If it's your turn, you can pull a tile from the TilePool.
-                 The tile you pulled needs to be subtracted from the TilePool and the new tile
-                 also needs to be added in the player's deck.
-     */
-    @GetMapping("/pull-tile")
-    public ResponseEntity<TileDto> getPulledTileFromTilePool(@Valid @RequestBody CreateSimpleRequest req) {
-        return gameService.pullTileFromTilePool(req.gameId(), req.playerId())
-                .map(tile -> ResponseEntity.ok(GameDtoMapper.mapToTileDto(tile)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

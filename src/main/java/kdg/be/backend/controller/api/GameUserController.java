@@ -28,7 +28,7 @@ public class GameUserController {
         if (id == null || username == null) {
             logger.warning("Invalid game user data");
             return ResponseEntity.badRequest().body("Invalid game user data");
-        } else if (gameUserService.gameUserExists(UUID.fromString(id))) {
+        } else if (gameUserService.gameUserExists(UUID.fromString(id), username)) {
             logger.info("Game user already exists");
             return ResponseEntity.badRequest().body("Game user already exists");
         } else {

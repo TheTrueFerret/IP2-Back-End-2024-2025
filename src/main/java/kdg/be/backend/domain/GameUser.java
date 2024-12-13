@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.UUID;
 @Setter
 public class GameUser {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String username;
     private String avatar;
