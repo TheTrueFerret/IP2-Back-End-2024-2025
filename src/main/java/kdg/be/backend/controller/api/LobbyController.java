@@ -67,11 +67,10 @@ public class LobbyController {
     }
 
     @PatchMapping("/leave/{id}")
-    public ResponseEntity<LobbyDto> leaveLobby(@PathVariable UUID id, @RequestParam UUID userId) {
-        return lobbyService.removePlayerFromLobby(id, userId)
-                .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
-                .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
+    public boolean leaveLobby(@PathVariable UUID id, @RequestParam UUID userId) {
+        return lobbyService.removeUserFromLobby(id, userId);
     }
+
 
     @PatchMapping("/ready/{id}")
     public ResponseEntity<LobbyDto> startGame(@PathVariable UUID id, @RequestParam UUID userId) {

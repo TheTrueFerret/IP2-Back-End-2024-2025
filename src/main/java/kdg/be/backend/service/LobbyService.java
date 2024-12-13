@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class LobbyService {
@@ -37,9 +38,15 @@ public class LobbyService {
                 .map(hostGameUser -> {
                     log.info("Game user found, continue creating a new lobby");
 
-                    if (lobbyRepository.findLobbyByHostGameUserId(hostGameUser.getId()).isPresent()) {
+                    Optional<Lobby> oldLobby = lobbyRepository.findLobbyByHostGameUserId(hostGameUser.getId());
+                    if (oldLobby.isPresent()) {
                         log.error("Lobby already exists for game user");
-                        throw new DataIntegrityViolationException("Lobby already exists for game user: " + hostGameUser.getUsername() + " " + hostGameUserId);
+
+                        // Als de persoon die een nieuwe lobby probeerd aan te maken nog in een oude lobby zit.
+                        // Word deze persoon verwijderd van die lobby.
+                        if (!removeUserFromLobby(oldLobby.get().getId(), hostGameUserId)) {
+                            return null;
+                        }
                     }
 
                     List<GameUser> usersInLobby = new ArrayList<>();
@@ -86,30 +93,47 @@ public class LobbyService {
                 }).orElseThrow(() -> new NullPointerException("Lobby not found")));
     }
 
-    public Optional<Lobby> removePlayerFromLobby(UUID lobbyId, UUID playerId) {
-        return Optional.of(lobbyRepository.findLobbyById(lobbyId)
-                .map(lobby -> {
-                    GameUser user = gameUserRepository.findById(playerId)
-                            .orElseThrow(() -> new DataIntegrityViolationException("User not found"));
+    public boolean removeUserFromLobby(UUID lobbyId, UUID userId) {
+        Optional<Lobby> lobby = lobbyRepository.findLobbyById(lobbyId);
 
-                    boolean userFound = false;
+        if (lobby.isPresent()) {
 
-                    for (Iterator<GameUser> iterator = lobby.getUsers().iterator(); iterator.hasNext(); ) {
-                        GameUser gameUserToBeDeleted = iterator.next();
-                        if (gameUserToBeDeleted.getId().equals(user.getId())) {
-                            iterator.remove();
-                            userFound = true;
-                            log.info("User {} left lobby {}", lobby.getHostUser().getUsername(), lobby.getId());
-                        }
-                    }
+            GameUser user = gameUserRepository.findById(userId)
+                    .orElseThrow(() -> new DataIntegrityViolationException("User not found"));
 
-                    if (!userFound) {
-                        log.error("User could not leave the lobby");
-                        throw new DataIntegrityViolationException("User not found in lobby");
-                    }
+            List<GameUser> updatedUsers = lobby.get().getUsers().stream()
+                    .filter(userInLobby -> !userInLobby.getId().equals(userId))
+                    .collect(Collectors.toList());
 
-                    return lobbyRepository.save(lobby);
-                }).orElseThrow(() -> new NullPointerException("Lobby not found")));
+            if (lobby.get().getHostUser().getId().equals(userId) && !updatedUsers.isEmpty()) {
+                lobby.get().setHostUser(updatedUsers.getFirst());
+            }
+
+            lobby.get().setUsers(updatedUsers);
+
+            // Delete lobby if no users remain
+            if (updatedUsers.isEmpty()) {
+                deleteLobby(lobbyId);
+                return true;
+            }
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+
+    public void deleteLobby(UUID lobbyId) {
+        try {
+            Optional<Lobby> existingLobby = lobbyRepository.findById(lobbyId);
+
+            if (existingLobby.isPresent()) {
+                lobbyRepository.deleteById(lobbyId);
+            }
+        } catch (Exception e) {
+            log.error("Error deleting lobby: {}", e.getMessage());
+            throw new DataIntegrityViolationException("Error deleting lobby");
+        }
     }
 
     public Optional<Lobby> readyLobby(UUID lobbyId, UUID hostUserId) {
