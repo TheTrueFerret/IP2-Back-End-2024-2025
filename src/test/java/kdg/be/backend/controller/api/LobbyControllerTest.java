@@ -74,12 +74,12 @@ class LobbyControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testCreateLobbyShouldReturnCreated() throws Exception {
         String requestBody = """
-            {
-                "joinCode": "TEST",
-                "minimumPlayers": 2,
-                "maximumPlayers": 2
-            }
-        """;
+                    {
+                        "joinCode": "TEST",
+                        "minimumPlayers": 2,
+                        "maximumPlayers": 2
+                    }
+                """;
 
         mockMvc.perform(post("/api/lobby/create?userId=1c14c66a-b034-4531-a1e2-dfb07e7f5707")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -104,10 +104,10 @@ class LobbyControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinLobbyShouldReturnOk() throws Exception {
         String requestBody = """
-            {
-                "joinCode": "JOIN123"
-            }
-        """;
+                    {
+                        "joinCode": "JOIN123"
+                    }
+                """;
 
         mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -130,10 +130,10 @@ class LobbyControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinFullLobbyShouldReturnBadRequest() throws Exception {
         String requestBody = """
-            {
-                "joinCode": "JOINME"
-            }
-        """;
+                    {
+                        "joinCode": "JOINME"
+                    }
+                """;
 
         mockMvc.perform(patch("/api/lobby/join/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=00000000-0000-0000-0000-000000000009")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -157,15 +157,10 @@ class LobbyControllerTest {
         mockMvc.perform(patch("/api/lobby/leave/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=c4a2fa67-6a4d-4d9b-9c59-4f96b6fbc104")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(content().string("true"))
                 .andDo(result -> {
                     String response = result.getResponse().getContentAsString();
-                    if (response.startsWith("{")) {
-                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
-                        System.out.println("Formatted JSON Response: " + prettyResponse);
-
-                    } else {
-                        System.out.println("Plain Text Response: " + response);
-                    }
+                    System.out.println("Plain Text Response: " + response);
                 });
     }
 
@@ -191,10 +186,10 @@ class LobbyControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinLobbyWithInvalidJoinCodeShouldReturnBadRequest() throws Exception {
         String requestBody = """
-            {
-                "joinCode": "INVALIDCODE"
-            }
-        """;
+                    {
+                        "joinCode": "INVALIDCODE"
+                    }
+                """;
 
 
         mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
@@ -217,10 +212,10 @@ class LobbyControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinLobbyWithInvalidUserIdShouldReturnBadRequest() throws Exception {
         String requestBody = """
-            {
-                "joinCode": "JOIN123"
-            }
-        """;
+                    {
+                        "joinCode": "JOIN123"
+                    }
+                """;
 
         mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000999")
                         .contentType(MediaType.APPLICATION_JSON)

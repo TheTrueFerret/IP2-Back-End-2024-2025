@@ -96,6 +96,8 @@ public class LobbyService {
     public boolean removeUserFromLobby(UUID lobbyId, UUID userId) {
         Optional<Lobby> lobby = lobbyRepository.findLobbyById(lobbyId);
 
+        boolean isRemoved = false;
+
         if (lobby.isPresent()) {
 
             GameUser user = gameUserRepository.findById(userId)
@@ -114,12 +116,12 @@ public class LobbyService {
             // Delete lobby if no users remain
             if (updatedUsers.isEmpty()) {
                 deleteLobby(lobbyId);
-                return true;
             }
+            isRemoved = true;
         } else {
-            return false;
+            throw new IllegalArgumentException("User Cannot be Removed from a Lobby");
         }
-        return true;
+        return isRemoved;
     }
 
 
