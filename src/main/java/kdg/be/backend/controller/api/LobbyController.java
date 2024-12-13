@@ -73,7 +73,7 @@ public class LobbyController {
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
-    @PatchMapping("/start/{id}")
+    @PatchMapping("/ready/{id}")
     public ResponseEntity<LobbyDto> startGame(@PathVariable UUID id, @RequestParam UUID userId) {
         return lobbyService.readyLobby(id, userId)
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))

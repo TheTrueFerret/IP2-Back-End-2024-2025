@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +47,7 @@ class GameControllerTest {
                 }
                 """;
 
-        mockMvc.perform(patch("/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
+        mockMvc.perform(patch("/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
                 .andExpect(status().isOk());
 
         MvcResult result = mockMvc.perform(post("/api/game/start/ef673b41-d76d-4b96-99d8-41beef0c3707")
@@ -162,7 +161,7 @@ class GameControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testManagePlayerTurnTurn_ShouldBeOk() throws Exception {
+    void testManagePlayerMoves_ShouldBeOk() throws Exception {
         // Stap 1: Start het spel
         String startGameRequest = """
                 {
@@ -211,7 +210,7 @@ class GameControllerTest {
                 "00000000-0000-0000-0000-000000000001"
         );
 
-        mockMvc.perform(get("/api/game/turn")
+        mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(playerTurnRequest))
                 .andExpect(status().isOk())
@@ -223,7 +222,7 @@ class GameControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testManagePlayerTurn_ShouldBeBadRequest() throws Exception {
+    void testManagePlayerMoves_ShouldBeBadRequest() throws Exception {
         // Stap 1: Start het spel
         String startGameRequest = """
                 {
@@ -261,7 +260,7 @@ class GameControllerTest {
                 }
                 """.formatted(firstPlayerTurnId, gameId);
 
-        mockMvc.perform(get("/api/game/turn")
+        mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(playerTurnRequest))
                 .andExpect(status().isBadRequest())

@@ -36,13 +36,13 @@ Authorization: Bearer {{access_token}}
 }
 
 ### call om de zet te cheken op basis van heel de playingfield
-GET http://localhost:8080/api/game/turn
+POST http://localhost:8080/api/game/turn/player-make-move
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "gameId": "29066fbc-7589-43a7-a85a-da4b02022b01",
-  "playerId": "7d9a32c4-a73e-42cc-a7a7-5408cf89f903",
+  "gameId": "a765c25e-51a7-4536-b4d7-822c32f5847c",
+  "playerId": "c77445dc-bbbc-4b36-a624-b642d9e47e9f",
   "tileSets": [
     {
       "tileSetId": "00000000-0000-0000-0000-000000000002",

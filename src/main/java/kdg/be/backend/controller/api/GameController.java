@@ -5,7 +5,6 @@ import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
-import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
@@ -65,11 +64,11 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("/turn")
-    public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody PlayerMoveRequest req) {
-        return gameService.managePlayerTurns(req)
+    @PostMapping("/turn/player-make-move")
+    public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
+        return gameService.managePlayerMoves(req)
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
