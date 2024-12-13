@@ -30,7 +30,7 @@ public class GameUserController {
             return ResponseEntity.badRequest().body("Invalid game user data");
         } else if (gameUserService.gameUserExists(UUID.fromString(id), username)) {
             logger.info("Game user already exists");
-            return ResponseEntity.badRequest().body("Game user already exists");
+            return ResponseEntity.ok("Game user already exists");
         } else {
             GameUserDto gameUserDto = new GameUserDto(username, UUID.fromString(id));
             gameUserService.createGameUser(gameUserDto);
