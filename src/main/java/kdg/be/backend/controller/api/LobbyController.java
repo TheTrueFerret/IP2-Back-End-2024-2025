@@ -66,7 +66,7 @@ public class LobbyController {
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
-    @PatchMapping("/leave/{id}")
+    @PostMapping("/leave/{id}")
     public boolean leaveLobby(@PathVariable UUID id, @RequestParam UUID userId) {
         return lobbyService.removeUserFromLobby(id, userId);
     }

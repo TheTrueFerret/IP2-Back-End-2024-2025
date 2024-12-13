@@ -94,34 +94,30 @@ public class LobbyService {
     }
 
     public boolean removeUserFromLobby(UUID lobbyId, UUID userId) {
-        Optional<Lobby> lobby = lobbyRepository.findLobbyById(lobbyId);
+        Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
+                .orElseThrow(() -> new IllegalArgumentException("Lobby does not Exist"));
 
-        boolean isRemoved = false;
+        List<GameUser> usersInLobby = lobby.getUsers();
+        boolean isUserPresent = usersInLobby.stream()
+                .anyMatch(userInLobby -> userInLobby.getId().equals(userId));
 
-        if (lobby.isPresent()) {
-
-            GameUser user = gameUserRepository.findById(userId)
-                    .orElseThrow(() -> new DataIntegrityViolationException("User not found"));
-
-            List<GameUser> updatedUsers = lobby.get().getUsers().stream()
-                    .filter(userInLobby -> !userInLobby.getId().equals(userId))
-                    .collect(Collectors.toList());
-
-            if (lobby.get().getHostUser().getId().equals(userId) && !updatedUsers.isEmpty()) {
-                lobby.get().setHostUser(updatedUsers.getFirst());
-            }
-
-            lobby.get().setUsers(updatedUsers);
-
-            // Delete lobby if no users remain
-            if (updatedUsers.isEmpty()) {
-                deleteLobby(lobbyId);
-            }
-            isRemoved = true;
-        } else {
-            throw new IllegalArgumentException("User Cannot be Removed from a Lobby");
+        if (!isUserPresent) {
+            throw new IllegalArgumentException("User Not in This Lobby");
         }
-        return isRemoved;
+
+        usersInLobby.removeIf(user -> user.getId().equals(userId));
+
+        if (lobby.getHostUser().getId().equals(userId) && !usersInLobby.isEmpty()) {
+            lobby.setHostUser(usersInLobby.getFirst());
+        }
+
+        lobby.setUsers(usersInLobby);
+
+        // Delete lobby if no users remain
+        if (usersInLobby.isEmpty()) {
+            deleteLobby(lobbyId);
+        }
+        return true;
     }
 
 
