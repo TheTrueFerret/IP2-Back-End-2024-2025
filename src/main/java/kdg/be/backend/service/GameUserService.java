@@ -5,6 +5,7 @@ import jdk.jshell.spi.ExecutionControl;
 import kdg.be.backend.controller.dto.GameUserDto;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
+import kdg.be.backend.exception.UserDoesNotExistException;
 import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
@@ -41,10 +42,7 @@ public class GameUserService {
 
 
     public GameUser getGameUser(UUID uuid) {
-        GameUser gameUser = gameUserRepository.findGameUserWithDetails(uuid);
-        if (gameUser == null) {
-            return null;
-        }
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(uuid).orElseThrow(() -> new UserDoesNotExistException(uuid.toString()));
         gameUser.setAchievements(gameUserAchievementService.getAchievementsForUser(gameUser.getId()));
         return gameUser;
     }
