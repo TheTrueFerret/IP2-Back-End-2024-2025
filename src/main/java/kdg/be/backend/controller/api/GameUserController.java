@@ -47,7 +47,7 @@ public class GameUserController {
         }
         GameUser gameUser = gameUserService.getGameUser(userId);
         if (gameUser != null) {
-            GameUserDto gameUserDto = new GameUserDto(gameUserService.getGameUser(userId));
+            GameUserDto gameUserDto = new GameUserDto(gameUserService.getGameUser(userId),gameUserService.getGamesPlayed(userId),gameUserService.getGamesWon(userId));
             logger.info("Game user " + gameUserDto.getUsername() + " found");
             return ResponseEntity.ok(gameUserDto);
         } else {
