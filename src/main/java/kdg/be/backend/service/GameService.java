@@ -201,6 +201,7 @@ public class GameService {
         }
     }
 
+    @Transactional
     public Optional<Player> managePlayerMoves(PlayerMoveRequest request) {
         return Optional.of(gameRepository.findGameById(request.gameId())
                 .map(game -> {

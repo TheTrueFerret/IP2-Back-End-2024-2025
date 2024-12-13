@@ -161,7 +161,7 @@ class GameControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testManagePlayerMoves_ShouldBeOk() throws Exception {
+    void testmakePlayerMove_ShouldBeOk() throws Exception {
         // Stap 1: Start het spel
         String startGameRequest = """
                 {
@@ -193,22 +193,66 @@ class GameControllerTest {
 
         // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
         String playerTurnRequest = """
+        {
+          "gameId": "%s",
+          "playerId": "%s",
+          "tileSets": [
             {
-                "playerId": "%s",
-                "gameId": "%s",
-                "moveType": "%s",
-                "tileSet": "%s",
-                "tileIds": ["%s"],
-                "playingFieldId": "%s"
+              "tileSetId": "00000000-0000-0000-0000-000000000002",
+              "startCoordinate": 1,
+              "endCoordinate": 3,
+              "tiles": [
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000004",
+                  "numberValue": 1,
+                  "color": "BLUE",
+                  "gridColumn": 4,
+                  "gridRow": 5
+                },
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000007",
+                  "numberValue": 4,
+                  "color": "ORANGE",
+                  "gridColumn": 7,
+                  "gridRow": 10
+                }
+              ]
+            },
+            {
+              "tileSetId": "00000000-0000-0000-0000-000000000003",
+              "startCoordinate": 11,
+              "endCoordinate": 13,
+              "tiles": [
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000006",
+                  "numberValue": 3,
+                  "color": "BLACK",
+                  "gridColumn": 7,
+                  "gridRow": 8
+                },
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000005",
+                  "numberValue": 2,
+                  "color": "RED",
+                  "gridColumn": 4,
+                  "gridRow": 6
+                }
+              ]
             }
-            """.formatted(
-                firstPlayerTurnId,
-                gameId,
-                "ADD_TILE_TO_TILESET",
-                "00000000-0000-0000-0000-000000000002",
-                "00000000-0000-0000-0000-000000000006",
-                "00000000-0000-0000-0000-000000000001"
-        );
+          ],
+          "playerDeckDto": {
+            "tilesInDeck": [
+              {
+                "tileId": "00000000-0000-0000-0000-000000000055",
+                "numberValue": 5,
+                "color": "BLUE",
+                "gridColumn": 0,
+                "gridRow": 0
+              }
+            ]
+          }
+        }
+        """.formatted(gameId, firstPlayerTurnId);
 
         mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
