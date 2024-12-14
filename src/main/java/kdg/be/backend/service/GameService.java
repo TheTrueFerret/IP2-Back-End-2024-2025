@@ -252,6 +252,12 @@ public class GameService {
         return nextPlayer;
     }
 
+    private Optional<Tile> pullTileFromTilePool(UUID gameId, UUID playerId) {
+        Player currentPlayerTurn = getPlayerTurn(gameId);
+        managePlayerTurns();
+    }
+
+
     private void makePlayerMove(Player player, PlayerMoveRequest request) {
         playingFieldService.handlePlayerMoves(request.tileSets());
         playingFieldService.handlePlayerDeck(player.getId(), request.playerDeckDto());
