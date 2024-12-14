@@ -260,7 +260,8 @@ class GameControllerTest {
                 .andExpect(status().isOk())
                 .andDo(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
-                    System.out.println("Beurtbeheer response: " + jsonResponse);
+                    String jsonResponsePretty = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(jsonResponse));
+                    System.out.println("Beurtbeheer response: " + jsonResponsePretty);
                 });
     }
 
@@ -313,4 +314,23 @@ class GameControllerTest {
                     System.out.println("Beurtbeheer response: " + jsonResponse);
                 });
     }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void testGetPlayerScore_ShouldReturnCorrectScore() throws Exception {
+        UUID playerId = UUID.fromString("00000000-0000-0000-0000-000000000014");
+
+        MvcResult result = mockMvc.perform(get("/api/game/player/{playerId}/score", playerId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.playerId").value(playerId.toString()))
+                .andExpect(jsonPath("$.score").isNumber())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        System.out.println("Get Player Score Response: " + jsonResponse);
+        int score = JsonPath.parse(jsonResponse).read("$.score", Integer.class);
+        assertTrue(score >= 0, "The player's score should be a non-negative integer.");
+    }
+
 }

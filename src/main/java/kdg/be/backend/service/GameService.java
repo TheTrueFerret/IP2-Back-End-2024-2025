@@ -41,6 +41,7 @@ public class GameService {
         return tileRepository.findTilesByPlayerId(playerId);
     }
 
+    @Transactional
     public List<Player> getPlayersOfGame(UUID gameId) {
         return playerRepository.findPlayersByGameId(gameId);
     }
@@ -259,4 +260,11 @@ public class GameService {
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
     }
+
+    public int getPlayerScore(UUID playerId) {
+        return playerRepository.findById(playerId)
+                .map(Player::getScore)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found with ID: " + playerId));
+    }
+
 }

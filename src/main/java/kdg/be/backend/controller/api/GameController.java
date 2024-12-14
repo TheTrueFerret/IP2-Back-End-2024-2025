@@ -3,12 +3,14 @@ package kdg.be.backend.controller.api;
 import jakarta.validation.Valid;
 import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
+import kdg.be.backend.controller.dto.PlayerScoreReturnDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
+import kdg.be.backend.service.PlayerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +27,11 @@ import java.util.stream.Collectors;
 public class GameController {
     private final GameService gameService;
 
-    public GameController(GameService gameService) {
+    private final PlayerService playerService;
+
+    public GameController(GameService gameService, PlayerService playerService) {
         this.gameService = gameService;
+        this.playerService = playerService;
     }
 
     private List<PlayerDto> mapToPlayerDTOs(List<Player> players) {
@@ -34,6 +39,7 @@ public class GameController {
                 .map(player -> new PlayerDto(
                         player.getId(),
                         player.getGameUser().getUsername(), // Assuming getGameUser() fetches the username
+                        player.getScore(),
                         player.getGame().getId(),           // Assuming getGame() fetches the game ID
                         GameDtoMapper.mapToDeckDto(player.getDeck())
                 ))
@@ -41,7 +47,7 @@ public class GameController {
     }
 
     private PlayerDto mapToPlayerDTO(Player player) {
-        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
+        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getScore(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
     }
 
     @GetMapping("/tiles/player/{playerId}")
@@ -50,7 +56,6 @@ public class GameController {
     }
 
     @GetMapping("/players/{gameId}")
-    @Transactional
     public List<PlayerDto> getPlayersOfGame(@PathVariable UUID gameId) {
         List<Player> players = gameService.getPlayersOfGame(gameId);
         return mapToPlayerDTOs(players);
@@ -70,6 +75,13 @@ public class GameController {
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    @GetMapping("/player/{playerId}/score")
+    public ResponseEntity<PlayerScoreReturnDto> getPlayerScore(@PathVariable UUID playerId) {
+        int score = gameService.getPlayerScore(playerId);
+        return ResponseEntity.ok(new PlayerScoreReturnDto(playerId, score));
+    }
+
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {

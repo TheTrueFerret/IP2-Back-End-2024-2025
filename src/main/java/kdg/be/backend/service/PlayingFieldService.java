@@ -5,6 +5,8 @@ import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ public class PlayingFieldService {
     private final TileRepository tileRepository;
     private final DeckRepository deckRepository;
     private final PlayerRepository playerRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
     public PlayingFieldService(PlayingFieldRepository playingFieldRepository, TileSetRepository tileSetRepository, TileRepository tileRepository, DeckRepository deckRepository, PlayerRepository playerRepository) {
         this.playingFieldRepository = playingFieldRepository;
@@ -86,9 +90,12 @@ public class PlayingFieldService {
     @Transactional
     public void handlePlayerDeck(UUID playerId, PlayerMoveDeckDto playerDeckDto) {
         // Retrieve the player's deck via the PlayerRepository
+        Player player = playerRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found for ID: " + playerId));
         Deck deck = playerRepository.findPlayerById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found for ID: " + playerId))
                 .getDeck();
+
 
         // Extract tile IDs from the DTO
         List<UUID> tileIds = playerDeckDto.tilesInDeck().stream()
@@ -121,8 +128,12 @@ public class PlayingFieldService {
         // Save the updated tiles and deck
         tileRepository.saveAll(tiles);
         deckRepository.save(deck);
-    }
 
+        // Update the player's score
+        player.updateScore();
+        playerRepository.save(player);
+        log.info("Score of player: {}, updated to {}", playerId, player.getScore());
+    }
 
 
     public TileSet addTileToTileSet(UUID playingFieldId, UUID tileSetId, UUID tileId) {
