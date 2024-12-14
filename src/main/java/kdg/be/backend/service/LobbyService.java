@@ -66,18 +66,14 @@ public class LobbyService {
                 }).orElseThrow(() -> new NullPointerException("Game user not found")));
     }
 
-    public Optional<Lobby> addPlayerToLobby(UUID lobbyId, UUID playerId, String joinCode) {
+    public Optional<Lobby> addPlayerToLobbyByLobbyId(UUID lobbyId, UUID userId) {
         return Optional.of(lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
                     if (lobby.getUsers().size() >= lobby.getMaximumPlayers()) {
                         throw new DataIntegrityViolationException("Maximum player count exceeded");
                     }
 
-                    if (!lobby.getJoinCode().equals(joinCode)) {
-                        throw new DataIntegrityViolationException("Join code is not valid");
-                    }
-
-                    GameUser user = gameUserRepository.findById(playerId)
+                    GameUser user = gameUserRepository.findById(userId)
                             .orElseThrow(() -> new DataIntegrityViolationException("User not found"));
 
                     for (GameUser userInLobby : lobby.getUsers()) {
@@ -92,6 +88,35 @@ public class LobbyService {
                     return lobbyRepository.save(lobby);
                 }).orElseThrow(() -> new NullPointerException("Lobby not found")));
     }
+
+
+    public Optional<Lobby> addPlayerToLobbyByCode(UUID userId, String joinCode) {
+        return Optional.of(lobbyRepository.findLobbyByJoinCode(joinCode)
+                .map(lobby -> {
+                    if (lobby.getUsers().size() >= lobby.getMaximumPlayers()) {
+                        throw new DataIntegrityViolationException("Maximum player count exceeded");
+                    }
+
+                    if (!lobby.getJoinCode().equals(joinCode)) {
+                        throw new IllegalArgumentException("Join code is not valid");
+                    }
+
+                    GameUser user = gameUserRepository.findById(userId)
+                            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                    for (GameUser userInLobby : lobby.getUsers()) {
+                        if (userInLobby.getId().equals(user.getId())) {
+                            log.error("User could not join the lobby");
+                            throw new DataIntegrityViolationException("User is already in the lobby");
+                        }
+                    }
+
+                    lobby.getUsers().add(user);
+                    log.info("User {} joined lobby {}", lobby.getHostUser().getUsername(), lobby.getId());
+                    return lobbyRepository.save(lobby);
+                }).orElseThrow(() -> new NullPointerException("Lobby not found")));
+    }
+
 
     public boolean removeUserFromLobby(UUID lobbyId, UUID userId) {
         Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
@@ -112,6 +137,7 @@ public class LobbyService {
         }
 
         lobby.setUsers(usersInLobby);
+        lobbyRepository.save(lobby);
 
         // Delete lobby if no users remain
         if (usersInLobby.isEmpty()) {

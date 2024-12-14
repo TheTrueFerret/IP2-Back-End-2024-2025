@@ -52,6 +52,12 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyDtos);
     }
 
+    // Most of these requests could be optimized by just returning a lobbyId
+
+    /**
+     * To Create a new Lobby
+     * Returns: a Lobby Object
+     */
     @PostMapping("/create")
     public ResponseEntity<LobbyDto> createLobby(@RequestParam UUID userId, @Valid @RequestBody CreateLobbySettingsRequest req) {
         return lobbyService.createLobby(userId, req.minimumPlayers(), req.maximumPlayers(), req.joinCode())
@@ -59,9 +65,24 @@ public class LobbyController {
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
+    /**
+     * For when the frontend already knows the lobbyId
+     * Returns: a Lobby Object
+     */
     @PatchMapping("/join/{id}")
-    public ResponseEntity<LobbyDto> joinLobby(@PathVariable UUID id, @RequestParam UUID userId, @Valid @RequestBody CreateJoinLobbyRequest req) {
-        return lobbyService.addPlayerToLobby(id, userId, req.joinCode())
+    public ResponseEntity<LobbyDto> joinLobby(@PathVariable UUID id, @RequestParam UUID userId) {
+        return lobbyService.addPlayerToLobbyByLobbyId(id, userId)
+                .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
+                .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
+    }
+
+    /**
+     * For When you want to join a Lobby By the LobbyCode
+     * Returns: a Lobby Object
+     */
+    @PatchMapping("/join")
+    public ResponseEntity<LobbyDto> joinLobbyWithCode(@RequestParam UUID userId, @Valid @RequestBody CreateJoinLobbyRequest req) {
+        return lobbyService.addPlayerToLobbyByCode(userId, req.joinCode())
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }

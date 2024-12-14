@@ -29,6 +29,15 @@ public interface LobbyRepository extends JpaRepository<Lobby, UUID> {
     @Query("""
             SELECT lo
             FROM Lobby lo
+            JOIN FETCH lo.hostUser
+            JOIN FETCH lo.users
+            WHERE lo.joinCode = :joinCode
+            """)
+    Optional<Lobby> findLobbyByJoinCode(String joinCode);
+
+    @Query("""
+            SELECT lo
+            FROM Lobby lo
             JOIN FETCH lo.hostUser hu
             WHERE hu.id = :hostId
             """)
