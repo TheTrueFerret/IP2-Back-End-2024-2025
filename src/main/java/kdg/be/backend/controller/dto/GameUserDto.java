@@ -14,6 +14,8 @@ public class GameUserDto {
     private String avatar;
     private List<AchievementDto> achievements;
     private List<GameUserDto> friendList;
+    private int gamesPlayed;
+    private int gamesWon;
 
     public GameUserDto(String username, UUID id) {
         this.id = id;
@@ -33,5 +35,16 @@ public class GameUserDto {
         this.friendList = new ArrayList<>();
         gameUser.getFriendList().forEach(friend -> this.friendList.add(new GameUserDto(friend)));
         gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
+    }
+    public GameUserDto(GameUser gameUser,int gamesPlayed,int gamesWon) {
+        this.id = gameUser.getId();
+        this.username = gameUser.getUsername();
+        this.avatar = gameUser.getAvatar();
+        this.achievements = new ArrayList<>();
+        this.friendList = new ArrayList<>();
+        gameUser.getFriendList().forEach(friend -> this.friendList.add(new GameUserDto(friend)));
+        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
+        this.gamesPlayed = gamesPlayed;
+        this.gamesWon = gamesWon;
     }
 }

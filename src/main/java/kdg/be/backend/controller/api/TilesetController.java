@@ -7,10 +7,13 @@ import kdg.be.backend.controller.dto.tiles.TileSetDto;
 import kdg.be.backend.domain.PlayingField;
 import kdg.be.backend.domain.TileSet;
 import kdg.be.backend.service.TileSetService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,20 +26,6 @@ public class TilesetController {
         this.tilesetService = tilesetService;
     }
 
-    @PostMapping
-    public ResponseEntity<TileSetDto> createTileset(@RequestBody CreateTilesetRequest request) {
-        TileSet tileSet = tilesetService.createTileset(request);
-        return ResponseEntity.ok(toDTO(tileSet));
-    }
-
-    @PutMapping("/{tilesetId}/assign-to-playingfield/{playingFieldId}")
-    public ResponseEntity<PlayingFieldDto> assignTileSetToPlayingField(
-            @PathVariable UUID tilesetId,
-            @PathVariable UUID playingFieldId) {
-        PlayingField playingField = tilesetService.assignTilesetToPlayingField(tilesetId, playingFieldId);
-        return ResponseEntity.ok(toPlayingFieldDto(playingField));
-    }
-
     @GetMapping("/playingfield/{playingFieldId}")
     public ResponseEntity<List<TileSetDto>> getTilesetsByPlayingField(@PathVariable UUID playingFieldId) {
         List<TileSet> tileSets = tilesetService.getTilesetsByPlayingField(playingFieldId);
@@ -46,16 +35,9 @@ public class TilesetController {
         return ResponseEntity.ok(tileSetDtos);
     }
 
-    private PlayingFieldDto toPlayingFieldDto(PlayingField playingField) {
-        List<TileSetDto> tileSetDtos = playingField.getTileSets().stream()
-                .map(this::toDTO)
-                .toList();
-        return new PlayingFieldDto(tileSetDtos);
-    }
-
     private TileSetDto toDTO(TileSet tileSet) {
         List<TileDto> tileDtos = tileSet.getTiles().stream()
-                .map(tile -> new TileDto(tile.getNumberValue(), tile.getTileColor()))
+                .map(tile -> new TileDto(tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow()))
                 .collect(Collectors.toList());
 
         return new TileSetDto(
@@ -63,5 +45,13 @@ public class TilesetController {
                 tileSet.getEndCoordinate(),
                 tileDtos
         );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", IllegalArgumentException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

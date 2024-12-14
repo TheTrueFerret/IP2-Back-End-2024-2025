@@ -1,5 +1,6 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.domain.enums.TileColor;
@@ -23,16 +24,18 @@ public class GameService {
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
+    private final PlayingFieldService playingFieldService;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
         this.playingFieldRepository = playingFieldRepository;
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
+        this.playingFieldService = playingFieldService;
     }
 
     public List<Tile> getTilesOfPlayer(UUID playerId) {
@@ -80,7 +83,7 @@ public class GameService {
     public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
         return lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
-                    if (!lobby.getHostUser().getId().equals(hostUserId)){
+                    if (!lobby.getHostUser().getId().equals(hostUserId)) {
                         log.error("Only the host of the lobby can start the game!");
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
@@ -90,7 +93,7 @@ public class GameService {
                         throw new IllegalStateException("Cannot start game if lobby is not started.");
                     }
 
-                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1){
+                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
                         log.error("There can only exist 1 game instance for every lobby");
                         throw new IllegalStateException("There can only exist 1 game instance for every lobby");
                     }
@@ -99,6 +102,9 @@ public class GameService {
                     tileRepository.saveAll(tiles);
                     TilePool tilePool = new TilePool(tiles);
                     tilePool.shuffleTiles();
+
+                    tiles.forEach(tile -> tile.setTilePool(tilePool));
+                    tileRepository.saveAll(tiles);
 
                     PlayingField playingField = new PlayingField(new ArrayList<>());
                     playingFieldRepository.save(playingField);
@@ -119,6 +125,9 @@ public class GameService {
                     for (GameUser user : lobby.getUsers()) {
                         Deck playerDeck = createPlayerDeck(tilePool, startTileAmount);
                         deckRepository.save(playerDeck);
+
+                        playerDeck.getTiles().forEach(tile -> tile.setDeck(playerDeck));
+                        tileRepository.saveAll(tiles);
 
                         Player player = new Player(user, playerDeck, game);
                         players.add(player);
@@ -180,21 +189,33 @@ public class GameService {
                 );
     }
 
-    public Optional<Player> managePlayerTurns(UUID gameId, UUID playerId) {
-        return Optional.of(gameRepository.findGameById(gameId)
+    public Player getPlayerTurn(UUID gameId) {
+        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
+
+        return playerRepository.findPlayerById(playerTurnOrders.getFirst()).orElseThrow(() -> new NullPointerException("Couldn't find current player turn"));
+    }
+
+    private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
+        if (!player.getId().equals(playerTurnOrders.getFirst())) {
+            throw new IllegalStateException(player.getGameUser().getUsername() + ": it's not your turn, wait until its your turn to make a move");
+        }
+    }
+
+    @Transactional
+    public Optional<Player> managePlayerMoves(PlayerMoveRequest request) {
+        return Optional.of(gameRepository.findGameById(request.gameId())
                 .map(game -> {
-                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
+                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(request.gameId(), request.playerId())
                             .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
 
-                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(request.gameId())
                             .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
-                    if (!player.getId().equals(playerTurnOrders.getFirst())) {
-                        throw new IllegalStateException(player.getGameUser().getUsername() + ": it's not your turn, wait until its your turn to make a move");
-                    }
+                    managePlayerTurns(player, playerTurnOrders);
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player);
+                        makePlayerMove(player, request);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -232,15 +253,11 @@ public class GameService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player) {
-        //todo als het mijn beurt is
-        // tegels leggen, validatie op gelegde tegels, tegels trekken, enz ...
+    private void makePlayerMove(Player player, PlayerMoveRequest request) {
+        playingFieldService.handlePlayerMoves(request.tileSets());
+        playingFieldService.handlePlayerDeck(player.getId(), request.playerDeckDto());
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
-    }
-
-    public Game getGameById(UUID id) {
-        return gameRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Game not found"));
     }
 }

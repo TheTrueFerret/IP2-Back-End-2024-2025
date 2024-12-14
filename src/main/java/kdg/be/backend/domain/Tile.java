@@ -19,25 +19,21 @@ public class Tile {
     private int numberValue;
     private int gridColumn;
     private int gridRow;
+
+    // relaties
     @ManyToOne
     private TilePool tilePool;
     @ManyToOne
     private TileSet tileSet;
-    public Tile() {
-    }
+    @ManyToOne
+    private Deck deck;
+
+    public Tile() {} // jpa
 
     public Tile(int numberValue, TileColor tileColor) {
         this.tileColor = tileColor;
         this.numberValue = numberValue;
+        this.gridColumn = 0;
+        this.gridRow = 0;
     }
-
-    //deze constructor gaat moeten gebruikt worden maar heb deze nog effe in commentaar gelaten
-//    public Tile(TileColor tileColor, int numberValue, TilePool tilePool, TileSet tileSet) {
-//        this.tileColor = tileColor;
-//        this.numberValue = numberValue;
-//        this.gridColumn = 0;
-//        this.gridRow = 0;
-//        this.tilePool = tilePool;
-//        this.tileSet = tileSet;
-//    }
 }

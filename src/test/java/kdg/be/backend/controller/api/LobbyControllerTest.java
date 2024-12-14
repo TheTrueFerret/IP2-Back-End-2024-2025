@@ -172,7 +172,7 @@ class LobbyControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testStartLobbyShouldReturnOk() throws Exception {
-        mockMvc.perform(patch("/api/lobby/start/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105")
+        mockMvc.perform(patch("/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(result -> {

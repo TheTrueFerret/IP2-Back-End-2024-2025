@@ -2,11 +2,12 @@ package kdg.be.backend.service;
 
 
 import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.FriendRequest;
 import kdg.be.backend.domain.user.GameUser;
-import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.RequestStatus;
-import kdg.be.backend.repository.FriendRequestRepository;
+import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,11 @@ public class GameUserService {
 
     private final GameUserRepository gameUserRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final GameRepository gameRepository;
     private final GameUserAchievementService gameUserAchievementService;
 
-    public GameUserService(GameUserRepository gameUserRepository, FriendRequestRepository friendRequestRepository, GameUserAchievementService gameUserAchievementService) {
+    public GameUserService(GameUserRepository gameUserRepository, GameUserAchievementService gameUserAchievementService) {
         this.gameUserRepository = gameUserRepository;
-        this.friendRequestRepository = friendRequestRepository;
         this.gameUserAchievementService = gameUserAchievementService;
     }
 
@@ -35,23 +36,30 @@ public class GameUserService {
         gameUserRepository.saveAndFlush(gameUser);
     }
 
-    public boolean gameUserExists(UUID id) {
-        return gameUserRepository.existsById(id);
+    public boolean gameUserExists(UUID id, String username) {
+        boolean exists = gameUserRepository.existsById(id);
+        boolean existsByUsername = gameUserRepository.existsByUsername(username);
+        return exists || existsByUsername;
     }
 
 
     public GameUser getGameUser(UUID uuid) {
-        GameUser gameUser = gameUserRepository.findGameUserWithDetails(uuid);
-        if (gameUser == null) {
-            return null;
-        }
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(uuid).orElseThrow(() -> new UserDoesNotExistException(uuid.toString()));
         gameUser.setAchievements(gameUserAchievementService.getAchievementsForUser(gameUser.getId()));
         return gameUser;
     }
 
+    public int getGamesPlayed(UUID userId) {
+        return gameRepository.countGamesByPlayersGameUserId(userId);
+    }
+
+    public int getGamesWon(UUID userId) {
+        //TODO: implement this method when winning is implemented
+        return 0;
+    }
     public boolean addFriend(UUID id, String friendUsername) {
-        GameUser receiver = gameUserRepository.findGameUserWithDetails(id);
-        GameUser sender = gameUserRepository.findGameUserByUsername(friendUsername);
+        kdg.be.backend.domain.user.GameUser receiver = gameUserRepository.findGameUserWithDetails(id);
+        kdg.be.backend.domain.user.GameUser sender = gameUserRepository.findGameUserByUsername(friendUsername);
         FriendRequest friendRequest = null;
         if (sender == null || receiver == null) {
             return false;
@@ -69,8 +77,8 @@ public class GameUserService {
     }
 
     public boolean addFriendRequest(UUID id, String friendUsername) {
-        GameUser sender = gameUserRepository.findGameUserWithDetails(id);
-        GameUser receiver = gameUserRepository.findGameUserByUsername(friendUsername);
+        kdg.be.backend.domain.user.GameUser sender = gameUserRepository.findGameUserWithDetails(id);
+        kdg.be.backend.domain.user.GameUser receiver = gameUserRepository.findGameUserByUsername(friendUsername);
         if (sender == null || receiver == null) {
             return false;
         } else {
@@ -81,30 +89,30 @@ public class GameUserService {
     }
 
     public String getFriendRequests(UUID id) {
-        GameUser gameUser = gameUserRepository.findGameUserWithDetails(id);
+        kdg.be.backend.domain.user.GameUser gameUser = gameUserRepository.findGameUserWithDetails(id);
         if (gameUser == null) {
             return "";
         }
-        List<GameUser> friends = gameUser.getFriendList();
+        List<kdg.be.backend.domain.user.GameUser> friends = gameUser.getFriendList();
         StringBuilder stringBuilder = new StringBuilder();
-        for (GameUser friend : friends) {
+        for (kdg.be.backend.domain.user.GameUser friend : friends) {
             stringBuilder.append(friend.getUsername()).append("\n");
         }
         return stringBuilder.toString();
     }
 
-    public void updateGameUserFriendList(UUID userId, List<GameUser> friendList) {
-        GameUser gameUser = gameUserRepository.findById(userId).orElse(null);
+    public void updateGameUserFriendList(UUID userId, List<kdg.be.backend.domain.user.GameUser> friendList) {
+        kdg.be.backend.domain.user.GameUser gameUser = gameUserRepository.findById(userId).orElse(null);
         if (gameUser != null) {
             gameUser.setFriendList(friendList);
             gameUserRepository.saveAndFlush(gameUser);
         }
     }
 
-    public void addFriendToFriendList(GameUser user, String friendName) {
-        GameUser friend = gameUserRepository.findGameUserByUsername(friendName);
+    public void addFriendToFriendList(kdg.be.backend.domain.user.GameUser user, String friendName) {
+        kdg.be.backend.domain.user.GameUser friend = gameUserRepository.findGameUserByUsername(friendName);
         if (friend != null) {
-            List<GameUser> friendList = user.getFriendList();
+            List<kdg.be.backend.domain.user.GameUser> friendList = user.getFriendList();
             friendList.add(friend);
             user.setFriendList(friendList);
             gameUserRepository.saveAndFlush(user);

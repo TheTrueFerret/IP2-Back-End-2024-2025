@@ -5,11 +5,10 @@ import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
-import kdg.be.backend.controller.dto.requests.CreatePlayerTurnRequest;
+import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,11 +64,11 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("/turn")
-    public ResponseEntity<PlayerDto> getTurn(@Valid @RequestBody CreatePlayerTurnRequest req) {
-        return gameService.managePlayerTurns(req.gameId(), req.playerId())
+    @PostMapping("/turn/player-make-move")
+    public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
+        return gameService.managePlayerMoves(req)
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

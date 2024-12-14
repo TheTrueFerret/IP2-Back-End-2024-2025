@@ -59,7 +59,7 @@ public class GameDtoMapper {
     }
 
     private static TileDto mapToTileDto(Tile tile) {
-        return new TileDto(tile.getNumberValue(), tile.getTileColor());
+        return new TileDto(tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow());
     }
 
     private static PlayerDto mapToPlayerDto(Player player) {
