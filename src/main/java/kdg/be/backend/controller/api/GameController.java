@@ -10,7 +10,6 @@ import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
-import kdg.be.backend.service.PlayerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +26,8 @@ import java.util.stream.Collectors;
 public class GameController {
     private final GameService gameService;
 
-    private final PlayerService playerService;
-
-    public GameController(GameService gameService, PlayerService playerService) {
+    public GameController(GameService gameService) {
         this.gameService = gameService;
-        this.playerService = playerService;
     }
 
     private List<PlayerDto> mapToPlayerDTOs(List<Player> players) {
@@ -71,7 +67,7 @@ public class GameController {
 
     @PostMapping("/turn/player-make-move")
     public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
-        return gameService.managePlayerMoves(req)
+        return gameService.managePlayerMoves(req.playerId(), req.gameId(), req.tileSets(), req.playerDeckDto())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

@@ -285,8 +285,6 @@ class GameControllerTest {
 
 
         String startGameResponse = startGameResult.getResponse().getContentAsString();
-        String gameIdString = JsonPath.parse(startGameResponse).read("$.players[0].gameId", String.class);
-        UUID gameId = UUID.fromString(gameIdString);
 
         List<String> playerOrder = JsonPath.parse(startGameResponse).read("$.playerTurnOrder", List.class);
 
@@ -299,16 +297,72 @@ class GameControllerTest {
 
         // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
         String playerTurnRequest = """
+        {
+          "gameId": "0000000-00000-000-0000",
+          "playerId": "%s",
+          "tileSets": [
+            {
+              "tileSetId": "00000000-0000-0000-0000-000000000002",
+              "startCoordinate": 1,
+              "endCoordinate": 3,
+              "tiles": [
                 {
-                    "playerId": "%s",
-                    "gameId": "%s"
+                  "tileId": "00000000-0000-0000-0000-000000000004",
+                  "numberValue": 1,
+                  "color": "BLUE",
+                  "gridColumn": 4,
+                  "gridRow": 5
+                },
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000007",
+                  "numberValue": 4,
+                  "color": "ORANGE",
+                  "gridColumn": 7,
+                  "gridRow": 10
                 }
-                """.formatted(firstPlayerTurnId, gameId);
+              ]
+            },
+            {
+              "tileSetId": "00000000-0000-0000-0000-000000000003",
+              "startCoordinate": 11,
+              "endCoordinate": 13,
+              "tiles": [
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000006",
+                  "numberValue": 3,
+                  "color": "BLACK",
+                  "gridColumn": 7,
+                  "gridRow": 8
+                },
+                {
+                  "tileId": "00000000-0000-0000-0000-000000000005",
+                  "numberValue": 2,
+                  "color": "RED",
+                  "gridColumn": 4,
+                  "gridRow": 6
+                }
+              ]
+            }
+          ],
+          "playerDeckDto": {
+            "tilesInDeck": [
+              {
+                "tileId": "00000000-0000-0000-0000-000000000055",
+                "numberValue": 5,
+                "color": "BLUE",
+                "gridColumn": 0,
+                "gridRow": 0
+              }
+            ]
+          }
+        }
+        """.formatted(firstPlayerTurnId);
 
         mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(playerTurnRequest))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Game not found"))
                 .andDo(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     System.out.println("Beurtbeheer response: " + jsonResponse);
@@ -332,5 +386,18 @@ class GameControllerTest {
         int score = JsonPath.parse(jsonResponse).read("$.score", Integer.class);
         assertTrue(score >= 0, "The player's score should be a non-negative integer.");
     }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void testGetPlayerScore_ShouldReturnNotFoundForInvalidPlayerId() throws Exception {
+        UUID invalidPlayerId = UUID.fromString("00000000-0000-0000-0000-000000000099");
+
+        mockMvc.perform(get("/api/game/player/{playerId}/score", invalidPlayerId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists())
+                .andExpect(jsonPath("$.message").value("Player not found with ID: 00000000-0000-0000-0000-000000000099"));
+    }
+
 
 }
