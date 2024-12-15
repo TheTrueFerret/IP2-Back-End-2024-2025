@@ -21,7 +21,7 @@ public class PlayingFieldService {
     private final DeckRepository deckRepository;
     private final PlayerRepository playerRepository;
 
-    private static final Logger log = LoggerFactory.getLogger(GameService.class);
+    private static final Logger log = LoggerFactory.getLogger(PlayingFieldService.class);
 
     public PlayingFieldService(PlayingFieldRepository playingFieldRepository, TileSetRepository tileSetRepository, TileRepository tileRepository, DeckRepository deckRepository, PlayerRepository playerRepository) {
         this.playingFieldRepository = playingFieldRepository;
