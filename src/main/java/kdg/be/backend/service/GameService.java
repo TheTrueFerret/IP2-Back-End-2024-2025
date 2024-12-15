@@ -87,10 +87,12 @@ public class GameService {
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
 
+                    /* Turned this one of because i don't know how and when the lobby should be put on ready... to me (Jarno) it seems never...
                     if (lobby.getStatus() != LobbyStatus.READY) {
                         log.error("Cannot start game if lobby is not started.");
                         throw new IllegalStateException("Cannot start game if lobby is not started.");
                     }
+                    */
 
                     if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
                         log.error("There can only exist 1 game instance for every lobby");
@@ -140,6 +142,33 @@ public class GameService {
 
                     log.info("Game started with lobby id: {}", lobbyId);
                     return game;
+                });
+    }
+
+
+    public Optional<Game> getGameByLobbyId(UUID lobbyId, UUID userId) {
+        return lobbyRepository.findLobbyById(lobbyId)
+                .map(lobby -> {
+                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
+                        log.error("There can only exist 1 game instance for every lobby");
+                        throw new IllegalStateException("There can only exist 1 game instance for every lobby");
+                    }
+
+                    Optional<Game> game = gameRepository.findGameByLobbyId(lobbyId);
+
+                    if (game.isEmpty()) {
+                        log.error("no Game Found for the LobbyId: {}", lobbyId);
+                        throw new IllegalArgumentException("No Game Found for the LobbyId: " + lobbyId);
+                    }
+
+                    boolean isPlayer = lobby.getUsers().stream().anyMatch(user -> user.getId().equals(userId));
+
+                    if (!isPlayer) {
+                        log.error("user is not a part of this Lobby: {}", lobbyId);
+                        throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
+                    }
+
+                    return game.get();
                 });
     }
 

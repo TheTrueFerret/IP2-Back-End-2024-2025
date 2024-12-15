@@ -33,4 +33,11 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             WHERE g.lobby.id = :lobbyId
             """)
     int countGamesByLobbyId(UUID lobbyId);
+
+    @Query("""
+            SELECT g
+            FROM Game g
+            WHERE g.lobby.id = :lobbyId
+            """)
+    Optional<Game> findGameByLobbyId(UUID lobbyId);
 }
