@@ -62,7 +62,7 @@ public class GameDtoMapper {
     }
 
     private static PlayerDto mapToPlayerDto(Player player) {
-        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getGame().getId(), mapToDeckDto(player.getDeck()));
+        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getScore(), player.getGame().getId(), mapToDeckDto(player.getDeck()));
     }
 
     public static DeckDto mapToDeckDto(Deck deck) {
