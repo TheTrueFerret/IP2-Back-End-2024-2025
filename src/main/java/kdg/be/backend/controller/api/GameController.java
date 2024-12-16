@@ -3,6 +3,7 @@ package kdg.be.backend.controller.api;
 import jakarta.validation.Valid;
 import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
+import kdg.be.backend.controller.dto.PlayerScoreReturnDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
@@ -34,6 +35,7 @@ public class GameController {
                 .map(player -> new PlayerDto(
                         player.getId(),
                         player.getGameUser().getUsername(), // Assuming getGameUser() fetches the username
+                        player.getScore(),
                         player.getGame().getId(),           // Assuming getGame() fetches the game ID
                         GameDtoMapper.mapToDeckDto(player.getDeck())
                 ))
@@ -41,7 +43,7 @@ public class GameController {
     }
 
     private PlayerDto mapToPlayerDTO(Player player) {
-        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
+        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getScore(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
     }
 
     @GetMapping("/tiles/player/{playerId}")
@@ -50,7 +52,6 @@ public class GameController {
     }
 
     @GetMapping("/players/{gameId}")
-    @Transactional
     public List<PlayerDto> getPlayersOfGame(@PathVariable UUID gameId) {
         List<Player> players = gameService.getPlayersOfGame(gameId);
         return mapToPlayerDTOs(players);
@@ -73,10 +74,17 @@ public class GameController {
 
     @PostMapping("/turn/player-make-move")
     public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
-        return gameService.managePlayerMoves(req)
+        return gameService.managePlayerMoves(req.playerId(), req.gameId(), req.tileSets(), req.playerDeckDto())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    @GetMapping("/player/{playerId}/score")
+    public ResponseEntity<PlayerScoreReturnDto> getPlayerScore(@PathVariable UUID playerId) {
+        int score = gameService.getPlayerScore(playerId);
+        return ResponseEntity.ok(new PlayerScoreReturnDto(playerId, score));
+    }
+
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {

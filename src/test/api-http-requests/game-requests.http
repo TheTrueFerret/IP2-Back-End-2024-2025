@@ -35,14 +35,19 @@ Authorization: Bearer {{access_token}}
   "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
 }
 
+> {%
+    client.global.set("gameId", response.body.players[0].gameId);
+    client.global.set("playerId", response.body.playerTurnOrder[0]);
+%}
+
 ### call om de zet te cheken op basis van heel de playingfield
 POST http://localhost:8080/api/game/turn/player-make-move
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "gameId": "a765c25e-51a7-4536-b4d7-822c32f5847c",
-  "playerId": "c77445dc-bbbc-4b36-a624-b642d9e47e9f",
+  "gameId": "{{gameId}}",
+  "playerId": "{{playerId}}",
   "tileSets": [
     {
       "tileSetId": "00000000-0000-0000-0000-000000000002",
