@@ -1,6 +1,8 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
+import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.domain.enums.TileColor;
@@ -42,6 +44,7 @@ public class GameService {
         return tileRepository.findTilesByPlayerId(playerId);
     }
 
+    @Transactional
     public List<Player> getPlayersOfGame(UUID gameId) {
         return playerRepository.findPlayersByGameId(gameId);
     }
@@ -239,19 +242,19 @@ public class GameService {
     }
 
     @Transactional
-    public Optional<Player> managePlayerMoves(PlayerMoveRequest request) {
-        return Optional.of(gameRepository.findGameById(request.gameId())
+    public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
-                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(request.gameId(), request.playerId())
+                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
                             .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
 
-                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(request.gameId())
+                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
                             .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
                     managePlayerTurns(player, playerTurnOrders);
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player, request);
+                        makePlayerMove(player, tileSetDtos, deckDto);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -289,11 +292,18 @@ public class GameService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player, PlayerMoveRequest request) {
-        playingFieldService.handlePlayerMoves(request.tileSets());
-        playingFieldService.handlePlayerDeck(player.getId(), request.playerDeckDto());
+    private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        playingFieldService.handlePlayerMoves(tileSetDtos);
+        playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
     }
+
+    public int getPlayerScore(UUID playerId) {
+        return playerRepository.findById(playerId)
+                .map(Player::getScore)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found with ID: " + playerId));
+    }
+
 }
