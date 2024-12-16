@@ -79,13 +79,16 @@ public class GameService {
     }
 
     @Transactional
-    public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
+    public Optional<UUID> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
         return lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
                     if (!lobby.getHostUser().getId().equals(hostUserId)) {
                         log.error("Only the host of the lobby can start the game!");
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
+
+                    lobby.setStatus(LobbyStatus.READY);
+                    lobbyRepository.save(lobby);
 
                     /* Turned this one of because i don't know how and when the lobby should be put on ready... to me (Jarno) it seems never...
                     if (lobby.getStatus() != LobbyStatus.READY) {
@@ -141,17 +144,24 @@ public class GameService {
                     gameRepository.save(game);
 
                     log.info("Game started with lobby id: {}", lobbyId);
-                    return game;
+                    return game.getId();
                 });
     }
 
 
-    public Optional<Game> getGameByLobbyId(UUID lobbyId, UUID userId) {
+    public Optional<UUID> getGameIdByLobbyId(UUID lobbyId, UUID userId) {
         return lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
+                    /*
                     if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
                         log.error("There can only exist 1 game instance for every lobby");
                         throw new IllegalStateException("There can only exist 1 game instance for every lobby");
+                    }
+                    */
+
+                    if (lobby.getStatus() != LobbyStatus.READY) {
+                        log.error("Cannot start game if lobby is not started.");
+                        throw new IllegalStateException("Cannot start game if lobby is not started.");
                     }
 
                     Optional<Game> game = gameRepository.findGameByLobbyId(lobbyId);
@@ -168,7 +178,7 @@ public class GameService {
                         throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
                     }
 
-                    return game.get();
+                    return game.get().getId();
                 });
     }
 
