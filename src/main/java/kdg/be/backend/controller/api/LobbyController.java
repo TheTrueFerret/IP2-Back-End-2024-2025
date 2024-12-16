@@ -53,7 +53,6 @@ public class LobbyController {
     }
 
     // Most of these requests could be optimized by just returning a lobbyId
-
     /**
      * To Create a new Lobby
      * Returns: a Lobby Object

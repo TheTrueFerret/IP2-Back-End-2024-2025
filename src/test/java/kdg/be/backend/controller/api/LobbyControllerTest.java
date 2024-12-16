@@ -128,6 +128,32 @@ class LobbyControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
+    void testJoinLobbyWithCodeShouldReturnOk() throws Exception {
+        String requestBody = """
+                    {
+                        "joinCode": "JOIN123"
+                    }
+                """;
+
+        mockMvc.perform(patch("/api/lobby/join?userId=00000000-0000-0000-0000-000000000010")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.joinCode").value("JOIN123"))
+                .andDo(result -> {
+                    String response = result.getResponse().getContentAsString();
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
+                });
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinFullLobbyShouldReturnBadRequest() throws Exception {
         String requestBody = """
                     {
