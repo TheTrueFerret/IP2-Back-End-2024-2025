@@ -218,7 +218,7 @@ class LobbyControllerTest {
                 """;
 
 
-        mockMvc.perform(patch("/api/lobby/join/a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006?userId=00000000-0000-0000-0000-000000000008")
+        mockMvc.perform(patch("/api/lobby/join?userId=00000000-0000-0000-0000-000000000008")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())

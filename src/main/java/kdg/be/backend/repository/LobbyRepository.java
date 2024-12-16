@@ -38,8 +38,9 @@ public interface LobbyRepository extends JpaRepository<Lobby, UUID> {
     @Query("""
             SELECT lo
             FROM Lobby lo
+            JOIN FETCH lo.users u
             JOIN FETCH lo.hostUser hu
-            WHERE hu.id = :hostId
+            WHERE u.id = :userId OR hu.id = :userId
             """)
-    Optional<Lobby> findLobbyByHostGameUserId(UUID hostId);
+    Optional<Lobby> findLobbyByHostUserOrGameUserId(UUID userId);
 }

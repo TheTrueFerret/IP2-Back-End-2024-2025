@@ -3,12 +3,14 @@ package kdg.be.backend.service;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.Lobby;
 import kdg.be.backend.domain.enums.LobbyStatus;
+import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import kdg.be.backend.repository.LobbyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,10 +21,12 @@ public class LobbyService {
     private final GameUserRepository gameUserRepository;
 
     private static final Logger log = LoggerFactory.getLogger(LobbyService.class);
+    private final GameRepository gameRepository;
 
-    public LobbyService(LobbyRepository lobbyRepository, GameUserRepository gameUserRepository) {
+    public LobbyService(LobbyRepository lobbyRepository, GameUserRepository gameUserRepository, GameRepository gameRepository) {
         this.lobbyRepository = lobbyRepository;
         this.gameUserRepository = gameUserRepository;
+        this.gameRepository = gameRepository;
     }
 
     public Optional<Lobby> getLobbyById(UUID id) {
@@ -33,17 +37,15 @@ public class LobbyService {
         return lobbyRepository.findAllLobbies();
     }
 
+    @Transactional
     public Optional<Lobby> createLobby(UUID hostGameUserId, int minimumPlayers, int maximumPlayers, String joinCode) {
         return Optional.of(gameUserRepository.findById(hostGameUserId)
                 .map(hostGameUser -> {
                     log.info("Game user found, continue creating a new lobby");
 
-                    lobbyRepository.findLobbyByHostGameUserId(hostGameUser.getId())
+                    lobbyRepository.findLobbyByHostUserOrGameUserId(hostGameUserId)
                             .ifPresent(oldLobby -> {
                                 log.error("Lobby already exists for game user");
-
-                                // Als de persoon die een nieuwe lobby probeerd aan te maken nog in een oude lobby zit.
-                                // Word deze persoon verwijderd van die lobby.
                                 if (!removeUserFromLobby(oldLobby.getId(), hostGameUserId)) {
                                     throw new DataIntegrityViolationException("Lobby Could not be removed from GameUser");
                                 }
@@ -66,6 +68,7 @@ public class LobbyService {
                 }).orElseThrow(() -> new NullPointerException("Game user not found")));
     }
 
+    @Transactional
     public Optional<Lobby> addPlayerToLobbyByLobbyId(UUID lobbyId, UUID userId) {
         return Optional.of(lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
@@ -75,6 +78,14 @@ public class LobbyService {
 
                     GameUser user = gameUserRepository.findById(userId)
                             .orElseThrow(() -> new DataIntegrityViolationException("User not found"));
+
+                    lobbyRepository.findLobbyByHostUserOrGameUserId(userId)
+                            .ifPresent(oldLobby -> {
+                                log.error("Lobby already exists for game user");
+                                if (!removeUserFromLobby(oldLobby.getId(), userId)) {
+                                    throw new DataIntegrityViolationException("Lobby Could not be removed from GameUser");
+                                }
+                            });
 
                     for (GameUser userInLobby : lobby.getUsers()) {
                         if (userInLobby.getId().equals(user.getId())) {
@@ -90,6 +101,7 @@ public class LobbyService {
     }
 
 
+    @Transactional
     public Optional<Lobby> addPlayerToLobbyByCode(UUID userId, String joinCode) {
         return Optional.of(lobbyRepository.findLobbyByJoinCode(joinCode)
                 .map(lobby -> {
@@ -104,6 +116,16 @@ public class LobbyService {
                     GameUser user = gameUserRepository.findById(userId)
                             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+
+                    lobbyRepository.findLobbyByHostUserOrGameUserId(userId)
+                            .ifPresent(oldLobby -> {
+                                log.error("Lobby already exists for game user");
+                                if (!removeUserFromLobby(oldLobby.getId(), userId)) {
+                                    throw new DataIntegrityViolationException("Lobby Could not be removed from GameUser");
+                                }
+                            });
+
+
                     for (GameUser userInLobby : lobby.getUsers()) {
                         if (userInLobby.getId().equals(user.getId())) {
                             log.error("User could not join the lobby");
@@ -118,6 +140,7 @@ public class LobbyService {
     }
 
 
+    @Transactional
     public boolean removeUserFromLobby(UUID lobbyId, UUID userId) {
         Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
                 .orElseThrow(() -> new IllegalArgumentException("Lobby does not Exist"));
@@ -139,14 +162,13 @@ public class LobbyService {
         lobby.setUsers(usersInLobby);
         lobbyRepository.save(lobby);
 
-        // Delete lobby if no users remain
-        if (usersInLobby.isEmpty()) {
-            deleteLobby(lobbyId);
-        }
+        //TODO Delete Lobby if No more Players inside (and game and everything related to it....)
+
         return true;
     }
 
 
+    // this deletes the Lobby
     public void deleteLobby(UUID lobbyId) {
         lobbyRepository.findById(lobbyId).ifPresentOrElse(
                         existingLobby -> {
