@@ -57,14 +57,15 @@ public class GameController {
     }
 
     @PostMapping("/start/{lobbyId}")
-    public ResponseEntity<UUID> startGame(@PathVariable UUID lobbyId, @Valid @RequestBody CreateGameSettingsRequest req) {
+    public ResponseEntity<GameDto> startGame(@PathVariable UUID lobbyId, @Valid @RequestBody CreateGameSettingsRequest req) {
         return gameService.startGame(lobbyId, req.turnTime(), req.startTileAmount(), req.hostUserId())
+                .map(GameDtoMapper::mapToGameDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("/{lobbyId}")
-    public ResponseEntity<UUID> getGameByLobbyId(@PathVariable UUID lobbyId, @RequestParam UUID userId) {
+    @GetMapping("/lobby/{lobbyId}")
+    public ResponseEntity<UUID> getGameIdByLobbyId(@PathVariable UUID lobbyId, @RequestParam UUID userId) {
         return gameService.getGameIdByLobbyId(lobbyId, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());

@@ -79,7 +79,7 @@ public class GameService {
     }
 
     @Transactional
-    public Optional<UUID> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
+    public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
         return lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
                     if (!lobby.getHostUser().getId().equals(hostUserId)) {
@@ -97,10 +97,12 @@ public class GameService {
                     }
                     */
 
+                    /*
                     if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
                         log.error("There can only exist 1 game instance for every lobby");
                         throw new IllegalStateException("There can only exist 1 game instance for every lobby");
                     }
+                    */
 
                     List<Tile> tiles = createTiles(startTileAmount);
                     tileRepository.saveAll(tiles);
@@ -144,7 +146,7 @@ public class GameService {
                     gameRepository.save(game);
 
                     log.info("Game started with lobby id: {}", lobbyId);
-                    return game.getId();
+                    return game;
                 });
     }
 

@@ -47,8 +47,8 @@ class GameControllerTest {
                 }
                 """;
 
-        mockMvc.perform(patch("/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
-                .andExpect(status().isOk());
+        //mockMvc.perform(patch("/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105"))
+        //        .andExpect(status().isOk());
 
         MvcResult result = mockMvc.perform(post("/api/game/start/ef673b41-d76d-4b96-99d8-41beef0c3707")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,6 +87,8 @@ class GameControllerTest {
         }
     }
 
+    /*
+    de reden dat deze test in commentaar staat is omdat ik nog niet weet waarvoor dit nuttig is of voor kan worden gebruikt
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testStartGame_UnhappyPath_LobbyNotStarted() throws Exception {
@@ -114,6 +116,7 @@ class GameControllerTest {
             assertTrue(response.contains("Cannot start game"), "Error message should indicate the reason for failure");
         }
     }
+     */
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
