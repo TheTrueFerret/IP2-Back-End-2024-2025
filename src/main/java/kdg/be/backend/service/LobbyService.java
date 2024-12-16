@@ -38,16 +38,16 @@ public class LobbyService {
                 .map(hostGameUser -> {
                     log.info("Game user found, continue creating a new lobby");
 
-                    Optional<Lobby> oldLobby = lobbyRepository.findLobbyByHostGameUserId(hostGameUser.getId());
-                    if (oldLobby.isPresent()) {
-                        log.error("Lobby already exists for game user");
+                    lobbyRepository.findLobbyByHostGameUserId(hostGameUser.getId())
+                            .ifPresent(oldLobby -> {
+                                log.error("Lobby already exists for game user");
 
-                        // Als de persoon die een nieuwe lobby probeerd aan te maken nog in een oude lobby zit.
-                        // Word deze persoon verwijderd van die lobby.
-                        if (!removeUserFromLobby(oldLobby.get().getId(), hostGameUserId)) {
-                            return null;
-                        }
-                    }
+                                // Als de persoon die een nieuwe lobby probeerd aan te maken nog in een oude lobby zit.
+                                // Word deze persoon verwijderd van die lobby.
+                                if (!removeUserFromLobby(oldLobby.getId(), hostGameUserId)) {
+                                    throw new DataIntegrityViolationException("Lobby Could not be removed from GameUser");
+                                }
+                            });
 
                     List<GameUser> usersInLobby = new ArrayList<>();
                     usersInLobby.add(hostGameUser);
@@ -148,16 +148,14 @@ public class LobbyService {
 
 
     public void deleteLobby(UUID lobbyId) {
-        try {
-            Optional<Lobby> existingLobby = lobbyRepository.findById(lobbyId);
-
-            if (existingLobby.isPresent()) {
-                lobbyRepository.deleteById(lobbyId);
-            }
-        } catch (Exception e) {
-            log.error("Error deleting lobby: {}", e.getMessage());
-            throw new DataIntegrityViolationException("Error deleting lobby");
-        }
+        lobbyRepository.findById(lobbyId).ifPresentOrElse(
+                        existingLobby -> {
+                            lobbyRepository.deleteById(lobbyId);
+                        },
+                        () -> {
+                            log.error("Error deleting lobby");
+                            throw new DataIntegrityViolationException("Error deleting lobby");
+                        });
     }
 
     public Optional<Lobby> readyLobby(UUID lobbyId, UUID hostUserId) {

@@ -65,8 +65,8 @@ public class GameController {
     }
 
     @GetMapping("/lobby/{lobbyId}")
-    public ResponseEntity<UUID> getGameIdByLobbyId(@PathVariable UUID lobbyId, @RequestParam UUID userId) {
-        return gameService.getGameIdByLobbyId(lobbyId, userId)
+    public ResponseEntity<UUID> getGameIdByLobbyIdAndUserId(@PathVariable UUID lobbyId, @RequestParam UUID userId) {
+        return gameService.getGameIdByLobbyIdAndUserId(lobbyId, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

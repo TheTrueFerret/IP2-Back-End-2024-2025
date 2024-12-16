@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -87,22 +88,19 @@ public class GameService {
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
 
+                    // Tijdelijk omdat het vrij stom is voor 2 http requests te doen voor gwn op ready te zetten terwijl er hier niks voor is.
                     lobby.setStatus(LobbyStatus.READY);
                     lobbyRepository.save(lobby);
 
-                    /* Turned this one of because i don't know how and when the lobby should be put on ready... to me (Jarno) it seems never...
                     if (lobby.getStatus() != LobbyStatus.READY) {
                         log.error("Cannot start game if lobby is not started.");
                         throw new IllegalStateException("Cannot start game if lobby is not started.");
                     }
-                    */
 
-                    /*
-                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
+                    if (gameRepository.countGamesByLobbyId(lobbyId) > 1) {
                         log.error("There can only exist 1 game instance for every lobby");
                         throw new IllegalStateException("There can only exist 1 game instance for every lobby");
                     }
-                    */
 
                     List<Tile> tiles = createTiles(startTileAmount);
                     tileRepository.saveAll(tiles);
@@ -151,37 +149,35 @@ public class GameService {
     }
 
 
-    public Optional<UUID> getGameIdByLobbyId(UUID lobbyId, UUID userId) {
-        return lobbyRepository.findLobbyById(lobbyId)
-                .map(lobby -> {
-                    /*
-                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
-                        log.error("There can only exist 1 game instance for every lobby");
-                        throw new IllegalStateException("There can only exist 1 game instance for every lobby");
-                    }
-                    */
+    public Optional<UUID> getGameIdByLobbyIdAndUserId(UUID lobbyId, UUID userId) {
+        Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
+                .orElseThrow(() -> new IllegalStateException("No lobby found with id: " + lobbyId));
 
-                    if (lobby.getStatus() != LobbyStatus.READY) {
-                        log.error("Cannot start game if lobby is not started.");
-                        throw new IllegalStateException("Cannot start game if lobby is not started.");
-                    }
+        if (gameRepository.countGamesByLobbyId(lobbyId) > 1) {
+            log.error("There can only exist 1 game instance for every lobby");
+            throw new IllegalStateException("There can only exist 1 game instance for every lobby");
+        }
 
-                    Optional<Game> game = gameRepository.findGameByLobbyId(lobbyId);
+        if (lobby.getStatus() != LobbyStatus.READY) {
+            log.error("Cannot start game if lobby is not started.");
+            throw new IllegalStateException("Cannot start game if lobby is not started.");
+        }
 
-                    if (game.isEmpty()) {
-                        log.error("no Game Found for the LobbyId: {}", lobbyId);
-                        throw new IllegalArgumentException("No Game Found for the LobbyId: " + lobbyId);
-                    }
+        Optional<UUID> gameId = gameRepository.findGameByLobbyId(lobbyId).map(Game::getId);
 
-                    boolean isPlayer = lobby.getUsers().stream().anyMatch(user -> user.getId().equals(userId));
+        if (gameId.isEmpty()) {
+            log.error("no Game Found for the LobbyId: {}", lobbyId);
+            throw new IllegalArgumentException("No Game Found for the LobbyId: " + lobbyId);
+        }
 
-                    if (!isPlayer) {
-                        log.error("user is not a part of this Lobby: {}", lobbyId);
-                        throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
-                    }
+        boolean isPlayer = lobby.getUsers().stream().anyMatch(user -> user.getId().equals(userId));
 
-                    return game.get().getId();
-                });
+        if (!isPlayer) {
+            log.error("user is not a part of this Lobby: {}", lobbyId);
+            throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
+        }
+
+        return gameId;
     }
 
     private void validateEqualTileCounts(List<Player> players, int startTileAmount) {
