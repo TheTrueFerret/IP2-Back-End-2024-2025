@@ -44,7 +44,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        CorsConfiguration config = new CorsConfiguration();
+        config.applyPermitDefaultValues();
+        config.addAllowedMethod("PATCH");
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

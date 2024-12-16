@@ -28,6 +28,7 @@ public class GameDtoMapper {
                 .toList();
 
         return new GameDto(
+                game.getId(),
                 game.getTurnTime(),
                 game.getStartTileAmount(),
                 game.getDateTime(),

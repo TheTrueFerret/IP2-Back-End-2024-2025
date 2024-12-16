@@ -65,6 +65,13 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @GetMapping("/lobby/{lobbyId}")
+    public ResponseEntity<UUID> getGameIdByLobbyIdAndUserId(@PathVariable UUID lobbyId, @RequestParam UUID userId) {
+        return gameService.getGameIdByLobbyIdAndUserId(lobbyId, userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @PostMapping("/turn/player-make-move")
     public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
         return gameService.managePlayerMoves(req.playerId(), req.gameId(), req.tileSets(), req.playerDeckDto())
