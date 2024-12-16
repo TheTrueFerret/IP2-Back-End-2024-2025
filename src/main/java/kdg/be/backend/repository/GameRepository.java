@@ -1,6 +1,7 @@
 package kdg.be.backend.repository;
 
 import kdg.be.backend.domain.Game;
+import kdg.be.backend.domain.TilePool;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -33,4 +34,13 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             WHERE g.lobby.id = :lobbyId
             """)
     int countGamesByLobbyId(UUID lobbyId);
+
+    @Query("""
+            SELECT tp
+            FROM Game g
+            JOIN g.tilePool tp
+            JOIN FETCH tp.tiles
+            WHERE g.id = :gameId
+            """)
+    Optional<TilePool> findTilePoolByGameId(UUID gameId);
 }

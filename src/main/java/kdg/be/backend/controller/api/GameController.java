@@ -8,8 +8,10 @@ import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.CreateSimpleRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.controller.dto.tiles.TileDto;
+import kdg.be.backend.controller.dto.tiles.TilePoolDto;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
+import kdg.be.backend.domain.TilePool;
 import kdg.be.backend.service.GameService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +48,14 @@ public class GameController {
         return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
     }
 
+    private TilePoolDto mapToTilePoolDto(TilePool tilePool) {
+        return new TilePoolDto(
+                tilePool.getTiles().stream()
+                        .map(GameDtoMapper::mapToTileDto)
+                        .toList()
+        );
+    }
+
     @GetMapping("/tiles/player/{playerId}")
     public List<Tile> getTilesOfPlayer(@PathVariable UUID playerId) {
         return gameService.getTilesOfPlayer(playerId);
@@ -73,21 +83,19 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-
-    /*
-    Params: gameId, playerId
-    Return: Tile
-    Description: If it's your turn, you can pull a tile from the TilePool.
-                 The tile you pulled needs to be subtracted from the TilePool and the new tile
-                 also needs to be added in the player's deck.
-     */
-    @GetMapping("/pull-tile")
+    @PatchMapping("/pull-tile")
     public ResponseEntity<TileDto> getPulledTileFromTilePool(@Valid @RequestBody CreateSimpleRequest req) {
         return gameService.pullTileFromTilePool(req.gameId(), req.playerId())
                 .map(tile -> ResponseEntity.ok(GameDtoMapper.mapToTileDto(tile)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/tilepool/contents")
+    public ResponseEntity<TilePoolDto> getTilePoolTiles(@RequestParam UUID gameId) {
+        return gameService.getTilePoolByGameId(gameId)
+                .map(tilePool -> ResponseEntity.ok(mapToTilePoolDto(tilePool)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {

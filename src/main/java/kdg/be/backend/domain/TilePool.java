@@ -26,6 +26,10 @@ public class TilePool {
         this.tiles = tiles;
     }
 
+    public int getRemainingTiles() {
+        return tiles.size();
+    }
+
     // Shuffle the tiles
     public void shuffleTiles() {
         Collections.shuffle(tiles);
@@ -36,13 +40,8 @@ public class TilePool {
         if (tiles.isEmpty()) {
             throw new IllegalStateException("No tiles left in the pool!");
         }
-        // Remove and return the first tile (or any specific logic for "drawing")
+        // Remove and return the first tile
         return tiles.removeFirst();
-    }
-
-    // Add tiles to the pool (if replenishment is needed)
-    public void addTiles(List<Tile> newTiles) {
-        tiles.addAll(newTiles);
     }
 
     // Check if the pool is empty

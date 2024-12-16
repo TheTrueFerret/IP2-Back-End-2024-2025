@@ -35,14 +35,30 @@ Authorization: Bearer {{access_token}}
   "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
 }
 
+### GET call om alle tiles van een tilepool te verkrijgen
+GET http://localhost:8080/api/game/tilepool/contents?gameId=00000000-0000-0000-0000-000000000011
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### PATCH call om een tile uit een tilepool te halen van een game
+PATCH http://localhost:8080/api/game/pull-tile
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "gameId": "e725b967-a561-4871-aca0-5249c510ae35",
+  "playerId": "6a4bc5a5-a26f-431f-bff3-cd37ec33c602"
+}
+
+
 ### call om de zet te cheken op basis van heel de playingfield
 POST http://localhost:8080/api/game/turn/player-make-move
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "gameId": "a765c25e-51a7-4536-b4d7-822c32f5847c",
-  "playerId": "c77445dc-bbbc-4b36-a624-b642d9e47e9f",
+  "gameId": "e725b967-a561-4871-aca0-5249c510ae35",
+  "playerId": "6a4bc5a5-a26f-431f-bff3-cd37ec33c602",
   "tileSets": [
     {
       "tileSetId": "00000000-0000-0000-0000-000000000002",
