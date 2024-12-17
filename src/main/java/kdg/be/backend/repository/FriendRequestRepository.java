@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -15,4 +17,6 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, UU
             "JOIN f.receiver r " +
             "WHERE s.id = :senderId AND r.id = :receiverId")
     FriendRequest findFriendRequestBySenderAndReceiver(UUID senderId, UUID receiverId);
+
+    Optional<List<FriendRequest>> findFriendRequestsByReceiver_Id(UUID receiverId);
 }

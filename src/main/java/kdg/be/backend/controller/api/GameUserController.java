@@ -1,7 +1,7 @@
 package kdg.be.backend.controller.api;
 
 import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.UserDoesNotExistException;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.HttpStatus;
@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -53,15 +54,17 @@ public class GameUserController {
         return ResponseEntity.ok(gameUserDto);
     }
 
-
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", NullPointerException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    //Get all game users
+    @GetMapping("/users")
+    public ResponseEntity<List<GameUserDto>> getGameUsers(){
+        if (gameUserService.getGameUsers().isEmpty()) {
+            logger.warning("No game users found");
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(gameUserService.getGameUsers());
     }
 
+    //Send friend request
     @PostMapping("/friendRequest/{friendUsername}")
     public ResponseEntity<String> friendRequest(@RequestParam UUID userId, @PathVariable String friendUsername) {
         if (userId == null) {
@@ -77,6 +80,7 @@ public class GameUserController {
         }
     }
 
+    //Accept friend request
     @PostMapping("/friend/{friendUsername}")
     public ResponseEntity<String> friend(@RequestParam UUID userId, @PathVariable String friendUsername) {
         if (userId == null) {
@@ -92,6 +96,7 @@ public class GameUserController {
         }
     }
 
+    //Get friend requests from single user
     @GetMapping("/friendRequests")
     public ResponseEntity<String> friendRequests(@RequestParam UUID userId) {
         if (userId == null) {
@@ -99,5 +104,30 @@ public class GameUserController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(gameUserService.getFriendRequests(userId));
+    }
+
+    // Exception handling
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(UserDoesNotExistException.class)
+    public ResponseEntity<Map<String, String>> handleUserDoesNotExistException(UserDoesNotExistException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", UserDoesNotExistException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(FriendRequestException.class)
+    public ResponseEntity<Map<String, String>> handleFriendRequestException(FriendRequestException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", FriendRequestException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

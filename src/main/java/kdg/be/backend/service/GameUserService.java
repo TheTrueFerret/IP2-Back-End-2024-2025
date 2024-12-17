@@ -2,17 +2,21 @@ package kdg.be.backend.service;
 
 
 import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.FriendRequest;
-import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.user.RequestStatus;
+import kdg.be.backend.exception.FriendRequestException;
+import kdg.be.backend.exception.UserDoesNotExistException;
+import kdg.be.backend.exception.UsersDoNotExistsException;
+import kdg.be.backend.repository.FriendRequestRepository;
 import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,8 +27,10 @@ public class GameUserService {
     private final GameRepository gameRepository;
     private final GameUserAchievementService gameUserAchievementService;
 
-    public GameUserService(GameUserRepository gameUserRepository, GameUserAchievementService gameUserAchievementService) {
+    public GameUserService(GameUserRepository gameUserRepository, FriendRequestRepository friendRequestRepository, GameRepository gameRepository, GameUserAchievementService gameUserAchievementService) {
         this.gameUserRepository = gameUserRepository;
+        this.friendRequestRepository = friendRequestRepository;
+        this.gameRepository = gameRepository;
         this.gameUserAchievementService = gameUserAchievementService;
     }
 
@@ -57,31 +63,42 @@ public class GameUserService {
         //TODO: implement this method when winning is implemented
         return 0;
     }
-    public boolean addFriend(UUID id, String friendUsername) {
-        kdg.be.backend.domain.user.GameUser receiver = gameUserRepository.findGameUserWithDetails(id);
-        kdg.be.backend.domain.user.GameUser sender = gameUserRepository.findGameUserByUsername(friendUsername);
+
+    //Accept friend request
+    public boolean addFriend(UUID recieverId, String senderFriendUsername) {
+        Optional<GameUser> optReceiver = gameUserRepository.findGameUserWithDetails(recieverId);
+        Optional<GameUser> optSender = gameUserRepository.findGameUserByUsername(senderFriendUsername);
         FriendRequest friendRequest = null;
-        if (sender == null || receiver == null) {
-            return false;
+        if (optSender.isEmpty()) {
+            throw new UserDoesNotExistException(recieverId.toString());
+        } else if (optReceiver.isEmpty()) {
+            throw new UserDoesNotExistException(senderFriendUsername);
         } else {
-            friendRequest = friendRequestRepository.findFriendRequestBySenderAndReceiver(sender.getId(), receiver.getId());
+            friendRequest = friendRequestRepository.findFriendRequestBySenderAndReceiver(optSender.get().getId(), optReceiver.get().getId());
+            GameUser sender = optSender.get();
+            GameUser receiver = optReceiver.get();
+            if (friendRequest.getStatus() == RequestStatus.PENDING) {
+                addFriendToFriendList(receiver, senderFriendUsername);
+                addFriendToFriendList(sender, receiver.getUsername());
+                friendRequest.setStatus(RequestStatus.ACCEPTED);
+                friendRequestRepository.saveAndFlush(friendRequest);
+                return true;
+            }
+            throw new FriendRequestException("Friend request is not pending");
         }
-        if (friendRequest.getStatus() == RequestStatus.PENDING) {
-            addFriendToFriendList(receiver, friendUsername);
-            addFriendToFriendList(sender, receiver.getUsername());
-            friendRequest.setStatus(RequestStatus.ACCEPTED);
-            friendRequestRepository.saveAndFlush(friendRequest);
-            return true;
-        }
-        return false;
     }
 
+    //Creation of a friend request
     public boolean addFriendRequest(UUID id, String friendUsername) {
-        kdg.be.backend.domain.user.GameUser sender = gameUserRepository.findGameUserWithDetails(id);
-        kdg.be.backend.domain.user.GameUser receiver = gameUserRepository.findGameUserByUsername(friendUsername);
-        if (sender == null || receiver == null) {
-            return false;
+        Optional<GameUser> optSender = gameUserRepository.findGameUserWithDetails(id);
+        Optional<GameUser> optReceiver = gameUserRepository.findGameUserByUsername(friendUsername);
+        if (optSender.isEmpty()) {
+            throw new UserDoesNotExistException(id.toString());
+        } else if (optReceiver.isEmpty()) {
+            throw new UserDoesNotExistException(friendUsername);
         } else {
+            GameUser sender = optSender.get();
+            GameUser receiver = optReceiver.get();
             FriendRequest friendRequest = new FriendRequest(sender, receiver, RequestStatus.PENDING);
             friendRequestRepository.saveAndFlush(friendRequest);
         }
@@ -89,33 +106,46 @@ public class GameUserService {
     }
 
     public String getFriendRequests(UUID id) {
-        kdg.be.backend.domain.user.GameUser gameUser = gameUserRepository.findGameUserWithDetails(id);
-        if (gameUser == null) {
-            return "";
+        Optional<List<FriendRequest>> optionalGameUser = friendRequestRepository.findFriendRequestsByReceiver_Id(id);
+        if (optionalGameUser.isEmpty()) {
+            throw new FriendRequestException("No friend requests found");
         }
-        List<kdg.be.backend.domain.user.GameUser> friends = gameUser.getFriendList();
+        List<FriendRequest> friendRequests = optionalGameUser.get();
         StringBuilder stringBuilder = new StringBuilder();
-        for (kdg.be.backend.domain.user.GameUser friend : friends) {
-            stringBuilder.append(friend.getUsername()).append("\n");
+        for (FriendRequest friendRequest : friendRequests) {
+            stringBuilder.append(friendRequest.getSender().getUsername()).append(" ");
         }
         return stringBuilder.toString();
     }
 
-    public void updateGameUserFriendList(UUID userId, List<kdg.be.backend.domain.user.GameUser> friendList) {
-        kdg.be.backend.domain.user.GameUser gameUser = gameUserRepository.findById(userId).orElse(null);
+    public void updateGameUserFriendList(UUID userId, List<GameUser> friendList) {
+        GameUser gameUser = gameUserRepository.findById(userId).orElse(null);
         if (gameUser != null) {
             gameUser.setFriendList(friendList);
             gameUserRepository.saveAndFlush(gameUser);
         }
     }
 
-    public void addFriendToFriendList(kdg.be.backend.domain.user.GameUser user, String friendName) {
-        kdg.be.backend.domain.user.GameUser friend = gameUserRepository.findGameUserByUsername(friendName);
-        if (friend != null) {
-            List<kdg.be.backend.domain.user.GameUser> friendList = user.getFriendList();
+    public void addFriendToFriendList(GameUser user, String friendName) {
+        Optional<GameUser> optFriend = gameUserRepository.findGameUserByUsername(friendName);
+        if (optFriend.isPresent()) {
+            GameUser friend = optFriend.get();
+            List<GameUser> friendList = user.getFriendList();
             friendList.add(friend);
             user.setFriendList(friendList);
             gameUserRepository.saveAndFlush(user);
         }
+    }
+
+    public List<GameUserDto> getGameUsers() {
+        List<GameUser> gameUsers = gameUserRepository.findAll();
+        if (gameUsers.isEmpty()) {
+            throw new UsersDoNotExistsException("No users found");
+        }
+        List<GameUserDto> gameUserDtos = new ArrayList<>();
+        for (GameUser gameUser : gameUsers) {
+            gameUserDtos.add(new GameUserDto(gameUser));
+        }
+        return gameUserDtos;
     }
 }
