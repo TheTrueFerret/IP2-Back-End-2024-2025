@@ -40,6 +40,13 @@ public class GameService {
         this.playingFieldService = playingFieldService;
     }
 
+    public UUID getPlayerIdByUserId(UUID userId) {
+        return playerRepository.findPlayerByUserId(userId)
+                .map(Player::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found with userId: " + userId));
+    }
+
+
     public List<Tile> getTilesOfPlayer(UUID playerId) {
         return tileRepository.findTilesByPlayerId(playerId);
     }
@@ -145,6 +152,18 @@ public class GameService {
                     validateEqualTileCounts(players, startTileAmount);
                     initializePlayerTurns(game, players);
                     gameRepository.save(game);
+
+                    Game verifiedGame = gameRepository.findById(game.getId())
+                            .orElseThrow(() -> {
+                                log.error("Failed to create game for lobby: {}", lobbyId);
+                                return new IllegalStateException("Game creation failed - could not verify game in database");
+                            });
+
+                    // Additional validation checks
+                    if (verifiedGame.getPlayers().isEmpty()) {
+                        log.error("Game created without players for lobby: {}", lobbyId);
+                        throw new IllegalStateException("Game must have players");
+                    }
 
                     log.info("Game started with lobby id: {}", lobbyId);
                     return game;

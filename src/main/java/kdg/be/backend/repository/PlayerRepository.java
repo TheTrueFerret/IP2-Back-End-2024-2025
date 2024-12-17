@@ -32,4 +32,12 @@ public interface PlayerRepository extends JpaRepository<Player, UUID> {
             WHERE p.id = :id
             """)
     Optional<Player> findPlayerById(UUID id);
+
+    @Query("""
+            SELECT p
+            FROM Player p
+            JOIN FETCH p.gameUser gu
+            WHERE gu.id = :userId
+            """)
+    Optional<Player> findPlayerByUserId(UUID userId);
 }

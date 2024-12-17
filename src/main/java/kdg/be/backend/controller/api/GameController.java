@@ -46,6 +46,12 @@ public class GameController {
         return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getScore(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
     }
 
+    // TODO Add Tests for this method
+    @GetMapping("/player/{userId}")
+    public UUID getPlayerIdByUserId(@PathVariable UUID userId) {
+        return gameService.getPlayerIdByUserId(userId);
+    }
+
     @GetMapping("/tiles/player/{playerId}")
     public List<Tile> getTilesOfPlayer(@PathVariable UUID playerId) {
         return gameService.getTilesOfPlayer(playerId);
