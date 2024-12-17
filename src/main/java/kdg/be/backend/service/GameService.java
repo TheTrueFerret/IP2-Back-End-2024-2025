@@ -24,10 +24,11 @@ public class GameService {
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
     private final PlayingFieldService playingFieldService;
+    private final TilePoolRepository tilePoolRepository;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, TilePoolRepository tilePoolRepository) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
@@ -35,6 +36,7 @@ public class GameService {
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
         this.playingFieldService = playingFieldService;
+        this.tilePoolRepository = tilePoolRepository;
     }
 
     public List<Tile> getTilesOfPlayer(UUID playerId) {
@@ -43,6 +45,10 @@ public class GameService {
 
     public List<Player> getPlayersOfGame(UUID gameId) {
         return playerRepository.findPlayersByGameId(gameId);
+    }
+
+    public Optional<TilePool> getTilePoolByGameId(UUID gameId) {
+        return gameRepository.findTilePoolByGameId(gameId);
     }
 
     private List<Tile> createTiles(int amount) {
@@ -131,7 +137,22 @@ public class GameService {
                         Player player = new Player(user, playerDeck, game);
                         players.add(player);
                         playerRepository.save(player);
+
+                        String tilesInfo = playerDeck.getTiles().stream()
+                                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                                .collect(Collectors.joining(", "));
+                        log.info("Player {} has the following tiles in their deck: {}", user.getUsername(), tilesInfo);
                     }
+
+                    log.info("TILES LEFT OVER AFTER GIVING EACH PLAYER {}: {}", startTileAmount, tilePool.getTiles().size());
+                    String tilesInfo = tilePool.getTiles().stream()
+                            .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                            .collect(Collectors.joining(", "));
+                    log.info("The tilepool has the following tiles left: {}", tilesInfo);
+
+//                    tilePool.setTiles(tilePool.getTiles());
+                    tilePoolRepository.save(tilePool);
+                    game.setTilePool(tilePool);
 
                     game.setPlayers(players);
                     validateEqualTileCounts(players, startTileAmount);
@@ -186,16 +207,6 @@ public class GameService {
                 .ifPresentOrElse(player -> log.info("First turn for player: {} starts at {} and ends at (+{} seconds) {}", player.getGameUser().getUsername(), player.getTurnStartTime(), game.getTurnTime(), player.getTurnEndTime()),
                         () -> log.error("No player found for the first turn with gameId {} and playerId {}", game.getId(), randomizedPlayersIds.getFirst())
                 );
-    }
-
-    public Player getPlayerTurn(UUID gameId) {
-        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
-                .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
-        Player currentPlayer = playerRepository.findPlayerById(playerTurnOrders.getFirst())
-                .orElseThrow(() -> new NullPointerException("Couldn't find current player turn"));
-
-        log.info("[info: get] Current player is: {}", currentPlayer.getGameUser().getUsername());
-        return currentPlayer;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
@@ -255,44 +266,6 @@ public class GameService {
         return nextPlayer;
     }
 
-    public Optional<Tile> pullTileFromTilePool(UUID gameId, UUID playerId) {
-        Player currentPlayerTurn = getPlayerTurn(gameId);
-        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
-                .orElseThrow(() -> new IllegalStateException("Player turn orders not found"));
-
-        managePlayerTurns(currentPlayerTurn, playerTurnOrders);
-
-        // Haal het game object en de tile pool op
-        Game game = gameRepository.findGameById(gameId)
-                .orElseThrow(() -> new IllegalStateException("Game not found"));
-
-        TilePool tilePool = gameRepository.findTilePoolByGameId(gameId)
-                .orElseThrow(() -> new IllegalStateException("Tilepool not found"));
-
-        // Trek een tegel uit de pool
-        Tile drawnTile = tilePool.drawTile();
-
-        // Update de tegel en voeg deze toe aan het deck van de speler
-        Deck playerDeck = currentPlayerTurn.getDeck();
-        drawnTile.setDeck(playerDeck);
-        tileRepository.save(drawnTile);
-
-        playerDeck.getTiles().add(drawnTile);
-        deckRepository.save(playerDeck);
-
-        log.info("Player {} drew a tile: {} {}. Remaining tiles in pool: {}",
-                currentPlayerTurn.getGameUser().getUsername(),
-                drawnTile.getNumberValue(),
-                drawnTile.getTileColor(),
-                tilePool.getRemainingTiles()
-        );
-
-        // Na de beurt moet het geupdatet worden zodat de volgende speler aan de beurt geraakt
-        getNextPlayer(playerTurnOrders,game, currentPlayerTurn);
-
-        return Optional.of(drawnTile);
-    }
-
     private void makePlayerMove(Player player, PlayerMoveRequest request) {
         playingFieldService.handlePlayerMoves(request.tileSets());
         playingFieldService.handlePlayerDeck(player.getId(), request.playerDeckDto());
@@ -301,7 +274,58 @@ public class GameService {
                 LocalTime.now());
     }
 
-    public Optional<TilePool> getTilePoolByGameId(UUID gameId) {
-        return gameRepository.findTilePoolByGameId(gameId);
+    @Transactional
+    public Optional<Tile> pullTileFromTilePool(UUID gameId, UUID playerId) {
+        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                .orElseThrow(() -> new IllegalStateException("Player turn orders not found"));
+
+        Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
+                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
+
+        // Check of je aan de beurt bent
+        managePlayerTurns(player, playerTurnOrders);
+
+        // Haal het game object en de tile pool op die niet tot een deck behoort
+        Game game = gameRepository.findGameByIdWithTilePoolTilesWithDeckIsNull(gameId)
+                .orElseThrow(() -> new IllegalStateException("Game not found"));
+
+        TilePool tilePool = game.getTilePool();
+        tilePool.shuffleTiles();
+
+        log.info("TILE POOL TILES: {}", tilePool.getTiles().size());
+        String tilesInfo = tilePool.getTiles().stream()
+                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                .collect(Collectors.joining(", "));
+        log.info("The tilepool has the following tiles left after player pulled a tile: {}", tilesInfo);
+
+        // Trek een tegel uit de pool
+        Tile drawnTile = tilePool.drawTile();
+
+        // Update de tegel en voeg deze toe aan het deck van de speler
+        Deck playerDeck = player.getDeck();
+        drawnTile.setDeck(playerDeck);
+        playerDeck.getTiles().add(drawnTile);
+
+        // Opslaan van wijzigingen
+        tileRepository.save(drawnTile);
+        deckRepository.save(playerDeck);
+        tilePoolRepository.save(tilePool);
+
+        log.info("Player {} drew a tile: {} {}. Remaining tiles in pool: {}",
+                player.getGameUser().getUsername(),
+                drawnTile.getNumberValue(),
+                drawnTile.getTileColor(),
+                tilePool.getTiles().size()
+        );
+
+        String playerTilesInfo = playerDeck.getTiles().stream()
+                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                .collect(Collectors.joining(", "));
+        log.info("Player {} has the following tiles in their deck after pulling a tile: {}", player.getGameUser().getUsername(), playerTilesInfo);
+
+        // Na de beurt moet het geupdatet worden zodat de volgende speler aan de beurt geraakt
+        getNextPlayer(playerTurnOrders, game, player);
+
+        return Optional.of(drawnTile);
     }
 }

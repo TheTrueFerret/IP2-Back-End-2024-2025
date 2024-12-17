@@ -35,6 +35,12 @@ Authorization: Bearer {{access_token}}
   "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
 }
 
+> {%
+    client.global.set("gameId", response.body.players[0].gameId);
+    client.global.set("playerId1", response.body.playerTurnOrder[0]);
+    client.global.set("playerId2", response.body.playerTurnOrder[1]);
+%}
+
 ### GET call om alle tiles van een tilepool te verkrijgen
 GET http://localhost:8080/api/game/tilepool/contents?gameId=00000000-0000-0000-0000-000000000011
 Accept: application/json
@@ -46,10 +52,9 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "gameId": "e725b967-a561-4871-aca0-5249c510ae35",
-  "playerId": "6a4bc5a5-a26f-431f-bff3-cd37ec33c602"
+  "gameId": "{{gameId}}",
+  "playerId": "{{playerId2}}"
 }
-
 
 ### call om de zet te cheken op basis van heel de playingfield
 POST http://localhost:8080/api/game/turn/player-make-move

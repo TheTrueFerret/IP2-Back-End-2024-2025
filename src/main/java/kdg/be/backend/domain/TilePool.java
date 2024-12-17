@@ -15,6 +15,7 @@ public class TilePool {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    // relaties
     @OneToMany(mappedBy = "tilePool", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tile> tiles;
 
@@ -26,7 +27,7 @@ public class TilePool {
         this.tiles = tiles;
     }
 
-    public int getRemainingTiles() {
+    public int getRemainingTilesSize() {
         return tiles.size();
     }
 
