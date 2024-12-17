@@ -65,14 +65,12 @@ class GameUserControllerTest {
                 });
     }
 
-    /*
-    in commentaar zodat onze tests werken maar yannick zal dit fiksen <3
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unhappyGetGameUser() throws Exception {
-        mockMvc.perform(get("/api/gameuser/userProfile?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(get("/api/gameuser/userProfile?userId=4e861d2e-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
     }
-     */
+
 }
