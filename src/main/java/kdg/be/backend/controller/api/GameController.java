@@ -9,6 +9,7 @@ import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
+import kdg.be.backend.exception.InvalidMoveException;
 import kdg.be.backend.service.GameService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,6 +107,14 @@ public class GameController {
     public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidMoveException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidMoveException(InvalidMoveException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", InvalidMoveException.class.getSimpleName());
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
