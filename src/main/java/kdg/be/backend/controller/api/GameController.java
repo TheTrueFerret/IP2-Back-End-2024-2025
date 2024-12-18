@@ -3,6 +3,7 @@ package kdg.be.backend.controller.api;
 import jakarta.validation.Valid;
 import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
+import kdg.be.backend.controller.dto.PlayerScoreReturnDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.CreateSimpleRequest;
@@ -11,6 +12,7 @@ import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.controller.dto.tiles.TilePoolDto;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
+import kdg.be.backend.exception.InvalidMoveException;
 import kdg.be.backend.domain.TilePool;
 import kdg.be.backend.service.GameService;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,7 @@ public class GameController {
                 .map(player -> new PlayerDto(
                         player.getId(),
                         player.getGameUser().getUsername(), // Assuming getGameUser() fetches the username
+                        player.getScore(),
                         player.getGame().getId(),           // Assuming getGame() fetches the game ID
                         GameDtoMapper.mapToDeckDto(player.getDeck())
                 ))
@@ -45,7 +48,7 @@ public class GameController {
     }
 
     private PlayerDto mapToPlayerDTO(Player player) {
-        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
+        return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getScore(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
     }
 
     private TilePoolDto mapToTilePoolDto(TilePool tilePool) {
@@ -62,7 +65,6 @@ public class GameController {
     }
 
     @GetMapping("/players/{gameId}")
-    @Transactional
     public List<PlayerDto> getPlayersOfGame(@PathVariable UUID gameId) {
         List<Player> players = gameService.getPlayersOfGame(gameId);
         return mapToPlayerDTOs(players);
@@ -76,9 +78,16 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @GetMapping("/lobby/{lobbyId}")
+    public ResponseEntity<UUID> getGameIdByLobbyIdAndUserId(@PathVariable UUID lobbyId, @RequestParam UUID userId) {
+        return gameService.getGameIdByLobbyIdAndUserId(lobbyId, userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @PostMapping("/turn/player-make-move")
     public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
-        return gameService.managePlayerMoves(req)
+        return gameService.managePlayerMoves(req.playerId(), req.gameId(), req.tileSets(), req.playerDeckDto())
                 .map(player -> ResponseEntity.ok(mapToPlayerDTO(player)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -96,6 +105,13 @@ public class GameController {
                 .map(tilePool -> ResponseEntity.ok(mapToTilePoolDto(tilePool)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/player/{playerId}/score")
+    public ResponseEntity<PlayerScoreReturnDto> getPlayerScore(@PathVariable UUID playerId) {
+        int score = gameService.getPlayerScore(playerId);
+        return ResponseEntity.ok(new PlayerScoreReturnDto(playerId, score));
+    }
+
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -117,6 +133,14 @@ public class GameController {
     public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidMoveException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidMoveException(InvalidMoveException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", InvalidMoveException.class.getSimpleName());
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }

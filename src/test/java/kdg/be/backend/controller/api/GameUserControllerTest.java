@@ -56,15 +56,8 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void getGameUser() throws Exception {
-        String body = """
-                {
-                "id":"fbe4a1d1-1c44-49b8-911f-7bc77a78b001"
-                }
-                """;
-
-        mockMvc.perform(get("/api/gameuser/userProfile")
-                        .contentType("application/json")
-                        .content(body))
+        mockMvc.perform(get("/api/gameuser/userProfile?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+                        .contentType("application/json"))
                 .andExpect(status().isOk()).andDo(result -> {
                     String content = result.getResponse().getContentAsString();
                     assertTrue(content.contains("id"));
@@ -75,15 +68,9 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unhappyGetGameUser() throws Exception {
-        String body = """
-                {
-                "id":"00000000-0000-0000-0000-000000000123"
-                }
-                """;
-
-        mockMvc.perform(get("/api/gameuser/userProfile")
-                        .contentType("application/json")
-                        .content(body))
+        mockMvc.perform(get("/api/gameuser/userProfile?userId=4e861d2e-1c44-49b8-911f-7bc77a78b001")
+                        .contentType("application/json"))
                 .andExpect(status().isNotFound());
     }
+
 }

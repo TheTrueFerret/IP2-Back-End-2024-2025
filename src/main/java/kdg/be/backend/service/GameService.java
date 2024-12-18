@@ -1,6 +1,7 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
+import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
+import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.domain.enums.TileColor;
@@ -24,11 +25,12 @@ public class GameService {
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
     private final PlayingFieldService playingFieldService;
+    private final MoveValidationService moveValidationService;
     private final TilePoolRepository tilePoolRepository;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, TilePoolRepository tilePoolRepository) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, TilePoolRepository tilePoolRepository) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
@@ -36,6 +38,7 @@ public class GameService {
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
         this.playingFieldService = playingFieldService;
+        this.moveValidationService = moveValidationService;
         this.tilePoolRepository = tilePoolRepository;
     }
 
@@ -93,12 +96,16 @@ public class GameService {
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
 
+                    // Tijdelijk omdat het vrij stom is voor 2 http requests te doen voor gwn op ready te zetten terwijl er hier niks voor is.
+                    lobby.setStatus(LobbyStatus.READY);
+                    lobbyRepository.save(lobby);
+
                     if (lobby.getStatus() != LobbyStatus.READY) {
                         log.error("Cannot start game if lobby is not started.");
                         throw new IllegalStateException("Cannot start game if lobby is not started.");
                     }
 
-                    if (gameRepository.countGamesByLobbyId(lobbyId) >= 1) {
+                    if (gameRepository.countGamesByLobbyId(lobbyId) > 1) {
                         log.error("There can only exist 1 game instance for every lobby");
                         throw new IllegalStateException("There can only exist 1 game instance for every lobby");
                     }
@@ -163,6 +170,38 @@ public class GameService {
                 });
     }
 
+
+    public Optional<UUID> getGameIdByLobbyIdAndUserId(UUID lobbyId, UUID userId) {
+        Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
+                .orElseThrow(() -> new IllegalStateException("No lobby found with id: " + lobbyId));
+
+        if (gameRepository.countGamesByLobbyId(lobbyId) > 1) {
+            log.error("There can only exist 1 game instance for every lobby");
+            throw new IllegalStateException("There can only exist 1 game instance for every lobby");
+        }
+
+        if (lobby.getStatus() != LobbyStatus.READY) {
+            log.error("Cannot start game if lobby is not started.");
+            throw new IllegalStateException("Cannot start game if lobby is not started.");
+        }
+
+        Optional<UUID> gameId = gameRepository.findGameByLobbyId(lobbyId).map(Game::getId);
+
+        if (gameId.isEmpty()) {
+            log.error("no Game Found for the LobbyId: {}", lobbyId);
+            throw new IllegalArgumentException("No Game Found for the LobbyId: " + lobbyId);
+        }
+
+        boolean isPlayer = lobby.getUsers().stream().anyMatch(user -> user.getId().equals(userId));
+
+        if (!isPlayer) {
+            log.error("user is not a part of this Lobby: {}", lobbyId);
+            throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
+        }
+
+        return gameId;
+    }
+
     private void validateEqualTileCounts(List<Player> players, int startTileAmount) {
         for (Player player : players) {
             int playerTileCount = player.getDeck().getTiles().size();
@@ -215,24 +254,25 @@ public class GameService {
     }
 
     @Transactional
-    public Optional<Player> managePlayerMoves(PlayerMoveRequest request) {
-        return Optional.of(gameRepository.findGameById(request.gameId())
+    public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
-                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(request.gameId(), request.playerId())
+                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
                             .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
 
-                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(request.gameId())
+                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
                             .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
                     managePlayerTurns(player, playerTurnOrders);
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player, request);
+                        makePlayerMove(player, tileSetDtos, deckDto);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
                     }
 
+                    log.info("Player with id {}, has score {}", player.getId(), player.getScore());
                     return getNextPlayer(playerTurnOrders, game, player);
                 }).orElseThrow(() -> new NullPointerException("Game not found")));
     }
@@ -265,13 +305,30 @@ public class GameService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player, PlayerMoveRequest request) {
-        playingFieldService.handlePlayerMoves(request.tileSets());
-        playingFieldService.handlePlayerDeck(player.getId(), request.playerDeckDto());
+    private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        checkFirstTurn(player, deckDto);
+        playingFieldService.handlePlayerMoves(tileSetDtos);
+        playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
     }
+
+    private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {
+        Game game = player.getGame();
+        if (!game.getPlayerTurnHistory().contains(player.getId())) {
+            moveValidationService.isValidInitialMove(player.getId(), deckDto);
+            game.getPlayerTurnHistory().add(player.getId());
+            gameRepository.save(game);
+        }
+    }
+
+    public int getPlayerScore(UUID playerId) {
+        return playerRepository.findById(playerId)
+                .map(Player::getScore)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found with ID: " + playerId));
+    }
+
 
     @Transactional
     public Optional<Tile> managePullingTileFromTilePool(UUID gameId, UUID playerId) {
