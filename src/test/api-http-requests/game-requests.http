@@ -38,7 +38,23 @@ Authorization: Bearer {{access_token}}
 > {%
     client.global.set("gameId", response.body.players[0].gameId);
     client.global.set("playerId", response.body.playerTurnOrder[0]);
+    client.global.set("playerId2", response.body.playerTurnOrder[1]);
 %}
+
+### GET call om alle tiles van een tilepool te verkrijgen
+GET http://localhost:8080/api/game/tilepool/contents?gameId=00000000-0000-0000-0000-000000000011
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### PATCH call om een tile uit een tilepool te halen van een game
+PATCH http://localhost:8080/api/game/pull-tile
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "gameId": "{{gameId}}",
+  "playerId": "{{playerId1}}"
+}
 
 ### call om de zet te cheken op basis van heel de playingfield
 POST http://localhost:8080/api/game/turn/player-make-move

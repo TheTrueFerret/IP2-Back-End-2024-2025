@@ -1,6 +1,7 @@
 package kdg.be.backend.repository;
 
 import kdg.be.backend.domain.Game;
+import kdg.be.backend.domain.TilePool;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -19,6 +20,15 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             WHERE g.id = :id
             """)
     Optional<Game> findGameById(UUID id);
+
+    @Query("""
+            SELECT g
+            FROM Game g
+            JOIN FETCH g.tilePool tp
+            JOIN FETCH tp.tiles t
+            WHERE g.id = :id AND t.deck IS NULL
+            """)
+    Optional<Game> findGameByIdWithTilePoolTilesWithDeckIsNull(UUID id);
 
     @Query("""
             SELECT g.playerTurnOrder
@@ -44,4 +54,13 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
 
     int countGamesByPlayersGameUserId(UUID gameUserId);
 
+
+    @Query("""
+            SELECT tp
+            FROM Game g
+            JOIN g.tilePool tp
+            JOIN FETCH tp.tiles
+            WHERE g.id = :gameId
+            """)
+    Optional<TilePool> findTilePoolByGameId(UUID gameId);
 }
