@@ -27,10 +27,10 @@ public class GameService {
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
     private final PlayingFieldService playingFieldService;
-
+    private final MoveValidationService moveValidationService;
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
@@ -38,6 +38,7 @@ public class GameService {
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
         this.playingFieldService = playingFieldService;
+        this.moveValidationService = moveValidationService;
     }
 
     public List<Tile> getTilesOfPlayer(UUID playerId) {
@@ -260,6 +261,7 @@ public class GameService {
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
                     }
 
+                    log.info("Player with id {}, has score {}", player.getId(), player.getScore());
                     return getNextPlayer(playerTurnOrders, game, player);
                 }).orElseThrow(() -> new NullPointerException("Game not found")));
     }
@@ -282,7 +284,7 @@ public class GameService {
 
         playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
                 .ifPresent(player -> {
-                    nextPlayer.setTurnStartTime(player.getTurnEndTime());
+                    nextPlayer.setTurnStartTime(LocalTime.now());
                     nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
                     playerRepository.save(nextPlayer);
                 });
@@ -293,11 +295,21 @@ public class GameService {
     }
 
     private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        checkFirstTurn(player, deckDto);
         playingFieldService.handlePlayerMoves(tileSetDtos);
         playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
+    }
+
+    private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {
+        Game game = player.getGame();
+        if (!game.getPlayerTurnHistory().contains(player.getId())) {
+            moveValidationService.isValidInitialMove(player.getId(), deckDto);
+            game.getPlayerTurnHistory().add(player.getId());
+            gameRepository.save(game);
+        }
     }
 
     public int getPlayerScore(UUID playerId) {
