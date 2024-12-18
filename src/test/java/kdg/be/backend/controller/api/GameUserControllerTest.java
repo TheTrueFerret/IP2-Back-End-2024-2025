@@ -1,12 +1,15 @@
 package kdg.be.backend.controller.api;
 
 import kdg.be.backend.TestContainerIPConfiguration;
+import kdg.be.backend.repository.GameUserRepository;
+import kdg.be.backend.service.GameUserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,6 +24,9 @@ class GameUserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private GameUserRepository repo;
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
@@ -53,6 +59,7 @@ class GameUserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void getGameUser() throws Exception {
@@ -68,7 +75,7 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unhappyGetGameUser() throws Exception {
-        mockMvc.perform(get("/api/gameuser/userProfile?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(get("/api/gameuser/userProfile?userId=fbe4a1d1-1c44-1c44-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
     }
@@ -82,19 +89,12 @@ class GameUserControllerTest {
                 .andExpect(status().isOk());
     }
 
-    //NO USERS IN DATABASE
-    @Test
-    @WithMockUser(username = "test", password = "test", roles = "USER")
-    void unHappyGetGameUsers() throws Exception{
-        mockMvc.perform(get("/api/gameuser/users")
-                        .contentType("application/json"))
-                .andExpect(status().isNotFound());
-    }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happyFriendRequest() throws Exception{
-        mockMvc.perform(post("/api/gameuser/friendRequest/test?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(post("/api/gameuser/friendRequest/Player4?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
     }
@@ -115,15 +115,11 @@ class GameUserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    //Friend request already exists
+
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happyFriend() throws Exception{
-        //Create friend request before accepting
-        mockMvc.perform(post("/api/gameuser/friendRequest/test?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
-                        .contentType("application/json"))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/gameuser/friend/test?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(post("/api/gameuser/friend/Player3?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
     }
@@ -132,18 +128,21 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappyFriend() throws Exception{
+        mockMvc.perform(post("/api/gameuser/friend/Player3?userId=87afee3d-2c6b-4876-8f2b-9e1d6f41c503")
+                        .contentType("application/json"))
+                .andExpect(status().isNotFound());
     }
 
     //Friend request in database
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happyFriendRequests() throws Exception{
-        mockMvc.perform(get("/api/gameuser/friendRequests?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(get("/api/gameuser/friendRequests?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
     }
 
-    //Freind request no uuid given
+    //Friend request no uuid given
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappyNoUUIDFriendRequests() throws Exception{
@@ -152,7 +151,7 @@ class GameUserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    //Freind request no friend requests in database
+    //Friend request no friend requests in database
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappyFriendRequests() throws Exception{

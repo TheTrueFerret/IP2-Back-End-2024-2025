@@ -107,7 +107,7 @@ public class GameUserService {
 
     public String getFriendRequests(UUID id) {
         Optional<List<FriendRequest>> optionalGameUser = friendRequestRepository.findFriendRequestsByReceiver_Id(id);
-        if (optionalGameUser.isEmpty()) {
+        if (optionalGameUser.get().isEmpty()) {
             throw new FriendRequestException("No friend requests found");
         }
         List<FriendRequest> friendRequests = optionalGameUser.get();
@@ -138,13 +138,14 @@ public class GameUserService {
     }
 
     public List<GameUserDto> getGameUsers() {
-        List<GameUser> gameUsers = gameUserRepository.findAll();
+        List<GameUser> gameUsers = gameUserRepository.findAllWithAchievements();
         if (gameUsers.isEmpty()) {
             throw new UsersDoNotExistsException("No users found");
         }
         List<GameUserDto> gameUserDtos = new ArrayList<>();
         for (GameUser gameUser : gameUsers) {
-            gameUserDtos.add(new GameUserDto(gameUser));
+            GameUserDto dto = new GameUserDto(gameUser,gameUser.getAchievements());
+            gameUserDtos.add(dto);
         }
         return gameUserDtos;
     }

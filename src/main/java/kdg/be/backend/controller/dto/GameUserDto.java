@@ -1,6 +1,7 @@
 package kdg.be.backend.controller.dto;
 
 import kdg.be.backend.domain.user.GameUser;
+import kdg.be.backend.domain.user.GameUserAchievement;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -46,5 +47,13 @@ public class GameUserDto {
         gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
         this.gamesPlayed = gamesPlayed;
         this.gamesWon = gamesWon;
+    }
+
+    public GameUserDto(GameUser gameUser, List<GameUserAchievement> achievements) {
+        this.id = gameUser.getId();
+        this.username = gameUser.getUsername();
+        this.avatar = gameUser.getAvatar();
+        this.achievements = new ArrayList<>();
+        achievements.forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
     }
 }

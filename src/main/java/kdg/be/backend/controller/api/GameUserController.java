@@ -56,7 +56,7 @@ public class GameUserController {
 
     //Get all game users
     @GetMapping("/users")
-    public ResponseEntity<List<GameUserDto>> getGameUsers(){
+    public ResponseEntity<List<GameUserDto>> getGameUsers() {
         if (gameUserService.getGameUsers().isEmpty()) {
             logger.warning("No game users found");
             return ResponseEntity.notFound().build();
@@ -128,6 +128,6 @@ public class GameUserController {
         Map<String, String> response = new HashMap<>();
         response.put("error", FriendRequestException.class.getSimpleName());
         response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }
