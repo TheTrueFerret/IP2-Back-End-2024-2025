@@ -85,7 +85,7 @@ public class GameController {
 
     @PatchMapping("/pull-tile")
     public ResponseEntity<TileDto> getPulledTileFromTilePool(@Valid @RequestBody CreateSimpleRequest req) {
-        return gameService.pullTileFromTilePool(req.gameId(), req.playerId())
+        return gameService.managePullingTileFromTilePool(req.gameId(), req.playerId())
                 .map(tile -> ResponseEntity.ok(GameDtoMapper.mapToTileDto(tile)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

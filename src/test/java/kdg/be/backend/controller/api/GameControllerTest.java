@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -160,6 +161,7 @@ class GameControllerTest {
     }
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testmakePlayerMove_ShouldBeOk() throws Exception {
         // Stap 1: Start het spel
@@ -193,66 +195,66 @@ class GameControllerTest {
 
         // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
         String playerTurnRequest = """
-        {
-          "gameId": "%s",
-          "playerId": "%s",
-          "tileSets": [
-            {
-              "tileSetId": "00000000-0000-0000-0000-000000000002",
-              "startCoordinate": 1,
-              "endCoordinate": 3,
-              "tiles": [
                 {
-                  "tileId": "00000000-0000-0000-0000-000000000004",
-                  "numberValue": 1,
-                  "color": "BLUE",
-                  "gridColumn": 4,
-                  "gridRow": 5
-                },
-                {
-                  "tileId": "00000000-0000-0000-0000-000000000007",
-                  "numberValue": 4,
-                  "color": "ORANGE",
-                  "gridColumn": 7,
-                  "gridRow": 10
+                  "gameId": "%s",
+                  "playerId": "%s",
+                  "tileSets": [
+                    {
+                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "startCoordinate": 1,
+                      "endCoordinate": 3,
+                      "tiles": [
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000004",
+                          "numberValue": 1,
+                          "color": "BLUE",
+                          "gridColumn": 4,
+                          "gridRow": 5
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000007",
+                          "numberValue": 4,
+                          "color": "ORANGE",
+                          "gridColumn": 7,
+                          "gridRow": 10
+                        }
+                      ]
+                    },
+                    {
+                      "tileSetId": "00000000-0000-0000-0000-000000000003",
+                      "startCoordinate": 11,
+                      "endCoordinate": 13,
+                      "tiles": [
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000006",
+                          "numberValue": 3,
+                          "color": "BLACK",
+                          "gridColumn": 7,
+                          "gridRow": 8
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000005",
+                          "numberValue": 2,
+                          "color": "RED",
+                          "gridColumn": 4,
+                          "gridRow": 6
+                        }
+                      ]
+                    }
+                  ],
+                  "playerDeckDto": {
+                    "tilesInDeck": [
+                      {
+                        "tileId": "00000000-0000-0000-0000-000000000055",
+                        "numberValue": 5,
+                        "color": "BLUE",
+                        "gridColumn": 0,
+                        "gridRow": 0
+                      }
+                    ]
+                  }
                 }
-              ]
-            },
-            {
-              "tileSetId": "00000000-0000-0000-0000-000000000003",
-              "startCoordinate": 11,
-              "endCoordinate": 13,
-              "tiles": [
-                {
-                  "tileId": "00000000-0000-0000-0000-000000000006",
-                  "numberValue": 3,
-                  "color": "BLACK",
-                  "gridColumn": 7,
-                  "gridRow": 8
-                },
-                {
-                  "tileId": "00000000-0000-0000-0000-000000000005",
-                  "numberValue": 2,
-                  "color": "RED",
-                  "gridColumn": 4,
-                  "gridRow": 6
-                }
-              ]
-            }
-          ],
-          "playerDeckDto": {
-            "tilesInDeck": [
-              {
-                "tileId": "00000000-0000-0000-0000-000000000055",
-                "numberValue": 5,
-                "color": "BLUE",
-                "gridColumn": 0,
-                "gridRow": 0
-              }
-            ]
-          }
-        }
-        """.formatted(gameId, firstPlayerTurnId);
+                """.formatted(gameId, firstPlayerTurnId);
 
         mockMvc.perform(post("/api/game/turn/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -311,6 +313,105 @@ class GameControllerTest {
                 .andDo(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     System.out.println("Beurtbeheer response: " + jsonResponse);
+                });
+    }
+
+
+    @Test
+    @DirtiesContext
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void givenValidGameAndPlayer_whenPullTile_thenReturnTileAndUpdateDeck_ShouldReturnOk() throws Exception {
+        // Stap 1: Start het spel
+        String startGameRequest = """
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                }
+                """;
+
+        MvcResult startGameResult = mockMvc.perform(post("/api/game/start/31111111-1111-1111-1111-111111111111")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(startGameRequest))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String startGameResponse = startGameResult.getResponse().getContentAsString();
+        String gameIdString = JsonPath.parse(startGameResponse).read("$.players[0].gameId", String.class);
+        UUID gameId = UUID.fromString(gameIdString);
+
+        List<String> playerOrder = JsonPath.parse(startGameResponse).read("$.playerTurnOrder", List.class);
+
+        // Controleer dat de lijst van playerTurnOrder niet leeg is
+        assertFalse(playerOrder.isEmpty(), "Player order should not be empty");
+
+        // Stap 3: Simuleer de beurt van de eerste speler (de eerste in de lijst is die gene die aan het beurt is)
+        UUID firstPlayerTurnId = UUID.fromString(playerOrder.getFirst());
+
+        // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
+        String playerPullTurnRequest = """
+                {
+                  "gameId": "%s",
+                  "playerId": "%s"
+                }
+                """.formatted(gameId, firstPlayerTurnId);
+
+        mockMvc.perform(patch("/api/game/pull-tile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(playerPullTurnRequest))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    System.out.println("Pull tile beurtbeheer response: " + jsonResponse);
+                });
+    }
+
+    @Test
+    @DirtiesContext
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void givenValidGameAndPlayerNotInTurn_whenPullTile_thenShouldNotReturnTileAndUpdateDeck_ShouldReturnBadRequest() throws Exception {
+        // Stap 1: Start het spel
+        String startGameRequest = """
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                }
+                """;
+
+        MvcResult startGameResult = mockMvc.perform(post("/api/game/start/31111111-1111-1111-1111-111111111111")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(startGameRequest))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String startGameResponse = startGameResult.getResponse().getContentAsString();
+        String gameIdString = JsonPath.parse(startGameResponse).read("$.players[0].gameId", String.class);
+        UUID gameId = UUID.fromString(gameIdString);
+
+        List<String> playerOrder = JsonPath.parse(startGameResponse).read("$.playerTurnOrder", List.class);
+
+        // Controleer dat de lijst van playerTurnOrder niet leeg is
+        assertFalse(playerOrder.isEmpty(), "Player order should not be empty");
+
+        // Stap 3: Simuleer de beurt van de eerste speler (de eerste in de lijst is die gene die aan het beurt is)
+        UUID firstPlayerTurnId = UUID.fromString(playerOrder.getLast());
+
+        // Stap 4: Simuleer een beurt nemen als jij aan het beurt bent
+        String playerPullTurnRequest = """
+                {
+                  "gameId": "%s",
+                  "playerId": "%s"
+                }
+                """.formatted(gameId, firstPlayerTurnId);
+
+        mockMvc.perform(patch("/api/game/pull-tile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(playerPullTurnRequest))
+                .andExpect(status().isBadRequest())
+                .andDo(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    System.out.println("Pull tile beurtbeheer response: " + jsonResponse);
                 });
     }
 }
