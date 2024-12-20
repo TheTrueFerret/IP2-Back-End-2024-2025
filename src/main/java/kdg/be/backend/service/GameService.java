@@ -42,20 +42,30 @@ public class GameService {
         this.tilePoolRepository = tilePoolRepository;
     }
 
+    public PlayingField getPlayingFieldByGameId(UUID gameId){
+        Game game = gameRepository.findGameByIdWithPlayingField(gameId)
+                .orElseThrow(() -> new IllegalStateException("No game found"));
+
+        return game.getPlayingField();
+    }
+
     public UUID getPlayerIdByUserId(UUID userId) {
         return playerRepository.findPlayerByUserId(userId)
                 .map(Player::getId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found with userId: " + userId));
     }
 
-
     public List<Tile> getDeckTilesOfPlayer(UUID playerId) {
         return tileRepository.findDeckTilesByPlayerId(playerId);
     }
 
-//    public Player getCurrentTurnPlayer(UUID gameId, UUID playerId) {
-//        return gameRepository.
-//    }
+    public Player getCurrentTurnPlayer(UUID gameId) {
+        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
+
+        return playerRepository.findPlayerById(playerTurnOrders.getFirst())
+                .orElseThrow(() -> new IllegalStateException("Couldn't retrieve first player turn"));
+    }
 
     @Transactional
     public List<Player> getPlayersOfGame(UUID gameId) {

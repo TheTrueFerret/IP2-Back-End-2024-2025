@@ -40,7 +40,7 @@ public class GameDtoMapper {
         );
     }
 
-    private static TileSetDto mapToTileSetDto(TileSet tileSet) {
+    public static TileSetDto mapToTileSetDto(TileSet tileSet) {
         return new TileSetDto(
                 tileSet.getStartCoordinate(),
                 tileSet.getEndCoordinate(),

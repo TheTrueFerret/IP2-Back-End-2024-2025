@@ -9,6 +9,16 @@ client_id=RummikubApp&username=test&password=test&grant_type=password&scope=open
     client.global.set("access_token", response.body.access_token);
 %}
 
+### GET playingField by gameId
+GET http://localhost:8080/api/game/{{gameId}}/playingField
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### GET wie aan de beurt is door een gameId mee te geven
+GET http://localhost:8080/api/game/{{gameId}}/turns/current-player-turn
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
 ### Test: Get Tiles by Player ID (Player 1)
 GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000014
 Accept: application/json

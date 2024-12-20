@@ -4,14 +4,16 @@ import jakarta.validation.Valid;
 import kdg.be.backend.controller.dto.GameDto;
 import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.PlayerScoreReturnDto;
+import kdg.be.backend.controller.dto.PlayingFieldDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.CreateSimpleRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.controller.dto.tiles.TilePoolDto;
+import kdg.be.backend.controller.dto.tiles.TileSetDto;
 import kdg.be.backend.domain.Player;
-import kdg.be.backend.domain.Tile;
+import kdg.be.backend.domain.PlayingField;
 import kdg.be.backend.exception.InvalidMoveException;
 import kdg.be.backend.domain.TilePool;
 import kdg.be.backend.service.GameService;
@@ -58,13 +60,21 @@ public class GameController {
         );
     }
 
+    private PlayingFieldDto mapToPlayingFieldDto(PlayingField playingField){
+        List<TileSetDto> tileSetDtos = playingField.getTileSets()
+                .stream()
+                .map(GameDtoMapper::mapToTileSetDto)
+                .toList();
+
+        return new PlayingFieldDto(tileSetDtos);
+    }
+
     // TODO Add Tests for this method
     @GetMapping("/player/{userId}")
     public UUID getPlayerIdByUserId(@PathVariable UUID userId) {
         return gameService.getPlayerIdByUserId(userId);
     }
 
-    //TODO pas dit aan
     @GetMapping("/tiles/player/{playerId}")
     public List<TileDto> getDeckTilesOfPlayer(@PathVariable UUID playerId) {
         return gameService.getDeckTilesOfPlayer(playerId)
@@ -73,11 +83,15 @@ public class GameController {
                 .toList();
     }
 
-    //TODO pas dit aan
-//    @GetMapping("/turns/current-player-turn")
-//    public PlayerDto getCurrentPlayerTurn(@Valid @RequestBody CreateSimpleRequest req) {
-//        return mapToPlayerDTO(gameService.getCurrentTurnPlayer(req.gameId(), req.playerId()));
-//    }
+    @GetMapping("/{gameId}/turns/current-player-turn")
+    public PlayerDto getCurrentPlayerTurn(@PathVariable UUID gameId) {
+        return mapToPlayerDTO(gameService.getCurrentTurnPlayer(gameId));
+    }
+
+    @GetMapping("/{gameId}/playingField")
+    public PlayingFieldDto getPlayingFieldByGameId(@PathVariable UUID gameId) {
+        return mapToPlayingFieldDto(gameService.getPlayingFieldByGameId(gameId));
+    }
 
     @GetMapping("/players/{gameId}")
     public List<PlayerDto> getPlayersOfGame(@PathVariable UUID gameId) {

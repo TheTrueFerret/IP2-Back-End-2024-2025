@@ -24,6 +24,15 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     @Query("""
             SELECT g
             FROM Game g
+            JOIN FETCH g.playingField pf
+            LEFT JOIN FETCH pf.tileSets
+            WHERE g.id = :gameId
+            """)
+    Optional<Game> findGameByIdWithPlayingField(UUID gameId);
+
+    @Query("""
+            SELECT g
+            FROM Game g
             JOIN FETCH g.tilePool tp
             JOIN FETCH tp.tiles t
             WHERE g.id = :id AND t.deck IS NULL
