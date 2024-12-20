@@ -58,7 +58,7 @@ public class GameDtoMapper {
         return new GameUserDto(gameUser.getUsername(), gameUser.getId());
     }
 
-    private static TileDto mapToTileDto(Tile tile) {
+    public static TileDto mapToTileDto(Tile tile) {
         return new TileDto(tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow());
     }
 

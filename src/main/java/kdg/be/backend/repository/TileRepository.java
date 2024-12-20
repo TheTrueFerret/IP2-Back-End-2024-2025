@@ -14,7 +14,7 @@ public interface TileRepository extends JpaRepository<Tile, UUID> {
             "JOIN d.tiles dt " +
             "JOIN Player p ON p.deck.id = d.id " +
             "WHERE p.id = :playerId)")
-    List<Tile> findTilesByPlayerId(@Param("playerId") UUID playerId);
+    List<Tile> findDeckTilesByPlayerId(@Param("playerId") UUID playerId);
 
     @Query("SELECT t FROM Tile t WHERE t.tilePool.id = :tilePoolId")
     List<Tile> findTilesByTilePoolId(@Param("tilePoolId") UUID tilePoolId);

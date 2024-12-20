@@ -43,5 +43,4 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     Optional<Game> findGameByLobbyId(UUID lobbyId);
 
     int countGamesByPlayersGameUserId(UUID gameUserId);
-
 }

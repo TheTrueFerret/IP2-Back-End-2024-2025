@@ -1,7 +1,6 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
-import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -47,9 +45,13 @@ public class GameService {
     }
 
 
-    public List<Tile> getTilesOfPlayer(UUID playerId) {
-        return tileRepository.findTilesByPlayerId(playerId);
+    public List<Tile> getDeckTilesOfPlayer(UUID playerId) {
+        return tileRepository.findDeckTilesByPlayerId(playerId);
     }
+
+//    public Player getCurrentTurnPlayer(UUID gameId, UUID playerId) {
+//        return gameRepository.
+//    }
 
     @Transactional
     public List<Player> getPlayersOfGame(UUID gameId) {
@@ -98,7 +100,7 @@ public class GameService {
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
 
-                    // Tijdelijk omdat het vrij stom is voor 2 http requests te doen voor gwn op ready te zetten terwijl er hier niks voor is.
+                    // zet lobby op ready wanneer je een game gaat starten
                     lobby.setStatus(LobbyStatus.READY);
                     lobbyRepository.save(lobby);
 
@@ -152,18 +154,6 @@ public class GameService {
                     validateEqualTileCounts(players, startTileAmount);
                     initializePlayerTurns(game, players);
                     gameRepository.save(game);
-
-                    Game verifiedGame = gameRepository.findById(game.getId())
-                            .orElseThrow(() -> {
-                                log.error("Failed to create game for lobby: {}", lobbyId);
-                                return new IllegalStateException("Game creation failed - could not verify game in database");
-                            });
-
-                    // Additional validation checks
-                    if (verifiedGame.getPlayers().isEmpty()) {
-                        log.error("Game created without players for lobby: {}", lobbyId);
-                        throw new IllegalStateException("Game must have players");
-                    }
 
                     log.info("Game started with lobby id: {}", lobbyId);
                     return game;

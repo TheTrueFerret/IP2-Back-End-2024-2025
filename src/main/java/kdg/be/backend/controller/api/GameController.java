@@ -6,13 +6,13 @@ import kdg.be.backend.controller.dto.PlayerDto;
 import kdg.be.backend.controller.dto.PlayerScoreReturnDto;
 import kdg.be.backend.controller.dto.mapper.GameDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
+import kdg.be.backend.controller.dto.requests.CreateSimpleRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
+import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.domain.Player;
-import kdg.be.backend.domain.Tile;
 import kdg.be.backend.service.GameService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -34,9 +34,9 @@ public class GameController {
         return players.stream()
                 .map(player -> new PlayerDto(
                         player.getId(),
-                        player.getGameUser().getUsername(), // Assuming getGameUser() fetches the username
+                        player.getGameUser().getUsername(),
                         player.getScore(),
-                        player.getGame().getId(),           // Assuming getGame() fetches the game ID
+                        player.getGame().getId(),
                         GameDtoMapper.mapToDeckDto(player.getDeck())
                 ))
                 .collect(Collectors.toList());
@@ -52,10 +52,20 @@ public class GameController {
         return gameService.getPlayerIdByUserId(userId);
     }
 
+    //TODO pas dit aan
     @GetMapping("/tiles/player/{playerId}")
-    public List<Tile> getTilesOfPlayer(@PathVariable UUID playerId) {
-        return gameService.getTilesOfPlayer(playerId);
+    public List<TileDto> getDeckTilesOfPlayer(@PathVariable UUID playerId) {
+        return gameService.getDeckTilesOfPlayer(playerId)
+                .stream()
+                .map(GameDtoMapper::mapToTileDto)
+                .toList();
     }
+
+    //TODO pas dit aan
+//    @GetMapping("/turns/current-player-turn")
+//    public PlayerDto getCurrentPlayerTurn(@Valid @RequestBody CreateSimpleRequest req) {
+//        return mapToPlayerDTO(gameService.getCurrentTurnPlayer(req.gameId(), req.playerId()));
+//    }
 
     @GetMapping("/players/{gameId}")
     public List<PlayerDto> getPlayersOfGame(@PathVariable UUID gameId) {
