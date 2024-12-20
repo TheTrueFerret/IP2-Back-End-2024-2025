@@ -25,10 +25,12 @@ public class GameService {
     private final GameRepository gameRepository;
     private final DeckRepository deckRepository;
     private final PlayingFieldService playingFieldService;
+    private final MoveValidationService moveValidationService;
+    private final TilePoolRepository tilePoolRepository;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, TilePoolRepository tilePoolRepository) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
@@ -36,6 +38,8 @@ public class GameService {
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
         this.playingFieldService = playingFieldService;
+        this.moveValidationService = moveValidationService;
+        this.tilePoolRepository = tilePoolRepository;
     }
 
     public UUID getPlayerIdByUserId(UUID userId) {
@@ -56,6 +60,10 @@ public class GameService {
     @Transactional
     public List<Player> getPlayersOfGame(UUID gameId) {
         return playerRepository.findPlayersByGameId(gameId);
+    }
+
+    public Optional<TilePool> getTilePoolByGameId(UUID gameId) {
+        return gameRepository.findTilePoolByGameId(gameId);
     }
 
     private List<Tile> createTiles(int amount) {
@@ -100,7 +108,7 @@ public class GameService {
                         throw new IllegalStateException("Only the host of the lobby can start the game!");
                     }
 
-                    // zet lobby op ready wanneer je een game gaat starten
+                    // Tijdelijk omdat het vrij stom is voor 2 http requests te doen voor gwn op ready te zetten terwijl er hier niks voor is.
                     lobby.setStatus(LobbyStatus.READY);
                     lobbyRepository.save(lobby);
 
@@ -148,7 +156,21 @@ public class GameService {
                         Player player = new Player(user, playerDeck, game);
                         players.add(player);
                         playerRepository.save(player);
+
+                        String tilesInfo = playerDeck.getTiles().stream()
+                                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                                .collect(Collectors.joining(", "));
+                        log.info("Player {} has the following tiles in their deck: {}", user.getUsername(), tilesInfo);
                     }
+
+                    log.info("TILES LEFT OVER AFTER GIVING EACH PLAYER {}: {}", startTileAmount, tilePool.getTiles().size());
+                    String tilesInfo = tilePool.getTiles().stream()
+                            .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                            .collect(Collectors.joining(", "));
+                    log.info("The tilepool has the following tiles left: {}", tilesInfo);
+
+                    tilePoolRepository.save(tilePool);
+                    game.setTilePool(tilePool);
 
                     game.setPlayers(players);
                     validateEqualTileCounts(players, startTileAmount);
@@ -237,13 +259,6 @@ public class GameService {
                 );
     }
 
-    public Player getPlayerTurn(UUID gameId) {
-        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
-                .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
-
-        return playerRepository.findPlayerById(playerTurnOrders.getFirst()).orElseThrow(() -> new NullPointerException("Couldn't find current player turn"));
-    }
-
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
         if (!player.getId().equals(playerTurnOrders.getFirst())) {
             throw new IllegalStateException(player.getGameUser().getUsername() + ": it's not your turn, wait until its your turn to make a move");
@@ -269,6 +284,7 @@ public class GameService {
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
                     }
 
+                    log.info("Player with id {}, has score {}", player.getId(), player.getScore());
                     return getNextPlayer(playerTurnOrders, game, player);
                 }).orElseThrow(() -> new NullPointerException("Game not found")));
     }
@@ -291,7 +307,7 @@ public class GameService {
 
         playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
                 .ifPresent(player -> {
-                    nextPlayer.setTurnStartTime(player.getTurnEndTime());
+                    nextPlayer.setTurnStartTime(LocalTime.now());
                     nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
                     playerRepository.save(nextPlayer);
                 });
@@ -302,11 +318,21 @@ public class GameService {
     }
 
     private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        checkFirstTurn(player, deckDto);
         playingFieldService.handlePlayerMoves(tileSetDtos);
         playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
+    }
+
+    private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {
+        Game game = player.getGame();
+        if (!game.getPlayerTurnHistory().contains(player.getId())) {
+            moveValidationService.isValidInitialMove(player.getId(), deckDto);
+            game.getPlayerTurnHistory().add(player.getId());
+            gameRepository.save(game);
+        }
     }
 
     public int getPlayerScore(UUID playerId) {
@@ -315,4 +341,73 @@ public class GameService {
                 .orElseThrow(() -> new IllegalArgumentException("Player not found with ID: " + playerId));
     }
 
+
+    @Transactional
+    public Optional<Tile> managePullingTileFromTilePool(UUID gameId, UUID playerId) {
+        Optional<Tile> drawnTileFromTilePool = Optional.empty();
+
+        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                .orElseThrow(() -> new IllegalStateException("Player turn orders not found"));
+
+        Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
+                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
+
+        // Haal het game object en de tile pool op die niet tot een deck behoort
+        Game game = gameRepository.findGameByIdWithTilePoolTilesWithDeckIsNull(gameId)
+                .orElseThrow(() -> new IllegalStateException("No tiles left in the tilepool of the game"));
+
+        if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
+            drawnTileFromTilePool = drawTileFromTilePool(player, playerTurnOrders, game);
+        } else {
+            log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"
+                    , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
+        }
+
+        // Na de beurt moet het geupdatet worden zodat de volgende speler aan de beurt geraakt
+        getNextPlayer(playerTurnOrders, game, player);
+
+        return drawnTileFromTilePool;
+    }
+
+    private Optional<Tile> drawTileFromTilePool(Player player, List<UUID> playerTurnOrders, Game game){
+        // Check of je aan de beurt bent
+        managePlayerTurns(player, playerTurnOrders);
+
+        TilePool tilePool = game.getTilePool();
+        tilePool.shuffleTiles();
+
+        log.info("TILE POOL TILES: {}", tilePool.getTiles().size());
+
+        // Trek een tegel uit de pool
+        Tile drawnTile = tilePool.drawTile();
+
+        // Update de tegel en voeg deze toe aan het deck van de speler
+        Deck playerDeck = player.getDeck();
+        drawnTile.setDeck(playerDeck);
+        playerDeck.getTiles().add(drawnTile);
+
+        // Wijzigingen opslaan
+        tileRepository.save(drawnTile);
+        deckRepository.save(playerDeck);
+        tilePoolRepository.save(tilePool);
+
+        log.info("Player {} drew a tile: {} {}. Remaining tiles in pool: {}",
+                player.getGameUser().getUsername(),
+                drawnTile.getNumberValue(),
+                drawnTile.getTileColor(),
+                tilePool.getTiles().size()
+        );
+
+        String tilesInfo = tilePool.getTiles().stream()
+                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                .collect(Collectors.joining(", "));
+        log.info("The tilepool has the following tiles left after player pulled a tile: {}", tilesInfo);
+
+        String playerTilesInfo = playerDeck.getTiles().stream()
+                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                .collect(Collectors.joining(", "));
+        log.info("Player {} has the following tiles in their deck after pulling a tile: {}", player.getGameUser().getUsername(), playerTilesInfo);
+
+        return Optional.of(drawnTile);
+    }
 }

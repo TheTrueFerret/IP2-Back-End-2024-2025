@@ -9,7 +9,11 @@ import kdg.be.backend.controller.dto.requests.CreateGameSettingsRequest;
 import kdg.be.backend.controller.dto.requests.CreateSimpleRequest;
 import kdg.be.backend.controller.dto.requests.PlayerMoveRequest;
 import kdg.be.backend.controller.dto.tiles.TileDto;
+import kdg.be.backend.controller.dto.tiles.TilePoolDto;
 import kdg.be.backend.domain.Player;
+import kdg.be.backend.domain.Tile;
+import kdg.be.backend.exception.InvalidMoveException;
+import kdg.be.backend.domain.TilePool;
 import kdg.be.backend.service.GameService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +48,14 @@ public class GameController {
 
     private PlayerDto mapToPlayerDTO(Player player) {
         return new PlayerDto(player.getId(), player.getGameUser().getUsername(), player.getScore(), player.getGame().getId(), GameDtoMapper.mapToDeckDto(player.getDeck()));
+    }
+
+    private TilePoolDto mapToTilePoolDto(TilePool tilePool) {
+        return new TilePoolDto(
+                tilePool.getTiles().stream()
+                        .map(GameDtoMapper::mapToTileDto)
+                        .toList()
+        );
     }
 
     // TODO Add Tests for this method
@@ -95,6 +107,20 @@ public class GameController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @PatchMapping("/pull-tile")
+    public ResponseEntity<TileDto> getPulledTileFromTilePool(@Valid @RequestBody CreateSimpleRequest req) {
+        return gameService.managePullingTileFromTilePool(req.gameId(), req.playerId())
+                .map(tile -> ResponseEntity.ok(GameDtoMapper.mapToTileDto(tile)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/tilepool/contents")
+    public ResponseEntity<TilePoolDto> getTilePoolTiles(@RequestParam UUID gameId) {
+        return gameService.getTilePoolByGameId(gameId)
+                .map(tilePool -> ResponseEntity.ok(mapToTilePoolDto(tilePool)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/player/{playerId}/score")
     public ResponseEntity<PlayerScoreReturnDto> getPlayerScore(@PathVariable UUID playerId) {
         int score = gameService.getPlayerScore(playerId);
@@ -122,6 +148,14 @@ public class GameController {
     public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidMoveException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidMoveException(InvalidMoveException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", InvalidMoveException.class.getSimpleName());
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }

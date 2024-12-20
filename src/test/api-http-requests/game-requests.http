@@ -38,7 +38,23 @@ Authorization: Bearer {{access_token}}
 > {%
     client.global.set("gameId", response.body.players[0].gameId);
     client.global.set("playerId", response.body.playerTurnOrder[0]);
+    client.global.set("playerId2", response.body.playerTurnOrder[1]);
 %}
+
+### GET call om alle tiles van een tilepool te verkrijgen
+GET http://localhost:8080/api/game/tilepool/contents?gameId=00000000-0000-0000-0000-000000000011
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### PATCH call om een tile uit een tilepool te halen van een game
+PATCH http://localhost:8080/api/game/pull-tile
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "gameId": "{{gameId}}",
+  "playerId": "{{playerId1}}"
+}
 
 ### call om de zet te cheken op basis van heel de playingfield
 POST http://localhost:8080/api/game/turn/player-make-move
@@ -96,7 +112,7 @@ Authorization: Bearer {{access_token}}
     "tilesInDeck": [
       {
         "tileId": "00000000-0000-0000-0000-000000000055",
-        "numberValue": 5,
+        "numberValue": 10,
         "color": "BLUE",
         "gridColumn": 0,
         "gridRow": 0
@@ -105,7 +121,98 @@ Authorization: Bearer {{access_token}}
   }
 }
 
+### call om de checken of de eerste zet van de speler geldig is
+POST http://localhost:8080/api/game/turn/player-make-move
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
 
+{
+  "gameId": "{{gameId}}",
+  "playerId": "{{playerId}}",
+  "tileSets": [
+    {
+      "tileSetId": "00000000-0000-0000-0000-000000000002",
+      "startCoordinate": 1,
+      "endCoordinate": 3,
+      "tiles": [
+        {
+          "tileId": "00000000-0000-0000-0000-000000000004",
+          "numberValue": 1,
+          "color": "BLUE",
+          "gridColumn": 4,
+          "gridRow": 5
+        },
+        {
+          "tileId": "00000000-0000-0000-0000-000000000007",
+          "numberValue": 4,
+          "color": "ORANGE",
+          "gridColumn": 7,
+          "gridRow": 10
+        }
+      ]
+    },
+    {
+      "tileSetId": "00000000-0000-0000-0000-000000000003",
+      "startCoordinate": 11,
+      "endCoordinate": 13,
+      "tiles": [
+        {
+          "tileId": "00000000-0000-0000-0000-000000000006",
+          "numberValue": 3,
+          "color": "BLACK",
+          "gridColumn": 7,
+          "gridRow": 8
+        },
+        {
+          "tileId": "00000000-0000-0000-0000-000000000005",
+          "numberValue": 2,
+          "color": "RED",
+          "gridColumn": 4,
+          "gridRow": 6
+        }
+      ]
+    }
+  ],
+  "playerDeckDto": {
+    "tilesInDeck": [
+      {
+        "tileId": "00000000-0000-0000-0000-000000000055",
+        "numberValue": 10,
+        "color": "BLUE",
+        "gridColumn": 0,
+        "gridRow": 0
+      },
+      {
+        "tileId": "00000000-0000-0000-0000-000000000056",
+        "numberValue": 10,
+        "color": "BLUE",
+        "gridColumn": 0,
+        "gridRow": 0
+      },
+      {
+        "tileId": "00000000-0000-0000-0000-000000000057",
+        "numberValue": 20,
+        "color": "RED",
+        "gridColumn": 0,
+        "gridRow": 0
+      },
+      {
+        "tileId": "00000000-0000-0000-0000-000000000058",
+        "numberValue": 20,
+        "color": "ORANGE",
+        "gridColumn": 0,
+        "gridRow": 0
+      },
+      {
+        "tileId": "00000000-0000-0000-0000-000000000059",
+        "numberValue": 25,
+        "color": "BLACK",
+        "gridColumn": 0,
+        "gridRow": 0
+      }
+    ]
+  }
+}
 #### GET player turn in game player create tileset move
 #GET http://localhost:8080/api/game/turn
 #Content-Type: application/json
