@@ -1,8 +1,10 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.controller.dto.user.GameUserDto;
+import kdg.be.backend.controller.dto.user.UserFriendDto;
 import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.UserDoesNotExistException;
+import kdg.be.backend.exception.UsersDoNotExistsException;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +66,16 @@ public class GameUserController {
         return ResponseEntity.ok(gameUserService.getGameUsers());
     }
 
+    @GetMapping("/users/{username}")
+    public ResponseEntity<List<UserFriendDto>> getGameUsers(@PathVariable String username, @RequestHeader Map<String, String> userData) {
+        String id = userData.get("id") != null ? userData.get("id") : null;
+        if (id == null) {
+            logger.warning("Invalid game user data");
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(gameUserService.getGameUsersWithName(UUID.fromString(id), username));
+    }
+
     //Send friend request
     @PostMapping("/friendRequest/{friendUsername}")
     public ResponseEntity<String> friendRequest(@RequestParam UUID userId, @PathVariable String friendUsername) {
@@ -119,6 +131,14 @@ public class GameUserController {
     public ResponseEntity<Map<String, String>> handleUserDoesNotExistException(UserDoesNotExistException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", UserDoesNotExistException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(UsersDoNotExistsException.class)
+    public ResponseEntity<Map<String, String>> handleUsersDoNotExistsException(UsersDoNotExistsException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", UsersDoNotExistsException.class.getSimpleName());
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }

@@ -89,11 +89,33 @@ class GameUserControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void happeGetGameUsersByName() throws Exception {
+        mockMvc.perform(get("/api/gameuser/users/Player")
+                        .contentType("application/json").header("id", "fbe4a1d1-1c44-49b8-911f-7bc77a78b001"))
+                .andExpect(status().isOk()).andDo(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    System.out.println("Response content: " + content);
+                    assertTrue(content.contains("id"));
+                    assertTrue(content.contains("username"));
+                });
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void unHappeGetGameUsersByName() throws Exception {
+        mockMvc.perform(get("/api/gameuser/users/testing")
+                        .contentType("application/json")
+                        .header("id", "fbe4a1d1-1c44-49b8-911f-7bc77a78b001"))
+                .andExpect(status().isNotFound());
+    }
+
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void happyFriendRequest() throws Exception{
+    void happyFriendRequest() throws Exception {
         mockMvc.perform(post("/api/gameuser/friendRequest/Player4?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
@@ -101,7 +123,7 @@ class GameUserControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void unHappyNoUUIDFriendRequest() throws Exception{
+    void unHappyNoUUIDFriendRequest() throws Exception {
         mockMvc.perform(post("/api/gameuser/friendRequest/test")
                         .contentType("application/json"))
                 .andExpect(status().isBadRequest());
@@ -109,16 +131,16 @@ class GameUserControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void unHappyUserNotFoundFriendRequest() throws Exception{
+    void unHappyUserNotFoundFriendRequest() throws Exception {
         mockMvc.perform(post("/api/gameuser/friendRequest/blablablablabla?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
     }
 
-
+    //Accept friend request from Speler 3 for Speler 4
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void happyFriend() throws Exception{
+    void happyFriend() throws Exception {
         mockMvc.perform(post("/api/gameuser/friend/Player3?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
@@ -127,7 +149,7 @@ class GameUserControllerTest {
     //Friend request is not pending
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void unHappyFriend() throws Exception{
+    void unHappyFriend() throws Exception {
         mockMvc.perform(post("/api/gameuser/friend/Player3?userId=87afee3d-2c6b-4876-8f2b-9e1d6f41c503")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
@@ -136,7 +158,7 @@ class GameUserControllerTest {
     //Friend request in database
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void happyFriendRequests() throws Exception{
+    void happyFriendRequests() throws Exception {
         mockMvc.perform(get("/api/gameuser/friendRequests?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
@@ -145,7 +167,7 @@ class GameUserControllerTest {
     //Friend request no uuid given
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void unHappyNoUUIDFriendRequests() throws Exception{
+    void unHappyNoUUIDFriendRequests() throws Exception {
         mockMvc.perform(get("/api/gameuser/friendRequests")
                         .contentType("application/json"))
                 .andExpect(status().isBadRequest());
@@ -154,7 +176,7 @@ class GameUserControllerTest {
     //Friend request no friend requests in database
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    void unHappyFriendRequests() throws Exception{
+    void unHappyFriendRequests() throws Exception {
         mockMvc.perform(get("/api/gameuser/friendRequests?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());

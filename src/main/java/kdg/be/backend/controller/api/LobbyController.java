@@ -1,7 +1,7 @@
 package kdg.be.backend.controller.api;
 
 import jakarta.validation.Valid;
-import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.controller.dto.LobbyDto;
 import kdg.be.backend.controller.dto.mapper.GameUserDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateJoinLobbyRequest;

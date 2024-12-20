@@ -22,7 +22,7 @@ public class GameUser {
     @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameUserAchievement> achievements = new ArrayList<>();
 
-    @OneToMany
+    @ManyToMany
     private List<GameUser> friendList;
     @OneToOne(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatHistory chatHistory;

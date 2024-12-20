@@ -1,5 +1,6 @@
-package kdg.be.backend.controller.dto;
+package kdg.be.backend.controller.dto.user;
 
+import kdg.be.backend.controller.dto.AchievementDto;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.user.GameUserAchievement;
 import lombok.Getter;

@@ -1,7 +1,8 @@
 package kdg.be.backend.service;
 
 
-import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.controller.dto.user.GameUserDto;
+import kdg.be.backend.controller.dto.user.UserFriendDto;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.FriendRequest;
@@ -14,10 +15,7 @@ import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class GameUserService {
@@ -144,9 +142,30 @@ public class GameUserService {
         }
         List<GameUserDto> gameUserDtos = new ArrayList<>();
         for (GameUser gameUser : gameUsers) {
-            GameUserDto dto = new GameUserDto(gameUser,gameUser.getAchievements());
+            GameUserDto dto = new GameUserDto(gameUser, gameUser.getAchievements());
             gameUserDtos.add(dto);
         }
         return gameUserDtos;
+    }
+
+    public List<UserFriendDto> getGameUsersWithName(UUID userId, String username) {
+        List<GameUser> gameUser = gameUserRepository.findGameUsersByUsernameIsContainingIgnoreCase(username);
+        if (gameUser.isEmpty()) {
+            throw new UsersDoNotExistsException("No users found with name " + username);
+        }
+        List<UserFriendDto> userFriendDto = new ArrayList<>();
+        for (GameUser user : gameUser) {
+            userFriendDto.add(new UserFriendDto(user, isFriend(userId, user)));
+        }
+        return userFriendDto;
+    }
+
+    public boolean isFriend(UUID userId, GameUser user) {
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(userId).orElse(null);
+        if (gameUser != null) {
+            List<GameUser> friendList = gameUser.getFriendList();
+            return friendList.stream().findAny().filter(friend -> friend.getId().equals(user.getId())).isPresent();
+        }
+        return false;
     }
 }

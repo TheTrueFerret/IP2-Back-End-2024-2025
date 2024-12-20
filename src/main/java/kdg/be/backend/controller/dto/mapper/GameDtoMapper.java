@@ -4,6 +4,7 @@ import kdg.be.backend.controller.dto.*;
 import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.controller.dto.tiles.TilePoolDto;
 import kdg.be.backend.controller.dto.tiles.TileSetDto;
+import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.user.GameUser;
 
