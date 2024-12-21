@@ -104,7 +104,6 @@ public class GameService {
                     log.info("The tilepool has the following tiles left: {}", tilesInfo);
 
                     tilePoolRepository.save(tilePool);
-//                    game.setTilePool(tilePool);
                     game.setPlayers(players);
 
                     // Validate if all players have the same amount of tiles

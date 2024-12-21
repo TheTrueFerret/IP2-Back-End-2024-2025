@@ -38,7 +38,9 @@ public class PlayerService {
     }
 
     public List<Tile> getDeckTilesOfPlayer(UUID playerId) {
-        return tileRepository.findDeckTilesByPlayerId(playerId);
+        return tileRepository.findDeckTilesByPlayerId(playerId)
+                .filter(tiles -> !tiles.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("Couldn't find the deck tiles of player with ID: " + playerId));
     }
 
     public int getPlayerScore(UUID playerId) {
@@ -49,6 +51,7 @@ public class PlayerService {
 
     public Player getCurrentTurnPlayer(UUID gameId) {
         List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                .filter(orderList -> !orderList.isEmpty())
                 .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
         return playerRepository.findPlayerById(playerTurnOrders.getFirst())
@@ -56,7 +59,9 @@ public class PlayerService {
     }
 
     public List<Player> getPlayersOfGame(UUID gameId) {
-        return playerRepository.findPlayersByGameId(gameId);
+        return playerRepository.findPlayersByGameId(gameId)
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("Couldn't find players of game with ID: " + gameId));
     }
 
     private Deck createPlayerDeck(TilePool tilePool, int tilesPerPlayer) {
