@@ -27,10 +27,11 @@ public class GameService {
     private final PlayingFieldService playingFieldService;
     private final MoveValidationService moveValidationService;
     private final TilePoolRepository tilePoolRepository;
+    private final GameUserAchievementService gameUserAchievementService;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, TilePoolRepository tilePoolRepository) {
+    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, TilePoolRepository tilePoolRepository, GameUserAchievementService gameUserAchievementService) {
         this.tileRepository = tileRepository;
         this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
@@ -40,6 +41,7 @@ public class GameService {
         this.playingFieldService = playingFieldService;
         this.moveValidationService = moveValidationService;
         this.tilePoolRepository = tilePoolRepository;
+        this.gameUserAchievementService = gameUserAchievementService;
     }
 
     public List<Tile> getTilesOfPlayer(UUID playerId) {
@@ -312,6 +314,7 @@ public class GameService {
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
+        gameUserAchievementService.checkAndAssignFirstMoveAchievement(player.getGameUser().getId(), 1);
     }
 
     private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {

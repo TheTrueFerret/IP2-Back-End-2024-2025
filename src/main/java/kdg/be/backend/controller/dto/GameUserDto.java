@@ -34,7 +34,7 @@ public class GameUserDto {
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         gameUser.getFriendList().forEach(friend -> this.friendList.add(new GameUserDto(friend)));
-        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
+        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription())));
     }
     public GameUserDto(GameUser gameUser,int gamesPlayed,int gamesWon) {
         this.id = gameUser.getId();
@@ -43,7 +43,7 @@ public class GameUserDto {
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         gameUser.getFriendList().forEach(friend -> this.friendList.add(new GameUserDto(friend)));
-        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
+        gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription())));
         this.gamesPlayed = gamesPlayed;
         this.gamesWon = gamesWon;
     }

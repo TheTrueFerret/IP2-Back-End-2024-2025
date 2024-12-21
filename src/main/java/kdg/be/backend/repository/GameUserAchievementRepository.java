@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface GameUserAchievementRepository extends JpaRepository<GameUserAchievement, UUID> {
     List<GameUserAchievement> findByGameUser_Id(UUID gameUserId);
     List<GameUserAchievement> findByAchievement_Id(long achievementId);
+    List<GameUserAchievement> findByGameUser_IdAndAchievement_Id(UUID userId, long achievementId);
 }

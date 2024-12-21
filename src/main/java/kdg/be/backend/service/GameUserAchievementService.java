@@ -54,4 +54,15 @@ public class GameUserAchievementService {
 
         gameUserAchievementRepository.delete(toRemove);
     }
+
+    public void checkAndAssignFirstMoveAchievement(UUID userId, long achievementId) {
+        gameUserRepository.findById(userId).orElseThrow(() ->
+                new IllegalArgumentException("User not found with ID: " + userId));
+        Achievement achievement = achievementRepository.findById(achievementId).orElseThrow(() ->
+                new IllegalArgumentException("Achievement not found with ID: " + achievementId));
+
+        if (gameUserAchievementRepository.findByGameUser_IdAndAchievement_Id(userId, achievement.getId()).isEmpty()) {
+            addAchievementToUser(userId, achievement.getId());
+        }
+    }
 }

@@ -99,3 +99,9 @@ VALUES
 -- Gebruikers voor Lobby 5
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111115'), -- Player5 (host)
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111116'); -- Player8
+
+
+INSERT INTO achievement (id, title, description) VALUES
+    (1, 'First Move', 'Complete your first move'),
+    (2, 'Win Game', 'Win a game'),
+    (3, 'High Score', 'Achieve a high score of 1000 points');
