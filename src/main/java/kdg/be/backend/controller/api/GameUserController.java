@@ -1,14 +1,10 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.domain.GameUser;
-import kdg.be.backend.exception.UserDoesNotExistException;
+import kdg.be.backend.controller.dto.game.GameUserDto;
 import kdg.be.backend.service.GameUserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -51,22 +47,5 @@ public class GameUserController {
         GameUserDto gameUserDto = new GameUserDto(gameUserService.getGameUser(userId), gameUserService.getGamesPlayed(userId), gameUserService.getGamesWon(userId));
         logger.info("Game user " + gameUserDto.getUsername() + " found");
         return ResponseEntity.ok(gameUserDto);
-    }
-
-
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", NullPointerException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @ExceptionHandler(UserDoesNotExistException.class)
-    public ResponseEntity<Map<String, String>> handleUserDoesNotExistException(UserDoesNotExistException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", UserDoesNotExistException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

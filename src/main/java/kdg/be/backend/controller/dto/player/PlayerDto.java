@@ -1,4 +1,6 @@
-package kdg.be.backend.controller.dto;
+package kdg.be.backend.controller.dto.player;
+
+import kdg.be.backend.controller.dto.game.DeckDto;
 
 import java.util.UUID;
 

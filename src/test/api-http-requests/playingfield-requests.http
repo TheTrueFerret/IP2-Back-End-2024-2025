@@ -1,0 +1,4 @@
+### GET playingField by gameId
+GET http://localhost:8080/api/game/{{gameId}}/playingField
+Accept: application/json
+Authorization: Bearer {{access_token}}

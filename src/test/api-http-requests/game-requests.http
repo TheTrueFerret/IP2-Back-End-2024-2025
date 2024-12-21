@@ -9,23 +9,8 @@ client_id=RummikubApp&username=test&password=test&grant_type=password&scope=open
     client.global.set("access_token", response.body.access_token);
 %}
 
-### Test: Get Tiles by Player ID (Player 1)
-GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000014
-Accept: application/json
-Authorization: Bearer {{access_token}}
-
-### Test: Get Tiles by Player ID (Player 2)
-GET http://localhost:8080/api/game/tiles/player/00000000-0000-0000-0000-000000000015
-Accept: application/json
-Authorization: Bearer {{access_token}}
-
-### Test: Get Players by Game ID
-GET http://localhost:8080/api/game/players/00000000-0000-0000-0000-000000000011
-Accept: application/json
-Authorization: Bearer {{access_token}}
-
 ### POST game starten met lobbyId, roundTime en startTileAmount en hostUserId -> lobby moet op "ready" staan
-POST http://localhost:8080/api/game/start/ef673b41-d76d-4b96-99d8-41beef0c3707
+POST http://localhost:8080/api/games/start/ef673b41-d76d-4b96-99d8-41beef0c3707
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -41,23 +26,23 @@ Authorization: Bearer {{access_token}}
     client.global.set("playerId2", response.body.playerTurnOrder[1]);
 %}
 
-### GET call om alle tiles van een tilepool te verkrijgen
-GET http://localhost:8080/api/game/tilepool/contents?gameId=00000000-0000-0000-0000-000000000011
+### GET wie aan de beurt is door een gameId mee te geven
+GET http://localhost:8080/api/players/game/{{gameId}}/turns/current-player-turn
 Accept: application/json
 Authorization: Bearer {{access_token}}
 
 ### PATCH call om een tile uit een tilepool te halen van een game
-PATCH http://localhost:8080/api/game/pull-tile
+PATCH http://localhost:8080/api/turns/player-pull-tile
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
   "gameId": "{{gameId}}",
-  "playerId": "{{playerId1}}"
+  "playerId": "{{playerId}}"
 }
 
 ### call om de zet te cheken op basis van heel de playingfield
-POST http://localhost:8080/api/game/turn/player-make-move
+POST http://localhost:8080/api/turns/player-make-move
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -122,7 +107,7 @@ Authorization: Bearer {{access_token}}
 }
 
 ### call om de checken of de eerste zet van de speler geldig is
-POST http://localhost:8080/api/game/turn/player-make-move
+POST http://localhost:8080/api/turns/player-make-move
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -213,6 +198,7 @@ Authorization: Bearer {{access_token}}
     ]
   }
 }
+
 #### GET player turn in game player create tileset move
 #GET http://localhost:8080/api/game/turn
 #Content-Type: application/json
