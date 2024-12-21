@@ -1,14 +1,13 @@
 package kdg.be.backend.controller.api;
 
 import jakarta.validation.Valid;
-import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.controller.dto.LobbyDto;
+import kdg.be.backend.controller.dto.game.GameUserDto;
+import kdg.be.backend.controller.dto.game.LobbyDto;
 import kdg.be.backend.controller.dto.mapper.GameUserDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateJoinLobbyRequest;
 import kdg.be.backend.controller.dto.requests.CreateLobbySettingsRequest;
 import kdg.be.backend.domain.Lobby;
 import kdg.be.backend.service.LobbyService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

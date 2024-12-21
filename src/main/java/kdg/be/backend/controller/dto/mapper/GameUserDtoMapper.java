@@ -1,6 +1,6 @@
 package kdg.be.backend.controller.dto.mapper;
 
-import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.controller.dto.game.GameUserDto;
 import kdg.be.backend.domain.GameUser;
 
 public class GameUserDtoMapper {

@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -70,7 +71,9 @@ class GameUserControllerTest {
     void unhappyGetGameUser() throws Exception {
         mockMvc.perform(get("/api/gameuser/userProfile?userId=4e861d2e-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User with id 4e861d2e-1c44-49b8-911f-7bc77a78b001 does not exist."));
+
     }
 
 }

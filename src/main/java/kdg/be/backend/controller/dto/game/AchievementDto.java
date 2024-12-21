@@ -1,4 +1,4 @@
-package kdg.be.backend.controller.dto;
+package kdg.be.backend.controller.dto.game;
 
 public record AchievementDto(
         String title,

@@ -45,4 +45,20 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(InvalidMoveException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidMoveException(InvalidMoveException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", InvalidMoveException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(UserDoesNotExistException.class)
+    public ResponseEntity<Map<String, String>> handleUserDoesNotExistException(UserDoesNotExistException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", UserDoesNotExistException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }

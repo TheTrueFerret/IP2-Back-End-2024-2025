@@ -1,14 +1,10 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.domain.GameUser;
-import kdg.be.backend.exception.UserDoesNotExistException;
+import kdg.be.backend.controller.dto.game.GameUserDto;
 import kdg.be.backend.service.GameUserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;

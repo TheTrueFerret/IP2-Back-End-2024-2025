@@ -1,8 +1,7 @@
 package kdg.be.backend.service;
 
 
-import jdk.jshell.spi.ExecutionControl;
-import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.controller.dto.game.GameUserDto;
 import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.exception.UserDoesNotExistException;

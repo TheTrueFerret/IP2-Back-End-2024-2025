@@ -1,19 +1,13 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.PlayingFieldDto;
-import kdg.be.backend.controller.dto.requests.CreateTilesetRequest;
 import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.controller.dto.tiles.TileSetDto;
-import kdg.be.backend.domain.PlayingField;
 import kdg.be.backend.domain.TileSet;
 import kdg.be.backend.service.TileSetService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
