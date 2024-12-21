@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TileRepository extends JpaRepository<Tile, UUID> {
@@ -14,7 +15,7 @@ public interface TileRepository extends JpaRepository<Tile, UUID> {
             "JOIN d.tiles dt " +
             "JOIN Player p ON p.deck.id = d.id " +
             "WHERE p.id = :playerId)")
-    List<Tile> findTilesByPlayerId(@Param("playerId") UUID playerId);
+    Optional<List<Tile>> findDeckTilesByPlayerId(@Param("playerId") UUID playerId);
 
     @Query("SELECT t FROM Tile t WHERE t.tilePool.id = :tilePoolId")
     List<Tile> findTilesByTilePoolId(@Param("tilePoolId") UUID tilePoolId);

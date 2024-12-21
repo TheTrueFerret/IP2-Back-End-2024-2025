@@ -1,5 +1,6 @@
-package kdg.be.backend.controller.dto;
+package kdg.be.backend.controller.dto.game;
 
+import kdg.be.backend.controller.dto.player.PlayerDto;
 import kdg.be.backend.controller.dto.tiles.TilePoolDto;
 
 import java.time.LocalDateTime;

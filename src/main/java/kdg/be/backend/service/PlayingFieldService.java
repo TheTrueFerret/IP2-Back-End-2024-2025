@@ -20,15 +20,24 @@ public class PlayingFieldService {
     private final TileRepository tileRepository;
     private final DeckRepository deckRepository;
     private final PlayerRepository playerRepository;
+    private final GameRepository gameRepository;
 
     private static final Logger log = LoggerFactory.getLogger(PlayingFieldService.class);
 
-    public PlayingFieldService(PlayingFieldRepository playingFieldRepository, TileSetRepository tileSetRepository, TileRepository tileRepository, DeckRepository deckRepository, PlayerRepository playerRepository) {
+    public PlayingFieldService(PlayingFieldRepository playingFieldRepository, TileSetRepository tileSetRepository, TileRepository tileRepository, DeckRepository deckRepository, PlayerRepository playerRepository, GameRepository gameRepository) {
         this.playingFieldRepository = playingFieldRepository;
         this.tileSetRepository = tileSetRepository;
         this.tileRepository = tileRepository;
         this.deckRepository = deckRepository;
         this.playerRepository = playerRepository;
+        this.gameRepository = gameRepository;
+    }
+
+    public PlayingField getPlayingFieldByGameId(UUID gameId) {
+        Game game = gameRepository.findGameByIdWithPlayingField(gameId)
+                .orElseThrow(() -> new IllegalStateException("No game found"));
+
+        return game.getPlayingField();
     }
 
     @Transactional

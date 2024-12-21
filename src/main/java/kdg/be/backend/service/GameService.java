@@ -1,7 +1,5 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
-import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.domain.enums.TileColor;
@@ -19,108 +17,72 @@ import java.util.stream.Collectors;
 @Service
 public class GameService {
     private final TileRepository tileRepository;
-    private final PlayerRepository playerRepository;
     private final LobbyRepository lobbyRepository;
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
-    private final DeckRepository deckRepository;
-    private final PlayingFieldService playingFieldService;
-    private final MoveValidationService moveValidationService;
     private final TilePoolRepository tilePoolRepository;
+
+    private final TileService tileService;
+    private final PlayerService playerService;
+    private final GameTurnService gameTurnService;
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
-    public GameService(TileRepository tileRepository, PlayerRepository playerRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, DeckRepository deckRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, TilePoolRepository tilePoolRepository) {
+    public GameService(TileRepository tileRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, TilePoolRepository tilePoolRepository, TileService tileService, PlayerService playerService, GameTurnService gameTurnService) {
         this.tileRepository = tileRepository;
-        this.playerRepository = playerRepository;
         this.lobbyRepository = lobbyRepository;
         this.playingFieldRepository = playingFieldRepository;
         this.gameRepository = gameRepository;
-        this.deckRepository = deckRepository;
-        this.playingFieldService = playingFieldService;
-        this.moveValidationService = moveValidationService;
         this.tilePoolRepository = tilePoolRepository;
+        this.tileService = tileService;
+        this.playerService = playerService;
+        this.gameTurnService = gameTurnService;
     }
 
-    public List<Tile> getTilesOfPlayer(UUID playerId) {
-        return tileRepository.findTilesByPlayerId(playerId);
-    }
-
-    public List<Player> getPlayersOfGame(UUID gameId) {
-        return playerRepository.findPlayersByGameId(gameId);
-    }
-
-    public Optional<TilePool> getTilePoolByGameId(UUID gameId) {
-        return gameRepository.findTilePoolByGameId(gameId);
-    }
-
-    private List<Tile> createTiles(int amount) {
-        List<Tile> tiles = new ArrayList<>();
-        TileColor[] colors = TileColor.values();
-
-        for (int number = 1; number <= 13; number++) {
-            for (TileColor color : colors) {
-                tiles.add(new Tile(number, color));
-                tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
-            }
+    private void validateGameStart(Lobby lobby, UUID hostUserId) {
+        if (!lobby.getHostUser().getId().equals(hostUserId)) {
+            log.error("Only the host of the lobby can start the game!");
+            throw new IllegalStateException("Only the host of the lobby can start the game!");
         }
 
-        tiles.add(new Tile(0, TileColor.BLACK)); // Joker 1
-        tiles.add(new Tile(0, TileColor.RED)); // Joker 2
+        lobby.setStatus(LobbyStatus.READY);
+        lobbyRepository.save(lobby);
 
-        log.info("AMOUNT OF TILES GENERATED: {}", tiles.size());
-
-        if (tiles.size() < amount) {
-            throw new IllegalArgumentException("Not enough tiles to create a pool");
+        if (lobby.getStatus() != LobbyStatus.READY) {
+            log.error("Cannot start game if lobby is not started.");
+            throw new IllegalStateException("Cannot start game if lobby is not started.");
         }
 
-        return tiles;
-    }
-
-    private Deck createPlayerDeck(TilePool tilePool, int tilesPerPlayer) {
-        List<Tile> playerTiles = new ArrayList<>();
-
-        for (int i = 0; i < tilesPerPlayer; i++) {
-            playerTiles.add(tilePool.drawTile());
+        if (gameRepository.countGamesByLobbyId(lobby.getId()) > 1) {
+            log.error("There can only exist 1 game instance for every lobby");
+            throw new IllegalStateException("There can only exist 1 game instance for every lobby");
         }
-
-        return new Deck(playerTiles);
     }
 
     @Transactional
     public Optional<Game> startGame(UUID lobbyId, int roundTime, int startTileAmount, UUID hostUserId) {
         return lobbyRepository.findLobbyById(lobbyId)
                 .map(lobby -> {
-                    if (!lobby.getHostUser().getId().equals(hostUserId)) {
-                        log.error("Only the host of the lobby can start the game!");
-                        throw new IllegalStateException("Only the host of the lobby can start the game!");
-                    }
+                    // Validate if the lobby is ready to start the game
+                    validateGameStart(lobby, hostUserId);
 
-                    // Tijdelijk omdat het vrij stom is voor 2 http requests te doen voor gwn op ready te zetten terwijl er hier niks voor is.
-                    lobby.setStatus(LobbyStatus.READY);
-                    lobbyRepository.save(lobby);
-
-                    if (lobby.getStatus() != LobbyStatus.READY) {
-                        log.error("Cannot start game if lobby is not started.");
-                        throw new IllegalStateException("Cannot start game if lobby is not started.");
-                    }
-
-                    if (gameRepository.countGamesByLobbyId(lobbyId) > 1) {
-                        log.error("There can only exist 1 game instance for every lobby");
-                        throw new IllegalStateException("There can only exist 1 game instance for every lobby");
-                    }
-
-                    List<Tile> tiles = createTiles(startTileAmount);
+                    // Create tiles
+                    List<Tile> tiles = tileService.createTiles(startTileAmount);
                     tileRepository.saveAll(tiles);
+
+                    // Create a tile pool and shuffle the tiles
                     TilePool tilePool = new TilePool(tiles);
                     tilePool.shuffleTiles();
 
+                    // Save the tile pool
                     tiles.forEach(tile -> tile.setTilePool(tilePool));
                     tileRepository.saveAll(tiles);
 
+                    // Create a playing field
                     PlayingField playingField = new PlayingField(new ArrayList<>());
                     playingFieldRepository.save(playingField);
 
+                    // Create a game and save it
                     Game game = new Game(
                             roundTime,
                             startTileAmount,
@@ -130,26 +92,10 @@ public class GameService {
                             new ArrayList<>(),
                             lobby
                     );
-
                     gameRepository.save(game);
 
-                    List<Player> players = new ArrayList<>();
-                    for (GameUser user : lobby.getUsers()) {
-                        Deck playerDeck = createPlayerDeck(tilePool, startTileAmount);
-                        deckRepository.save(playerDeck);
-
-                        playerDeck.getTiles().forEach(tile -> tile.setDeck(playerDeck));
-                        tileRepository.saveAll(tiles);
-
-                        Player player = new Player(user, playerDeck, game);
-                        players.add(player);
-                        playerRepository.save(player);
-
-                        String tilesInfo = playerDeck.getTiles().stream()
-                                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
-                                .collect(Collectors.joining(", "));
-                        log.info("Player {} has the following tiles in their deck: {}", user.getUsername(), tilesInfo);
-                    }
+                    // Create players
+                    List<Player> players = playerService.createPlayers(lobby, tilePool, startTileAmount, game, tiles);
 
                     log.info("TILES LEFT OVER AFTER GIVING EACH PLAYER {}: {}", startTileAmount, tilePool.getTiles().size());
                     String tilesInfo = tilePool.getTiles().stream()
@@ -158,11 +104,13 @@ public class GameService {
                     log.info("The tilepool has the following tiles left: {}", tilesInfo);
 
                     tilePoolRepository.save(tilePool);
-                    game.setTilePool(tilePool);
-
                     game.setPlayers(players);
-                    validateEqualTileCounts(players, startTileAmount);
-                    initializePlayerTurns(game, players);
+
+                    // Validate if all players have the same amount of tiles
+                    tileService.validateEqualTileCounts(players, startTileAmount);
+
+                    // Initialize player turns
+                    gameTurnService.initializePlayerTurns(game, players);
                     gameRepository.save(game);
 
                     log.info("Game started with lobby id: {}", lobbyId);
@@ -174,16 +122,6 @@ public class GameService {
     public Optional<UUID> getGameIdByLobbyIdAndUserId(UUID lobbyId, UUID userId) {
         Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
                 .orElseThrow(() -> new IllegalStateException("No lobby found with id: " + lobbyId));
-
-        if (gameRepository.countGamesByLobbyId(lobbyId) > 1) {
-            log.error("There can only exist 1 game instance for every lobby");
-            throw new IllegalStateException("There can only exist 1 game instance for every lobby");
-        }
-
-        if (lobby.getStatus() != LobbyStatus.READY) {
-            log.error("Cannot start game if lobby is not started.");
-            throw new IllegalStateException("Cannot start game if lobby is not started.");
-        }
 
         Optional<UUID> gameId = gameRepository.findGameByLobbyId(lobbyId).map(Game::getId);
 
@@ -200,202 +138,5 @@ public class GameService {
         }
 
         return gameId;
-    }
-
-    private void validateEqualTileCounts(List<Player> players, int startTileAmount) {
-        for (Player player : players) {
-            int playerTileCount = player.getDeck().getTiles().size();
-            if (playerTileCount != startTileAmount) {
-                throw new IllegalStateException("Tile distribution error: Players do not have equal tile counts.");
-            }
-        }
-
-        log.info("All players have equal tile counts: {}", startTileAmount);
-    }
-
-    private void initializePlayerTurns(Game game, List<Player> players) {
-        List<UUID> randomizedPlayersIds = new ArrayList<>();
-
-        for (Player player : game.getPlayers()) {
-            randomizedPlayersIds.add(player.getId());
-        }
-
-        Collections.shuffle(randomizedPlayersIds);
-        game.setPlayerTurnOrder(randomizedPlayersIds);
-
-        String playerNames = randomizedPlayersIds.stream()
-                .map(playerRepository::findPlayerById)
-                .map(optionalPlayer -> optionalPlayer.map(Player::getGameUser)
-                        .map(GameUser::getUsername)
-                        .orElse("Unknown"))
-                .collect(Collectors.joining(", "));
-        log.info("Player turn order initialized for game with players: {}", playerNames);
-
-        players.forEach(player -> {
-            if (playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), player.getId()).isPresent()) {
-                player.setTurnStartTime(LocalTime.now());
-                player.setTurnEndTime(LocalTime.now().plusSeconds(game.getTurnTime()));
-            }
-            playerRepository.save(player);
-        });
-
-        playerRepository.findPlayerInGameByGameIdAndPlayerId(
-                        game.getId(),
-                        randomizedPlayersIds.getFirst())
-                .ifPresentOrElse(player -> log.info("First turn for player: {} starts at {} and ends at (+{} seconds) {}", player.getGameUser().getUsername(), player.getTurnStartTime(), game.getTurnTime(), player.getTurnEndTime()),
-                        () -> log.error("No player found for the first turn with gameId {} and playerId {}", game.getId(), randomizedPlayersIds.getFirst())
-                );
-    }
-
-    private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
-        if (!player.getId().equals(playerTurnOrders.getFirst())) {
-            throw new IllegalStateException(player.getGameUser().getUsername() + ": it's not your turn, wait until its your turn to make a move");
-        }
-    }
-
-    @Transactional
-    public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
-        return Optional.of(gameRepository.findGameById(gameId)
-                .map(game -> {
-                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
-                            .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
-
-                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
-                            .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
-
-                    managePlayerTurns(player, playerTurnOrders);
-
-                    if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player, tileSetDtos, deckDto);
-                    } else {
-                        log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
-                                , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
-                    }
-
-                    log.info("Player with id {}, has score {}", player.getId(), player.getScore());
-                    return getNextPlayer(playerTurnOrders, game, player);
-                }).orElseThrow(() -> new NullPointerException("Game not found")));
-    }
-
-    private Player getNextPlayer(List<UUID> turnOrders, Game game, Player currentPlayer) {
-        Deque<UUID> nextPlayerTurnOrders = new ArrayDeque<>(turnOrders);
-
-        UUID firstPlayerId = nextPlayerTurnOrders.pollFirst();
-        if (firstPlayerId != null && !firstPlayerId.equals(currentPlayer.getId())) {
-            throw new IllegalStateException("It is not your turn: " + currentPlayer.getGameUser().getUsername());
-        }
-        nextPlayerTurnOrders.offerLast(firstPlayerId);
-
-        game.setPlayerTurnOrder(new ArrayList<>(nextPlayerTurnOrders));
-        gameRepository.save(game);
-
-        UUID nextPlayerId = nextPlayerTurnOrders.peekFirst();
-        Player nextPlayer = playerRepository.findPlayerById(nextPlayerId)
-                .orElseThrow(() -> new NullPointerException("Next player not found"));
-
-        playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
-                .ifPresent(player -> {
-                    nextPlayer.setTurnStartTime(LocalTime.now());
-                    nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
-                    playerRepository.save(nextPlayer);
-                });
-
-        log.info("The next turn is for player: {}, make a move within the time limit: from {} to {}",
-                nextPlayer.getGameUser().getUsername(), nextPlayer.getTurnStartTime(), nextPlayer.getTurnEndTime());
-        return nextPlayer;
-    }
-
-    private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
-        checkFirstTurn(player, deckDto);
-        playingFieldService.handlePlayerMoves(tileSetDtos);
-        playingFieldService.handlePlayerDeck(player.getId(), deckDto);
-        log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
-                player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
-                LocalTime.now());
-    }
-
-    private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {
-        Game game = player.getGame();
-        if (!game.getPlayerTurnHistory().contains(player.getId())) {
-            moveValidationService.isValidInitialMove(player.getId(), deckDto);
-            game.getPlayerTurnHistory().add(player.getId());
-            gameRepository.save(game);
-        }
-    }
-
-    public int getPlayerScore(UUID playerId) {
-        return playerRepository.findById(playerId)
-                .map(Player::getScore)
-                .orElseThrow(() -> new IllegalArgumentException("Player not found with ID: " + playerId));
-    }
-
-
-    @Transactional
-    public Optional<Tile> managePullingTileFromTilePool(UUID gameId, UUID playerId) {
-        Optional<Tile> drawnTileFromTilePool = Optional.empty();
-
-        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
-                .orElseThrow(() -> new IllegalStateException("Player turn orders not found"));
-
-        Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
-                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
-
-        // Haal het game object en de tile pool op die niet tot een deck behoort
-        Game game = gameRepository.findGameByIdWithTilePoolTilesWithDeckIsNull(gameId)
-                .orElseThrow(() -> new IllegalStateException("No tiles left in the tilepool of the game"));
-
-        if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-            drawnTileFromTilePool = drawTileFromTilePool(player, playerTurnOrders, game);
-        } else {
-            log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"
-                    , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
-        }
-
-        // Na de beurt moet het geupdatet worden zodat de volgende speler aan de beurt geraakt
-        getNextPlayer(playerTurnOrders, game, player);
-
-        return drawnTileFromTilePool;
-    }
-
-    private Optional<Tile> drawTileFromTilePool(Player player, List<UUID> playerTurnOrders, Game game){
-        // Check of je aan de beurt bent
-        managePlayerTurns(player, playerTurnOrders);
-
-        TilePool tilePool = game.getTilePool();
-        tilePool.shuffleTiles();
-
-        log.info("TILE POOL TILES: {}", tilePool.getTiles().size());
-
-        // Trek een tegel uit de pool
-        Tile drawnTile = tilePool.drawTile();
-
-        // Update de tegel en voeg deze toe aan het deck van de speler
-        Deck playerDeck = player.getDeck();
-        drawnTile.setDeck(playerDeck);
-        playerDeck.getTiles().add(drawnTile);
-
-        // Wijzigingen opslaan
-        tileRepository.save(drawnTile);
-        deckRepository.save(playerDeck);
-        tilePoolRepository.save(tilePool);
-
-        log.info("Player {} drew a tile: {} {}. Remaining tiles in pool: {}",
-                player.getGameUser().getUsername(),
-                drawnTile.getNumberValue(),
-                drawnTile.getTileColor(),
-                tilePool.getTiles().size()
-        );
-
-        String tilesInfo = tilePool.getTiles().stream()
-                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
-                .collect(Collectors.joining(", "));
-        log.info("The tilepool has the following tiles left after player pulled a tile: {}", tilesInfo);
-
-        String playerTilesInfo = playerDeck.getTiles().stream()
-                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
-                .collect(Collectors.joining(", "));
-        log.info("Player {} has the following tiles in their deck after pulling a tile: {}", player.getGameUser().getUsername(), playerTilesInfo);
-
-        return Optional.of(drawnTile);
     }
 }
