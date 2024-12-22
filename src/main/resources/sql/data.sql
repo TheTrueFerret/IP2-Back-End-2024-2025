@@ -103,5 +103,4 @@ VALUES
 
 INSERT INTO achievement (id, title, description) VALUES
     (1, 'First Move', 'Complete your first move'),
-    (2, 'Win Game', 'Win a game'),
-    (3, 'High Score', 'Achieve a high score of 1000 points');
+    (2, 'Participation', 'Play 10 games');

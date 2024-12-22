@@ -22,10 +22,11 @@ public class TurnService {
     private final DeckRepository deckRepository;
     private final TileRepository tileRepository;
     private final TilePoolRepository tilePoolRepository;
+    private final GameUserAchievementService gameUserAchievementService;
 
     private static final Logger log = LoggerFactory.getLogger(TurnService.class);
 
-    public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, DeckRepository deckRepository, TileRepository tileRepository, TilePoolRepository tilePoolRepository) {
+    public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, DeckRepository deckRepository, TileRepository tileRepository, TilePoolRepository tilePoolRepository, GameUserAchievementService gameUserAchievementService) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
         this.playingFieldService = playingFieldService;
@@ -33,6 +34,7 @@ public class TurnService {
         this.deckRepository = deckRepository;
         this.tileRepository = tileRepository;
         this.tilePoolRepository = tilePoolRepository;
+        this.gameUserAchievementService = gameUserAchievementService;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
@@ -100,6 +102,8 @@ public class TurnService {
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
+        gameUserAchievementService.checkAndAssignFirstMoveAchievement(player.getGameUser().getId());
+        gameUserAchievementService.checkAndAssignParticipationAchievement(player.getGameUser().getId());
     }
 
     private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {
