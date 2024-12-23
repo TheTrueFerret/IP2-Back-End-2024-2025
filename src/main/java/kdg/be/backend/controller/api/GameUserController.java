@@ -66,7 +66,6 @@ public class GameUserController {
                     achievement.getDateAchieved()
             );
         }).collect(Collectors.toList());
-        logger.info("Achievements for user " + userId + " retrieved");
         return ResponseEntity.ok(achievementDtos);
     }
 }
