@@ -176,27 +176,20 @@ class GameUserControllerTest {
                   ],
                   "playerDeckDto": {
                        "tilesInDeck": [
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000055",
-                           "numberValue": 10,
-                           "color": "BLUE",
-                           "gridColumn": 0,
-                           "gridRow": 0
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000056",
-                           "numberValue": 10,
-                           "color": "BLUE",
-                           "gridColumn": 0,
-                           "gridRow": 0
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000059",
-                           "numberValue": 25,
-                           "color": "BLACK",
-                           "gridColumn": 0,
-                           "gridRow": 0
-                         }
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000062",
+                          "numberValue": 5,
+                          "color": "ORANGE",
+                          "gridColumn": 0,
+                          "gridRow": 0
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000063",
+                          "numberValue": 5,
+                          "color": "RED",
+                          "gridColumn": 0,
+                          "gridRow": 0
+                        }
                        ]
                      }
                 }
@@ -309,27 +302,20 @@ class GameUserControllerTest {
               ],
               "playerDeckDto": {
                    "tilesInDeck": [
-                     {
-                       "tileId": "00000000-0000-0000-0000-000000000055",
-                       "numberValue": 10,
-                       "color": "BLUE",
-                       "gridColumn": 0,
-                       "gridRow": 0
-                     },
-                     {
-                       "tileId": "00000000-0000-0000-0000-000000000056",
-                       "numberValue": 10,
-                       "color": "BLUE",
-                       "gridColumn": 0,
-                       "gridRow": 0
-                     },
-                     {
-                       "tileId": "00000000-0000-0000-0000-000000000059",
-                       "numberValue": 25,
-                       "color": "BLACK",
-                       "gridColumn": 0,
-                       "gridRow": 0
-                     }
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000062",
+                          "numberValue": 5,
+                          "color": "ORANGE",
+                          "gridColumn": 0,
+                          "gridRow": 0
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000063",
+                          "numberValue": 5,
+                          "color": "RED",
+                          "gridColumn": 0,
+                          "gridRow": 0
+                        }
                    ]
                  }
             }
