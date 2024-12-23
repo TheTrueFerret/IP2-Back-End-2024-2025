@@ -21,7 +21,6 @@ public class GameService {
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final TilePoolRepository tilePoolRepository;
-
     private final TileService tileService;
     private final PlayerService playerService;
     private final GameTurnService gameTurnService;

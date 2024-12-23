@@ -27,8 +27,8 @@ VALUES ('00000000-0000-0000-0000-000000000055', 10, 'BLUE', 0,0, '00000000-0000-
 
 INSERT INTO tile (id, number_value, tile_color, grid_row, grid_column) VALUES
                 ('00000000-0000-0000-0000-000000000056', 10, 'BLUE', 0, 0),
-                ('00000000-0000-0000-0000-000000000057', 20, 'RED', 0, 0),
-                ('00000000-0000-0000-0000-000000000058', 20, 'ORANGE', 0, 0),
+                ('00000000-0000-0000-0000-000000000057', 35, 'RED', 0, 0), --voor testing
+                ('00000000-0000-0000-0000-000000000058', 35, 'ORANGE', 0, 0),
                 ('00000000-0000-0000-0000-000000000059', 25, 'BLACK', 0, 0);
 -- Insert into GameUser
 INSERT INTO game_user (id, username, avatar)
@@ -99,3 +99,8 @@ VALUES
 -- Gebruikers voor Lobby 5
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111115'), -- Player5 (host)
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111116'); -- Player8
+
+
+INSERT INTO achievement (id, title, description) VALUES
+    (1, 'First Move', 'Complete your first move'),
+    (2, 'Participation', 'Play 10 games');

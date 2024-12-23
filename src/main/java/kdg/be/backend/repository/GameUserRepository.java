@@ -20,4 +20,7 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
 
 
     boolean existsByUsername(String username);
+
+    @Query("SELECT COUNT(g) FROM Game g JOIN g.players p WHERE p.gameUser.id = :userId")
+    long countGamesPlayedByUser(UUID userId);
 }

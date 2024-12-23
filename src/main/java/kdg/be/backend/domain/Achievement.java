@@ -16,7 +16,6 @@ public class Achievement {
     private long id;
     private String title;
     private String description;
-    private boolean completed;
 
     @OneToMany(mappedBy = "achievement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameUserAchievement> users = new ArrayList<>();
@@ -24,9 +23,8 @@ public class Achievement {
     public Achievement() {
     }  // jpa
 
-    public Achievement(String title, String description, boolean completed) {
+    public Achievement(String title, String description) {
         this.title = title;
         this.description = description;
-        this.completed = completed;
     }
 }
