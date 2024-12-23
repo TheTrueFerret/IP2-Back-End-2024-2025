@@ -1,6 +1,7 @@
 package kdg.be.backend.service;
 
 
+import kdg.be.backend.controller.dto.user.FriendRequestDto;
 import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.controller.dto.user.UserFriendDto;
 import kdg.be.backend.domain.user.GameUser;
@@ -13,9 +14,13 @@ import kdg.be.backend.exception.UsersDoNotExistsException;
 import kdg.be.backend.repository.FriendRequestRepository;
 import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class GameUserService {
@@ -63,27 +68,38 @@ public class GameUserService {
     }
 
     //Accept friend request
-    public boolean addFriend(UUID recieverId, String senderFriendUsername) {
-        Optional<GameUser> optReceiver = gameUserRepository.findGameUserWithDetails(recieverId);
-        Optional<GameUser> optSender = gameUserRepository.findGameUserByUsername(senderFriendUsername);
-        FriendRequest friendRequest = null;
-        if (optSender.isEmpty()) {
-            throw new UserDoesNotExistException(recieverId.toString());
-        } else if (optReceiver.isEmpty()) {
-            throw new UserDoesNotExistException(senderFriendUsername);
-        } else {
-            friendRequest = friendRequestRepository.findFriendRequestBySenderAndReceiver(optSender.get().getId(), optReceiver.get().getId());
-            GameUser sender = optSender.get();
-            GameUser receiver = optReceiver.get();
-            if (friendRequest.getStatus() == RequestStatus.PENDING) {
-                addFriendToFriendList(receiver, senderFriendUsername);
-                addFriendToFriendList(sender, receiver.getUsername());
-                friendRequest.setStatus(RequestStatus.ACCEPTED);
-                friendRequestRepository.saveAndFlush(friendRequest);
-                return true;
-            }
-            throw new FriendRequestException("Friend request is not pending");
+    public boolean addFriend(UUID recieverId, String requestId) {
+        //Search friend request
+        Optional<FriendRequest> optFriendRequest = friendRequestRepository.findById(UUID.fromString(requestId));
+        if (optFriendRequest.isEmpty()) {
+            throw new FriendRequestException("Friend request not found");
         }
+
+        FriendRequest friendRequest = optFriendRequest.get();
+        GameUser sender = gameUserRepository.findGameUserWithDetails(friendRequest.getSender().getId()).orElseThrow(() -> new UserDoesNotExistException(friendRequest.getSender().getId().toString()));
+        GameUser receiver = gameUserRepository.findGameUserWithDetails(recieverId).orElseThrow(() -> new UserDoesNotExistException(recieverId.toString()));
+        if (friendRequest.getStatus() == RequestStatus.PENDING) {
+            addFriendToFriendList(receiver, sender.getUsername());
+            addFriendToFriendList(sender, receiver.getUsername());
+            friendRequest.setStatus(RequestStatus.ACCEPTED);
+            friendRequestRepository.saveAndFlush(friendRequest);
+            return true;
+        }
+        throw new FriendRequestException("Friend request is not pending");
+    }
+
+    public boolean declineFriendRequest(UUID userId, String requestId) {
+        Optional<FriendRequest> optFriendRequest = friendRequestRepository.findById(UUID.fromString(requestId));
+        if (optFriendRequest.isEmpty()) {
+            throw new FriendRequestException("Friend request not found");
+        }
+        FriendRequest friendRequest = optFriendRequest.get();
+        if (friendRequest.getStatus() == RequestStatus.PENDING || friendRequest.getReceiver() == getGameUser(userId)) {
+            friendRequest.setStatus(RequestStatus.DECLINED);
+            friendRequestRepository.saveAndFlush(friendRequest);
+            return true;
+        }
+        throw new FriendRequestException("User not allowed to decline friend request.");
     }
 
     //Creation of a friend request
@@ -95,6 +111,10 @@ public class GameUserService {
         } else if (optReceiver.isEmpty()) {
             throw new UserDoesNotExistException(friendUsername);
         } else {
+            FriendRequest existingFriendRequest = friendRequestRepository.findFriendRequestBySenderAndReceiver(optSender.get().getId(), optReceiver.get().getId());
+            if (existingFriendRequest != null) {
+                throw new FriendRequestException("Friend request already exists");
+            }
             GameUser sender = optSender.get();
             GameUser receiver = optReceiver.get();
             FriendRequest friendRequest = new FriendRequest(sender, receiver, RequestStatus.PENDING);
@@ -103,17 +123,19 @@ public class GameUserService {
         return true;
     }
 
-    public String getFriendRequests(UUID id) {
+    public List<FriendRequestDto> getFriendRequests(UUID id) {
         Optional<List<FriendRequest>> optionalGameUser = friendRequestRepository.findFriendRequestsByReceiver_Id(id);
         if (optionalGameUser.get().isEmpty()) {
             throw new FriendRequestException("No friend requests found");
         }
         List<FriendRequest> friendRequests = optionalGameUser.get();
-        StringBuilder stringBuilder = new StringBuilder();
+        List<FriendRequestDto> friendRequestDtos = new ArrayList<>();
         for (FriendRequest friendRequest : friendRequests) {
-            stringBuilder.append(friendRequest.getSender().getUsername()).append(" ");
+            if (friendRequest.getStatus() == RequestStatus.PENDING) {
+                friendRequestDtos.add(new FriendRequestDto(friendRequest.getId().toString(), friendRequest.getSender().getUsername(), friendRequest.getSender().getId().toString()));
+            }
         }
-        return stringBuilder.toString();
+        return friendRequestDtos;
     }
 
     public void updateGameUserFriendList(UUID userId, List<GameUser> friendList) {
@@ -148,16 +170,25 @@ public class GameUserService {
         return gameUserDtos;
     }
 
+
+    //Usage of Pageable zodat er maar 20 resultaten worden getoond
+    //Zorgt ervoor dat niet heel de db wordt geladen in memory
     public List<UserFriendDto> getGameUsersWithName(UUID userId, String username) {
-        List<GameUser> gameUser = gameUserRepository.findGameUsersByUsernameIsContainingIgnoreCase(username);
-        if (gameUser.isEmpty()) {
-            throw new UsersDoNotExistsException("No users found with name " + username);
+        List<GameUserDto> users;
+
+        if (!username.isEmpty() || username.isBlank()) {
+            users = gameUserRepository.findGameUsersByUsernameIsContainingIgnoreCase(username)
+                    .stream().limit(20)
+                    .map(GameUserDto::new)
+                    .collect(Collectors.toList());
+        } else {
+            users = gameUserRepository.findAll()
+                    .stream().limit(20)
+                    .map(GameUserDto::new)
+                    .collect(Collectors.toList());
         }
-        List<UserFriendDto> userFriendDto = new ArrayList<>();
-        for (GameUser user : gameUser) {
-            userFriendDto.add(new UserFriendDto(user, isFriend(userId, user)));
-        }
-        return userFriendDto;
+        List<UserFriendDto> userFriendDtos = users.stream().map(user -> new UserFriendDto(getGameUser(user.getId()), isFriend(userId, getGameUser(user.getId())))).collect(Collectors.toList());
+        return userFriendDtos;
     }
 
     public boolean isFriend(UUID userId, GameUser user) {
@@ -167,5 +198,18 @@ public class GameUserService {
             return friendList.stream().findAny().filter(friend -> friend.getId().equals(user.getId())).isPresent();
         }
         return false;
+    }
+
+    public List<UserFriendDto> getFriends(UUID userId) {
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(userId).orElse(null);
+        if (gameUser != null) {
+            List<GameUser> friendList = gameUser.getFriendList();
+            List<UserFriendDto> userFriendDtos = new ArrayList<>();
+            for (GameUser friend : friendList) {
+                userFriendDtos.add(new UserFriendDto(friend, true));
+            }
+            return userFriendDtos;
+        }
+        throw new UserDoesNotExistException(userId.toString());
     }
 }

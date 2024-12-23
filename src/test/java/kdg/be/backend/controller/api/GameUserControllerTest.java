@@ -92,8 +92,8 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happeGetGameUsersByName() throws Exception {
-        mockMvc.perform(get("/api/gameuser/users/Player")
-                        .contentType("application/json").header("id", "fbe4a1d1-1c44-49b8-911f-7bc77a78b001"))
+        mockMvc.perform(get("/api/gameuser/users/Player?uuid=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+                        .contentType("application/json"))
                 .andExpect(status().isOk()).andDo(result -> {
                     String content = result.getResponse().getContentAsString();
                     System.out.println("Response content: " + content);
@@ -106,9 +106,45 @@ class GameUserControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappeGetGameUsersByName() throws Exception {
         mockMvc.perform(get("/api/gameuser/users/testing")
-                        .contentType("application/json")
-                        .header("id", "fbe4a1d1-1c44-49b8-911f-7bc77a78b001"))
+                        .contentType("application/json"))
                 .andExpect(status().isNotFound());
+    }
+
+    //Get friends of Speler 3 return 1
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void happyGetOneFriends() throws Exception {
+        mockMvc.perform(get("/api/gameuser/friends?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
+                        .contentType("application/json"))
+                .andExpect(status().isOk());
+    }
+
+    //Get friends of Speler 4 return 0
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void happyGetNoFriends() throws Exception {
+        mockMvc.perform(get("/api/gameuser/friends?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+                        .contentType("application/json"))
+                .andExpect(status().isOk());
+    }
+
+    //Get friends of no player return bad request
+    //USER DOESN'T EXIST
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void unHappyGetFriendsWrongUUID() throws Exception {
+        mockMvc.perform(get("/api/gameuser/friends?userId=fbe4a1d1-49b8-911f-902f-7bc77a78b001")
+                        .contentType("application/json"))
+                .andExpect(status().isNotFound());
+    }
+
+    //Get friends of no player return bad request
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void unHappyGetFriends() throws Exception {
+        mockMvc.perform(get("/api/gameuser/friends")
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
     }
 
 
