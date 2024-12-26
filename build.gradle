@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'jacoco'
+    id 'checkstyle'
 }
 
 group = 'kdg.be'
@@ -79,4 +80,17 @@ jacocoTestReport {
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+}
+
+checkstyle {
+    toolVersion = '10.12.2'
+    configFile = file('checkstyle-config/checkstyle/checkstyle.xml')
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+    ignoreFailures = true
 }
