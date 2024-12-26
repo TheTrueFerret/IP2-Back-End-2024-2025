@@ -105,9 +105,9 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappeGetGameUsersByName() throws Exception {
-        mockMvc.perform(get("/api/gameuser/users/testing")
+        mockMvc.perform(get("/api/gameuser/users/iffyUh?uuid=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     //Get friends of Speler 3 return 1
@@ -152,7 +152,7 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happyFriendRequest() throws Exception {
-        mockMvc.perform(post("/api/gameuser/friendRequest/Player4?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(post("/api/gameuser/friendRequest/Player10?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
     }
@@ -177,7 +177,7 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happyFriend() throws Exception {
-        mockMvc.perform(post("/api/gameuser/friend/Player3?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
+        mockMvc.perform(post("/api/gameuser/friendRequest/accept/00000000-0000-0000-0000-000000000001?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
     }
@@ -186,7 +186,7 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappyFriend() throws Exception {
-        mockMvc.perform(post("/api/gameuser/friend/Player3?userId=87afee3d-2c6b-4876-8f2b-9e1d6f41c503")
+        mockMvc.perform(post("/api/gameuser/friendRequest/accept/00000000-0000-0000-0000-000000000002?userId=87afee3d-2c6b-4876-8f2b-9e1d6f41c503")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
     }
