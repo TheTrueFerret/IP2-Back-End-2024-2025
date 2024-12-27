@@ -109,7 +109,20 @@ VALUES
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111115'), -- Player5 (host)
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111116'); -- Player8
 
-
 INSERT INTO achievement (id, title, description)
 VALUES (1, 'First Move', 'Complete your first move'),
        (2, 'Participation', 'Play 10 games');
+
+-- Insert friend requests
+INSERT INTO friend_request (id, sender_id, receiver_id, status)
+VALUES
+-- Friend request already exists
+('00000000-0000-0000-0000-000000000001', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001', '4e861d2e-5f89-47b1-91e4-a3aef9c97b02',
+ 'PENDING'),
+-- Friend request is not pending
+('00000000-0000-0000-0000-000000000002', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001', '87afee3d-2c6b-4876-8f2b-9e1d6f41c503',
+ 'ACCEPTED');
+
+INSERT INTO game_user_friend_list (friend_list_id, game_user_id)
+VALUES ('fbe4a1d1-1c44-49b8-911f-7bc77a78b001', '87afee3d-2c6b-4876-8f2b-9e1d6f41c503'),
+       ('87afee3d-2c6b-4876-8f2b-9e1d6f41c503', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001');

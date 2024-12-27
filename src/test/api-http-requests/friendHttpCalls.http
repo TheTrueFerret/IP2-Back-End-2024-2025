@@ -1,0 +1,50 @@
+### GET USER "test"
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=test&password=test&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
+### GET USER "yannick"
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=yannick&password=yannick&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
+### Register test user
+POST http://localhost:8080/api/gameuser/user
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "id": "11dfb3b1-092d-4add-9dfd-f11377cc5eff",
+  "username": "test"
+}
+
+###Register yannick user
+POST http://localhost:8080/api/gameuser/user
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "id": "dfd4357c-1fce-463a-aa77-1a13093e0cd7",
+  "username": "yannick"
+}
+
+### LOGIN AS TEST AND SEND FRIEND REQUEST TO YANNICK
+POST http://localhost:8080/api/gameuser/friendRequest/yannick?userId=11dfb3b1-092d-4add-9dfd-f11377cc5eff
+Authorization: Bearer {{access_token}}
+
+### LOGIN AS YANNICK AND ACCEPT FRIEND REQUEST FROM TEST
+POST http://localhost:8080/api/gameuser/friend/test?userId=dfd4357c-1fce-463a-aa77-1a13093e0cd7
+Authorization: Bearer {{access_token}}
+

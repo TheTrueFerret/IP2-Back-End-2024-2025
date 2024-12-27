@@ -1,4 +1,4 @@
-package kdg.be.backend.domain;
+package kdg.be.backend.domain.user;
 
 import jakarta.persistence.*;
 import kdg.be.backend.domain.chatting.ChatHistory;
@@ -22,7 +22,7 @@ public class GameUser {
     @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameUserAchievement> achievements = new ArrayList<>();
 
-    @OneToMany
+    @ManyToMany
     private List<GameUser> friendList;
     @OneToOne(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatHistory chatHistory;

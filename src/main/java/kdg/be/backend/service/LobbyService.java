@@ -1,6 +1,6 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.Lobby;
 import kdg.be.backend.domain.enums.LobbyStatus;
 import kdg.be.backend.repository.GameRepository;
