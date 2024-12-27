@@ -609,7 +609,7 @@ class TurnControllerTest {
                       },
                       {
                         "tileId": "00000000-0000-0000-0000-000000000057",
-                        "numberValue": 20,
+                        "numberValue": 35,
                         "color": "RED",
                         "gridColumn": 0,
                         "gridRow": 0
@@ -623,7 +623,7 @@ class TurnControllerTest {
                       },
                       {
                         "tileId": "00000000-0000-0000-0000-000000000059",
-                        "numberValue": 35,
+                        "numberValue": 25,
                         "color": "BLACK",
                         "gridColumn": 0,
                         "gridRow": 0
