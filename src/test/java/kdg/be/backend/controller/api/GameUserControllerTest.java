@@ -482,7 +482,7 @@ class GameUserControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void unHappyFriendRequests() throws Exception {
-        mockMvc.perform(get("/api/gameuser/friendRequests?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
+        mockMvc.perform(get("/api/gameuser/friendRequests?userId=1c14c66a-b034-4531-a1e2-dfb07e7f5707")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
     }
