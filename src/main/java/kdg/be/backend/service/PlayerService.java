@@ -1,6 +1,7 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.DeckRepository;
 import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.PlayerRepository;

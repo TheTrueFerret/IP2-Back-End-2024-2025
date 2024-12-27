@@ -1,11 +1,14 @@
 package kdg.be.backend.controller.api;
 
+import kdg.be.backend.controller.dto.game.AchievementDto;
 import kdg.be.backend.controller.dto.user.FriendRequestDto;
 import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.controller.dto.user.UserFriendDto;
+import kdg.be.backend.domain.user.GameUserAchievement;
 import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.UserDoesNotExistException;
 import kdg.be.backend.exception.UsersDoNotExistsException;
+import kdg.be.backend.service.GameUserAchievementService;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static java.util.logging.Level.INFO;
 
 @RestController
 @RequestMapping("/api/gameuser")

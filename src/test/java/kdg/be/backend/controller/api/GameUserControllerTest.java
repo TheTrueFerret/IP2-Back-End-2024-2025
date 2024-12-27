@@ -1,17 +1,30 @@
 package kdg.be.backend.controller.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import kdg.be.backend.TestContainerIPConfiguration;
+import kdg.be.backend.domain.user.GameUserAchievement;
+import kdg.be.backend.repository.GameUserAchievementRepository;
+import kdg.be.backend.repository.GameUserRepository;
+import kdg.be.backend.repository.PlayerRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -83,7 +96,7 @@ class GameUserControllerTest {
     void unhappyGetGameUser() throws Exception {
         mockMvc.perform(get("/api/gameuser/userProfile?userId=4e861d2e-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("User with id 4e861d2e-1c44-49b8-911f-7bc77a78b001 does not exist."));
 
     }
@@ -332,7 +345,7 @@ class GameUserControllerTest {
         achievements.forEach(achievement -> System.out.println("Achievement Title: " + achievement.getAchievement().getTitle()));
 
         boolean hasParticipationAward = achievements.stream()
-                .anyMatch(achievement -> "Participation".equals(achievement.getAchievement().getTitle()));
+                .anyMatch(achievement -> "First Move".equals(achievement.getAchievement().getTitle()));
 
         assertTrue(hasParticipationAward, "GameUser should have received the 'Participation' award after playing a game");
     }

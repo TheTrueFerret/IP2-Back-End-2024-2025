@@ -1,11 +1,12 @@
 package kdg.be.backend.service;
 
 
-import jdk.jshell.spi.ExecutionControl;
-import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.domain.GameUser;
+import kdg.be.backend.controller.dto.user.FriendRequestDto;
+import kdg.be.backend.controller.dto.user.GameUserDto;
+import kdg.be.backend.controller.dto.user.UserFriendDto;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.FriendRequest;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.user.RequestStatus;
 import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.UserDoesNotExistException;
@@ -13,9 +14,6 @@ import kdg.be.backend.exception.UsersDoNotExistsException;
 import kdg.be.backend.repository.FriendRequestRepository;
 import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -37,8 +35,7 @@ public class GameUserService {
     }
 
     public void createGameUser(GameUserDto gameUserDto) {
-        GameUser gameUser = new GameUser(gameUserDto.getId(), gameUserDto.getUsername());
-        ChatHistory chatHistory = new ChatHistory(gameUser, new ArrayList<>());
+        GameUser gameUser = new GameUser(gameUserDto.getId(), gameUserDto.getUsername());ChatHistory chatHistory = new ChatHistory(gameUser, new ArrayList<>());
         gameUser.setChatHistory(chatHistory);
 
         gameUserRepository.saveAndFlush(gameUser);

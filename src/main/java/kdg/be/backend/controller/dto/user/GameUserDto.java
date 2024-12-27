@@ -1,6 +1,6 @@
 package kdg.be.backend.controller.dto.user;
 
-import kdg.be.backend.controller.dto.AchievementDto;
+import kdg.be.backend.controller.dto.game.AchievementDto;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.user.GameUserAchievement;
 import lombok.Getter;
@@ -45,7 +45,7 @@ public class GameUserDto {
             gameUser.getFriendList().forEach(friend -> this.friendList.add(new GameUserDto(friend)));
         }
         if (!gameUser.getAchievements().isEmpty()) {
-            gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
+            gameUser.getAchievements().forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(),achievement.getDateAchieved())));
         }
         this.gamesPlayed = gamesPlayed;
         this.gamesWon = gamesWon;
@@ -56,6 +56,6 @@ public class GameUserDto {
         this.username = gameUser.getUsername();
         this.avatar = gameUser.getAvatar();
         this.achievements = new ArrayList<>();
-        achievements.forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(), achievement.getAchievement().isCompleted())));
+        achievements.forEach(achievement -> this.achievements.add(new AchievementDto(achievement.getAchievement().getTitle(), achievement.getAchievement().getDescription(),achievement.getDateAchieved())));
     }
 }
