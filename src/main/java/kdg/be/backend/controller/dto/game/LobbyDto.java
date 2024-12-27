@@ -1,4 +1,4 @@
-package kdg.be.backend.controller.dto;
+package kdg.be.backend.controller.dto.game;
 
 import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.domain.enums.LobbyStatus;

@@ -18,8 +18,10 @@ public class Player {
     private LocalTime turnStartTime;
     private LocalTime turnEndTime;
     private LocalTime turnMoveTime;
+    private int score;
 
-     // relaties
+
+    // relaties
     @ManyToOne(fetch = FetchType.LAZY)
     private GameUser gameUser;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,5 +36,20 @@ public class Player {
         this.gameUser = gameUser;
         this.deck = deck;
         this.game = game;
+        updateScore();
+    }
+
+    public void updateScore() {
+        if (deck != null && deck.getTiles() != null) {
+            this.score = calculateScoreFromDeck();
+        } else {
+            this.score = 0;
+        }
+    }
+
+    private int calculateScoreFromDeck() {
+        return deck.getTiles().stream()
+                .mapToInt(Tile::getNumberValue)
+                .sum();
     }
 }

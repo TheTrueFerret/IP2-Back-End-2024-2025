@@ -1,14 +1,12 @@
 package kdg.be.backend.repository;
 
 
-import kdg.be.backend.domain.user.GameUser;
-import org.springframework.data.domain.Pageable;
+import kdg.be.backend.domain.GameUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,4 +33,5 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
             "LEFT JOIN FETCH g.friendList " +
             "WHERE LOWER(g.username) LIKE LOWER(CONCAT('%', :username, '%'))")
     List<GameUser> findGameUsersByUsernameIsContainingIgnoreCase(@Param("username") String username);
+
 }

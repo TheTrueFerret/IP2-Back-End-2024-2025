@@ -1,10 +1,9 @@
 package kdg.be.backend.service;
 
 
-import kdg.be.backend.controller.dto.user.FriendRequestDto;
-import kdg.be.backend.controller.dto.user.GameUserDto;
-import kdg.be.backend.controller.dto.user.UserFriendDto;
-import kdg.be.backend.domain.user.GameUser;
+import jdk.jshell.spi.ExecutionControl;
+import kdg.be.backend.controller.dto.GameUserDto;
+import kdg.be.backend.domain.GameUser;
 import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.FriendRequest;
 import kdg.be.backend.domain.user.RequestStatus;
