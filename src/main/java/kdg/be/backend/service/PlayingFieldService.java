@@ -21,16 +21,17 @@ public class PlayingFieldService {
     private final DeckRepository deckRepository;
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
-
+    private final MoveValidationService moveValidationService;
     private static final Logger log = LoggerFactory.getLogger(PlayingFieldService.class);
 
-    public PlayingFieldService(PlayingFieldRepository playingFieldRepository, TileSetRepository tileSetRepository, TileRepository tileRepository, DeckRepository deckRepository, PlayerRepository playerRepository, GameRepository gameRepository) {
+    public PlayingFieldService(PlayingFieldRepository playingFieldRepository, TileSetRepository tileSetRepository, TileRepository tileRepository, DeckRepository deckRepository, PlayerRepository playerRepository, GameRepository gameRepository, MoveValidationService moveValidationService) {
         this.playingFieldRepository = playingFieldRepository;
         this.tileSetRepository = tileSetRepository;
         this.tileRepository = tileRepository;
         this.deckRepository = deckRepository;
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
+        this.moveValidationService = moveValidationService;
     }
 
     public PlayingField getPlayingFieldByGameId(UUID gameId) {
@@ -98,7 +99,8 @@ public class PlayingFieldService {
 
     @Transactional
     public void handlePlayerDeck(UUID playerId, PlayerMoveDeckDto playerDeckDto) {
-        // Retrieve the player's deck via the PlayerRepository
+        moveValidationService.validateTileAttributes(playerDeckDto);
+
         Player player = playerRepository.findPlayerById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found for ID: " + playerId));
         Deck deck = playerRepository.findPlayerById(playerId)
