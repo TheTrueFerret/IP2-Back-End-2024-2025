@@ -2,8 +2,6 @@ package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
-import kdg.be.backend.domain.enums.TileColor;
-import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -138,5 +135,20 @@ public class GameService {
         }
 
         return gameId;
+    }
+
+    public void getGameLeaderboard(UUID gameId) {
+        Game game = gameRepository.findGameById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
+
+        if (game.getGameState() != GameState.ENDED) {
+            throw new IllegalStateException("Game is not finished yet, cannot show leaderboard");
+        }
+
+        List<Player> players = playerService.getPlayersOfGame(gameId);
+        players.sort(Comparator.comparingInt(Player::getScore));
+        log.info("Leaderboard for game with id: {}", gameId);
+        players.forEach(player -> log.info("Player: {} has {} tiles left with a score of {}",
+                player.getGameUser().getUsername(), player.getDeck().getTiles().size(), player.getScore()));
     }
 }

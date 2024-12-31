@@ -20,7 +20,6 @@ public class Player {
     private LocalTime turnMoveTime;
     private int score;
 
-
     // relaties
     @ManyToOne(fetch = FetchType.LAZY)
     private GameUser gameUser;

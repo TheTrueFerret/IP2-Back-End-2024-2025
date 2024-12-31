@@ -15,26 +15,35 @@ import java.util.stream.Collectors;
 
 @Service
 public class TurnService {
+    // repositories
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
-    private final PlayingFieldService playingFieldService;
-    private final MoveValidationService moveValidationService;
     private final DeckRepository deckRepository;
     private final TileRepository tileRepository;
     private final TilePoolRepository tilePoolRepository;
-    private final GameUserAchievementService gameUserAchievementService;
 
+    // services
+    private final PlayingFieldService playingFieldService;
+    private final MoveValidationService moveValidationService;
+    private final GameUserAchievementService gameUserAchievementService;
+    private final PlayerService playerService;
+
+    // other
     private static final Logger log = LoggerFactory.getLogger(TurnService.class);
 
-    public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, DeckRepository deckRepository, TileRepository tileRepository, TilePoolRepository tilePoolRepository, GameUserAchievementService gameUserAchievementService) {
+    public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, DeckRepository deckRepository,
+                       TileRepository tileRepository, TilePoolRepository tilePoolRepository, PlayingFieldService playingFieldService,
+                       MoveValidationService moveValidationService, GameUserAchievementService gameUserAchievementService,
+                       PlayerService playerService) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
-        this.playingFieldService = playingFieldService;
-        this.moveValidationService = moveValidationService;
         this.deckRepository = deckRepository;
         this.tileRepository = tileRepository;
         this.tilePoolRepository = tilePoolRepository;
+        this.playingFieldService = playingFieldService;
+        this.moveValidationService = moveValidationService;
         this.gameUserAchievementService = gameUserAchievementService;
+        this.playerService = playerService;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
@@ -96,14 +105,22 @@ public class TurnService {
     }
 
     private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        // First turn check
         checkFirstTurn(player, deckDto);
+
+        // Handle player moves
         playingFieldService.handlePlayerMoves(tileSetDtos);
         playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
                 LocalTime.now());
+
+        // Checks
         gameUserAchievementService.checkAndAssignFirstMoveAchievement(player.getGameUser().getId());
         gameUserAchievementService.checkAndAssignParticipationAchievement(player.getGameUser().getId());
+
+        // Check if the player has no tiles left in their deck
+        playerService.checkPlayerTiles(player);
     }
 
     private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {

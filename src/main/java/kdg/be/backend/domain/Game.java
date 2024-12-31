@@ -14,13 +14,17 @@ public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+    private GameState gameState;
     private int turnTime;
     private int startTileAmount;
     private LocalDateTime dateTime;
+
     @ElementCollection
     private List<UUID> playerTurnOrder;
     @ElementCollection
     private List<UUID> playerTurnHistory;
+    @ElementCollection
+    private List<UUID> playerScores;
 
     // relaties
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,7 +33,7 @@ public class Game {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private TilePool tilePool;
 
-    @OneToMany(mappedBy = "game",  cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players;
 
     @ManyToOne
@@ -48,5 +52,7 @@ public class Game {
         this.playerTurnOrder = new ArrayList<>();
         this.lobby = lobby;
         this.playerTurnHistory = new ArrayList<>();
+        this.gameState = GameState.ONGOING;
+        this.playerScores = new ArrayList<>();
     }
 }

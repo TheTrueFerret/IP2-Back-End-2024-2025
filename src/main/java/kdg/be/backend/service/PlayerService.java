@@ -99,4 +99,42 @@ public class PlayerService {
         }
         return players;
     }
+
+    /**
+     * Check if the player has won the game
+     * (= if the player has no tiles left in his deck)
+     * TODO add achievement for winning the game
+     */
+    @Transactional
+    public void checkPlayerTiles(Player player) {
+        if (player.getDeck().getTiles().isEmpty()) {
+            Game game = player.getGame();
+            game.setGameState(GameState.ENDED);
+            gameRepository.save(game);
+
+            log.info("Game has ended, {} is the first player to place all their tiles on the playing field!", player.getGameUser().getUsername());
+            calculatePlayerScores(game);
+        }
+    }
+
+    /*
+     * Calculate the scores of the players at the end of the game
+     * (If player wins = the game ends so calculate all the players their scores)
+     */
+    public void calculatePlayerScores(Game game) {
+        int winnerScore = 0;
+
+        if (game.getGameState() == GameState.ENDED) {
+            for (Player player : game.getPlayers()) {
+                int score = player.getDeck().getTiles().stream()
+                        .mapToInt(Tile::getNumberValue)
+                        .sum();
+                player.setScore(-score);
+                winnerScore += score;
+                playerRepository.save(player);
+                log.info("Player {} has a score of {}", player.getGameUser().getUsername(), player.getScore());
+            }
+            log.info("The winner of the game, has a score of {}", winnerScore);
+        }
+    }
 }
