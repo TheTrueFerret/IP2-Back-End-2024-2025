@@ -24,12 +24,14 @@ public class PlayerService {
     private final DeckRepository deckRepository;
 
     private static final Logger log = LoggerFactory.getLogger(PlayerService.class);
+    private final GameService gameService;
 
-    public PlayerService(PlayerRepository playerRepository, TileRepository tileRepository, GameRepository gameRepository, DeckRepository deckRepository) {
+    public PlayerService(PlayerRepository playerRepository, TileRepository tileRepository, GameRepository gameRepository, DeckRepository deckRepository, GameService gameService) {
         this.playerRepository = playerRepository;
         this.tileRepository = tileRepository;
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
+        this.gameService = gameService;
     }
 
     public UUID getPlayerIdByUserId(UUID userId) {
@@ -106,14 +108,14 @@ public class PlayerService {
      * TODO add achievement for winning the game
      */
     @Transactional
-    public void checkPlayerTiles(Player player) {
-        if (player.getDeck().getTiles().isEmpty()) {
-            Game game = player.getGame();
+    public void checkPlayerTiles(Player winner) {
+        if (winner.getDeck().getTiles().isEmpty()) {
+            Game game = winner.getGame();
             game.setGameState(GameState.ENDED);
             gameRepository.save(game);
 
-            log.info("Game has ended, {} is the first player to place all their tiles on the playing field!", player.getGameUser().getUsername());
-            calculatePlayerScores(game);
+            log.info("Game has ended, {} is the first player to place all their tiles on the playing field!", winner.getGameUser().getUsername());
+            calculatePlayerScores(game, winner);
         }
     }
 
@@ -121,20 +123,27 @@ public class PlayerService {
      * Calculate the scores of the players at the end of the game
      * (If player wins = the game ends so calculate all the players their scores)
      */
-    public void calculatePlayerScores(Game game) {
+    public void calculatePlayerScores(Game game, Player winner) {
         int winnerScore = 0;
 
         if (game.getGameState() == GameState.ENDED) {
             for (Player player : game.getPlayers()) {
-                int score = player.getDeck().getTiles().stream()
-                        .mapToInt(Tile::getNumberValue)
-                        .sum();
-                player.setScore(-score);
-                winnerScore += score;
-                playerRepository.save(player);
-                log.info("Player {} has a score of {}", player.getGameUser().getUsername(), player.getScore());
+                if (!winner.equals(player)) {
+                    int score = player.getDeck().getTiles().stream()
+                            .mapToInt(Tile::getNumberValue)
+                            .sum();
+
+                    player.setScore(-score);
+                    winnerScore += score;
+
+                    playerRepository.save(player);
+                    log.info("Player {} has a score of {}", player.getGameUser().getUsername(), player.getScore());
+                }
             }
-            log.info("The winner of the game, has a score of {}", winnerScore);
+
+            winner.setScore(winnerScore);
+            playerRepository.save(winner);
+            gameService.setGameLeaderboard(game);
         }
     }
 }

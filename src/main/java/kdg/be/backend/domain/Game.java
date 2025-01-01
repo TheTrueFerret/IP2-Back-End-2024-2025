@@ -24,7 +24,7 @@ public class Game {
     @ElementCollection
     private List<UUID> playerTurnHistory;
     @ElementCollection
-    private List<UUID> playerScores;
+    private List<UUID> playerLeaderboard;
 
     // relaties
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,6 +53,6 @@ public class Game {
         this.lobby = lobby;
         this.playerTurnHistory = new ArrayList<>();
         this.gameState = GameState.ONGOING;
-        this.playerScores = new ArrayList<>();
+        this.playerLeaderboard = new ArrayList<>();
     }
 }

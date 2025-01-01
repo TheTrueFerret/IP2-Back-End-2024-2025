@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,5 +34,10 @@ public class GameController {
         return gameService.getGameIdByLobbyIdAndUserId(lobbyId, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/{gameId}/leaderboard")
+    public ResponseEntity<List<UUID>> getGameIdByLobbyIdAndUserId(@PathVariable UUID gameId) {
+        return ResponseEntity.ok(gameService.getGameLeaderboard(gameId));
     }
 }

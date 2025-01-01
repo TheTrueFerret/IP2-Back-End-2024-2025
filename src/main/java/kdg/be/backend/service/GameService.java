@@ -14,15 +14,19 @@ import java.util.stream.Collectors;
 
 @Service
 public class GameService {
+    // repositories
     private final TileRepository tileRepository;
     private final LobbyRepository lobbyRepository;
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final TilePoolRepository tilePoolRepository;
+
+    // services
     private final TileService tileService;
     private final PlayerService playerService;
     private final GameTurnService gameTurnService;
 
+    // other
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
     public GameService(TileRepository tileRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, TilePoolRepository tilePoolRepository, TileService tileService, PlayerService playerService, GameTurnService gameTurnService) {
@@ -137,17 +141,32 @@ public class GameService {
         return gameId;
     }
 
-    public void getGameLeaderboard(UUID gameId) {
+    public List<UUID> getGameLeaderboard(UUID gameId) {
         Game game = gameRepository.findGameById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
+                .orElseThrow(() -> new IllegalArgumentException("No game found with id: " + gameId));
 
         if (game.getGameState() != GameState.ENDED) {
-            throw new IllegalStateException("Game is not finished yet, cannot show leaderboard");
+            throw new IllegalStateException("Game is not finished yet");
         }
 
-        List<Player> players = playerService.getPlayersOfGame(gameId);
+        return game.getPlayerLeaderboard();
+    }
+
+    public void setGameLeaderboard(Game game){
+        if (game.getGameState() != GameState.ENDED) {
+            throw new IllegalStateException("Game is not finished yet, cannot create leaderboard");
+        }
+
+        List<Player> players = game.getPlayers();
         players.sort(Comparator.comparingInt(Player::getScore));
-        log.info("Leaderboard for game with id: {}", gameId);
+
+        List<UUID> playerIds = players.stream()
+                .map(Player::getId)
+                .collect(Collectors.toList());
+        game.setPlayerLeaderboard(playerIds);
+        gameRepository.save(game);
+
+        log.info("Leaderboard for game with id: {}", game.getId());
         players.forEach(player -> log.info("Player: {} has {} tiles left with a score of {}",
                 player.getGameUser().getUsername(), player.getDeck().getTiles().size(), player.getScore()));
     }

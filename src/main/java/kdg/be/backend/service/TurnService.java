@@ -58,7 +58,7 @@ public class TurnService {
         return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
 
-                    if (game.getGameState() != GameState.ENDED){
+                    if (game.getGameState() != GameState.ENDED) {
                         throw new IllegalStateException("Game has already ended!");
                     }
 
