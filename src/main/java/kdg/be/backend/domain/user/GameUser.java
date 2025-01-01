@@ -1,7 +1,7 @@
 package kdg.be.backend.domain.user;
 
 import jakarta.persistence.*;
-import kdg.be.backend.domain.chatting.ChatHistory;
+import kdg.be.backend.domain.chatting.Chat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,17 +24,18 @@ public class GameUser {
 
     @ManyToMany
     private List<GameUser> friendList;
-    @OneToOne(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ChatHistory chatHistory;
+
+    @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chat> chats;
 
     public GameUser() {
     }  // jpa
 
-    public GameUser(String username, String avatar, List<GameUser> friendList, ChatHistory chatHistory) {
+    public GameUser(String username, String avatar, List<GameUser> friendList, List<Chat> chats) {
         this.username = username;
         this.avatar = avatar;
         this.friendList = friendList;
-        this.chatHistory = chatHistory;
+        this.chats = chats;
     }
 
     public GameUser(UUID  id, String username) {
@@ -43,6 +44,6 @@ public class GameUser {
         this.avatar = "default.png";
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
-        this.chatHistory = new ChatHistory(this, new ArrayList<>());
+        this.chats = new ArrayList<>();
     }
 }

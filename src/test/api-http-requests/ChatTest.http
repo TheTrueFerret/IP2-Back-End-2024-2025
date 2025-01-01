@@ -1,0 +1,28 @@
+###
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=test&password=test&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
+### Create a new chat thread
+POST http://localhost:8080/api/chat/createThread/00000000-0000-0000-0000-000000000008
+Content-Type: application/x-www-form-urlencoded
+Authorization: Bearer {{access_token}}
+
+> {% client.global.set("threadId", response.body); %}
+
+### Send a message to the chatbot
+# @settings timeout 1800000
+POST http://localhost:8080/api/chat/sendMessage
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "question": "What is a trump tile?",
+  "threadId": "{{threadId}}"
+}
