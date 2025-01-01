@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,6 +57,11 @@ public class TurnService {
     public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
         return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
+
+                    if (game.getGameState() != GameState.ENDED){
+                        throw new IllegalStateException("Game has already ended!");
+                    }
+
                     Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
                             .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
 
@@ -63,12 +69,12 @@ public class TurnService {
                             .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
                     managePlayerTurns(player, playerTurnOrders);
-
-                    if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
+                    if (LocalDateTime.now().isAfter(player.getTurnStartTime()) && LocalDateTime.now().isBefore(player.getTurnEndTime())) {
+                        player.setTurnMoveTime(LocalDateTime.now());
                         makePlayerMove(player, tileSetDtos, deckDto);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
-                                , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
+                                , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), player.getTurnMoveTime());
                     }
 
                     log.info("Player with id {}, has score {}", player.getId(), player.getScore());
@@ -94,7 +100,7 @@ public class TurnService {
 
         playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
                 .ifPresent(player -> {
-                    nextPlayer.setTurnStartTime(LocalTime.now());
+                    nextPlayer.setTurnStartTime(LocalDateTime.now());
                     nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
                     playerRepository.save(nextPlayer);
                 });
@@ -146,7 +152,7 @@ public class TurnService {
         Game game = gameRepository.findGameByIdWithTilePoolTilesWithDeckIsNull(gameId)
                 .orElseThrow(() -> new IllegalStateException("No tiles left in the tilepool of the game"));
 
-        if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
+        if (LocalDateTime.now().isAfter(player.getTurnStartTime()) && LocalDateTime.now().isBefore(player.getTurnEndTime())) {
             drawnTileFromTilePool = drawTileFromTilePool(player, playerTurnOrders, game);
         } else {
             log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"

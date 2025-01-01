@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,8 +53,8 @@ public class GameTurnService {
         // Set the turn start and end times for the first player
         players.forEach(player -> {
             if (playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), player.getId()).isPresent()) {
-                player.setTurnStartTime(LocalTime.now());
-                player.setTurnEndTime(LocalTime.now().plusSeconds(game.getTurnTime()));
+                player.setTurnStartTime(LocalDateTime.now());
+                player.setTurnEndTime(LocalDateTime.now().plusSeconds(game.getTurnTime()));
             }
             playerRepository.save(player);
         });

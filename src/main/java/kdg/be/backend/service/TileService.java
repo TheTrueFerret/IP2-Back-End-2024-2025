@@ -64,15 +64,17 @@ public class TileService {
         List<Tile> tiles = new ArrayList<>();
         TileColor[] colors = TileColor.values();
 
-        for (int number = 1; number <= 13; number++) {
-            for (TileColor color : colors) {
-                tiles.add(new Tile(number, color));
-                tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
-            }
-        }
-
-        tiles.add(new Tile(0, TileColor.BLACK)); // Joker 1
-        tiles.add(new Tile(0, TileColor.RED)); // Joker 2
+//        for (int number = 1; number <= 13; number++) {
+//            for (TileColor color : colors) {
+//                tiles.add(new Tile(number, color));
+//                tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
+//            }
+//        }
+        tiles.add(new Tile(100, TileColor.RED));
+        tiles.add(new Tile(100, TileColor.BLACK));
+        tiles.add(new Tile(100, TileColor.ORANGE));
+//        tiles.add(new Tile(0, TileColor.BLACK)); // Joker 1
+//        tiles.add(new Tile(0, TileColor.RED)); // Joker 2
 
         log.info("AMOUNT OF TILES GENERATED: {}", tiles.size());
 

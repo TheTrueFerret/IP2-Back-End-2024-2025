@@ -1,0 +1,57 @@
+### Get access token with normal user
+POST http://localhost:8180/realms/Rummikub/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=RummikubApp&username=test&password=test&grant_type=password&scope=openid
+
+//saving the access token
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
+### POST game starten met lobbyId, roundTime en startTileAmount en hostUserId -> lobby moet op "ready" staan
+POST http://localhost:8080/api/games/start/ef673b41-d76d-4b96-99d8-41beef0c3707
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "turnTime": 6000,
+  "startTileAmount": 1,
+  "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
+}
+
+> {%
+    client.global.set("gameId", response.body.players[0].gameId);
+    client.global.set("playerId", response.body.playerTurnOrder[0]);
+    client.global.set("playerId2", response.body.playerTurnOrder[1]);
+%}
+
+### call om de zet te cheken op basis van heel de playingfield
+POST http://localhost:8080/api/turns/player-make-move
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "gameId": "{{gameId}}",
+  "playerId": "{{playerId}}",
+  "tileSets": [
+    {
+      "tileSetId": "00000000-0000-0000-0000-000000000002",
+      "startCoordinate": 1,
+      "endCoordinate": 3,
+      "tiles": [
+        {
+          "tileId": "fe8bce75-830c-44b3-8af7-a7850ac6b3ee",
+          "numberValue": 100,
+          "color": "RED",
+          "gridColumn": 0,
+          "gridRow": 0
+        }
+      ]
+    }
+  ],
+  "playerDeckDto": {
+    "tilesInDeck": [
+    ]
+  }
+}
