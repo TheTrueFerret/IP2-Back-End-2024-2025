@@ -200,6 +200,7 @@ public class GameUserService {
         if (isFriend(userId, gameUser)) {
             removeFriendFromFriendList(friendUser, gameUser);
             removeFriendFromFriendList(gameUser, friendUser);
+            removeFriendRequest(userId, friendId);
             return true;
         }
         return false;
@@ -218,5 +219,21 @@ public class GameUserService {
             return;
         }
         throw new FriendException("Friend not found in friend list");
+    }
+
+    public void removeFriendRequest(UUID userId, String friendId) {
+        GameUser user = gameUserRepository.findGameUserWithDetails(UUID.fromString(friendId))
+                .orElseThrow(() -> new UserDoesNotExistException(friendId));
+        GameUser friend = gameUserRepository.findGameUserWithDetails(userId)
+                .orElseThrow(() -> new UserDoesNotExistException(userId.toString()));
+
+        FriendRequest friendRequest = friendRequestRepository.findFriendRequestBySenderAndReceiver(user.getId(), friend.getId());
+        if (friendRequest == null) {
+            friendRequest = friendRequestRepository.findFriendRequestBySenderAndReceiver(friend.getId(), user.getId());
+        }
+        if (friendRequest == null) {
+            throw new FriendRequestException("Friend request not found");
+        }
+        friendRequestRepository.delete(friendRequest);
     }
 }
