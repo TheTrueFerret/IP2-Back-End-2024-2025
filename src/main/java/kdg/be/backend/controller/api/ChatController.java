@@ -22,16 +22,18 @@ public class ChatController {
     }
 
     @PostMapping("/sendMessage")
-    public ChatbotResponse sendMessageToChatbot(@RequestBody ChatbotRequest request) {
-        return chatService.sendMessageToChatbot(request.threadId(), request.question());
+    public ResponseEntity<ChatbotResponse> sendMessageToChatbot(@RequestBody ChatbotRequest request) {
+        ChatbotResponse response = chatService.sendMessageToChatbot(request.threadId(), request.question());
+        return ResponseEntity.status(201).body(response);
     }
 
     @PostMapping("/createThread/{gameUserId}")
-    public UUID createChatThread(@PathVariable UUID gameUserId) {
-        return chatService.createChatThread(gameUserId);
+    public ResponseEntity<UUID> createChatThread(@PathVariable UUID gameUserId) {
+        UUID threadId = chatService.createChatThread(gameUserId);
+        return ResponseEntity.status(201).body(threadId);
     }
 
-    @GetMapping("/api/chat/{chatId}/history")
+    @GetMapping("/{chatId}/history")
     public ResponseEntity<?> getChatHistory(@PathVariable UUID chatId) {
         Map<String, Object> response = chatService.getChatHistory(chatId);
 

@@ -35,9 +35,6 @@ public class GameUserService {
 
     public void createGameUser(GameUserDto gameUserDto) {
         GameUser gameUser = new GameUser(gameUserDto.getId(), gameUserDto.getUsername());
-//        ChatHistory chatHistory = new ChatHistory(gameUser, new ArrayList<>());
-//        gameUser.setChatHistory(chatHistory);
-
         gameUserRepository.saveAndFlush(gameUser);
     }
 

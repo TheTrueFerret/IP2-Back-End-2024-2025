@@ -4,6 +4,7 @@ import kdg.be.backend.controller.dto.Chat.ChatbotResponse;
 import kdg.be.backend.domain.chatting.Chat;
 import kdg.be.backend.repository.ChatRepository;
 import kdg.be.backend.repository.GameUserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,6 +18,15 @@ public class ChatService {
     private final GameUserRepository gameUserRepository;
     private final RestTemplate restTemplate;
 
+    @Value("${chatbot.api.base-url}")
+    private String chatbotApiBaseUrl;
+
+    @Value("${chatbot.api.thread-url}")
+    private String chatbotApiThreadUrl;
+
+    @Value("${chatbot.api.history-url}")
+    private String chatbotApiHistoryUrl;
+
     public ChatService(ChatRepository chatRepository, RestTemplate restTemplate, GameUserRepository gameUserRepository) {
         this.chatRepository = chatRepository;
         this.restTemplate = restTemplate;
@@ -24,7 +34,7 @@ public class ChatService {
     }
 
     public UUID createChatThread(UUID gameUserId) {
-        UUID threadId = restTemplate.postForObject("http://localhost:8000/api/chatbot/thread", null, UUID.class);
+        UUID threadId = restTemplate.postForObject(chatbotApiThreadUrl, null, UUID.class);
 
         Chat chat = new Chat();
         chat.setId(threadId);
@@ -40,7 +50,7 @@ public class ChatService {
 
         var request = Map.of("question", message, "thread_id", chatId);
 
-        var response = restTemplate.postForObject("http://localhost:8000/api/chatbot/", request, Map.class);
+        var response = restTemplate.postForObject(chatbotApiBaseUrl, request, Map.class);
 
         if (response == null) {
             throw new IllegalArgumentException("Chatbot response is null");
@@ -60,7 +70,7 @@ public class ChatService {
         chatRepository.findById(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found for ID: " + chatId));
 
-        String url = "http://localhost:8123/threads/" + chatId + "/state";
+        String url = chatbotApiHistoryUrl + "/" + chatId + "/state";
         return restTemplate.getForObject(url, Map.class);
     }
 }
