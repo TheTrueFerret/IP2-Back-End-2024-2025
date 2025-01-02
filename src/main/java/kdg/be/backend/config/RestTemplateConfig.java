@@ -1,0 +1,20 @@
+package kdg.be.backend.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+public class RestTemplateConfig {
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate(clientHttpRequestFactory());
+    }
+
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(1800000);
+        factory.setReadTimeout(1800000);
+        return factory;
+    }
+}

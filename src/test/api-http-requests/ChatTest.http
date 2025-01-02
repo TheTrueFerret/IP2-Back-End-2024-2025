@@ -26,3 +26,8 @@ Authorization: Bearer {{access_token}}
   "question": "What is a trump tile?",
   "threadId": "{{threadId}}"
 }
+
+### Get Chat History
+GET http://localhost:8080/api/chat/{{threadId}}/history
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
