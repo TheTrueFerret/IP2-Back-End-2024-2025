@@ -8,6 +8,7 @@ import kdg.be.backend.domain.chatting.ChatHistory;
 import kdg.be.backend.domain.user.FriendRequest;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.domain.user.RequestStatus;
+import kdg.be.backend.exception.FriendException;
 import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.UserDoesNotExistException;
 import kdg.be.backend.exception.UsersDoNotExistsException;
@@ -190,5 +191,32 @@ public class GameUserService {
             userFriendDtos.add(new UserFriendDto(friend, true));
         }
         return userFriendDtos;
+    }
+
+    public boolean removeFriend(UUID userId, String friendId) {
+        GameUser gameUser = gameUserRepository.findGameUserWithDetails(UUID.fromString(friendId)).orElseThrow(() -> new UserDoesNotExistException(friendId));
+        GameUser friendUser = gameUserRepository.findGameUserWithDetails(userId).orElseThrow(() -> new UserDoesNotExistException(userId.toString()));
+
+        if (isFriend(userId, gameUser)) {
+            removeFriendFromFriendList(friendUser, gameUser);
+            removeFriendFromFriendList(gameUser, friendUser);
+            return true;
+        }
+        return false;
+    }
+
+    public void removeFriendFromFriendList(GameUser user, GameUser friend) {
+        List<GameUser> friendList = user.getFriendList();
+        if (friendList.isEmpty()) {
+            throw new FriendException("Friend list is empty");
+        }
+        if (friendList.stream().anyMatch(f -> f.getId().equals(friend.getId()))) {
+            GameUser friendToRemove = friendList.stream().filter(f -> f.getId().equals(friend.getId())).findFirst().orElseThrow(() -> new FriendException("Friend not found in friend list"));
+            friendList.remove(friendToRemove);
+            user.setFriendList(friendList);
+            gameUserRepository.saveAndFlush(user);
+            return;
+        }
+        throw new FriendException("Friend not found in friend list");
     }
 }

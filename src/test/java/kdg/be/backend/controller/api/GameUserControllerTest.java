@@ -230,12 +230,12 @@ class GameUserControllerTest {
     void testGameUserReceivesParticipationAward() throws Exception {
         // Step 1: Start the game
         String startGameRequest = """
-            {
-                "turnTime": 60,
-                "startTileAmount": 14,
-                "hostUserId": "11111111-1111-1111-1111-111111111113"
-            }
-            """;
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                }
+                """;
 
         MvcResult startGameResult = mockMvc.perform(post("/api/games/start/31111111-1111-1111-1111-111111111111")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -257,73 +257,73 @@ class GameUserControllerTest {
 
         // Step 2: Simulate the turn of the first player
         String playerTurnRequest = """
-            {
-              "gameId": "%s",
-              "playerId": "%s",
-              "tileSets": [
                 {
-                  "tileSetId": "00000000-0000-0000-0000-000000000002",
-                  "startCoordinate": 1,
-                  "endCoordinate": 3,
-                  "tiles": [
+                  "gameId": "%s",
+                  "playerId": "%s",
+                  "tileSets": [
                     {
-                      "tileId": "00000000-0000-0000-0000-000000000004",
-                      "numberValue": 1,
-                      "color": "BLUE",
-                      "gridColumn": 4,
-                      "gridRow": 5
-                    },
-                    {
-                      "tileId": "00000000-0000-0000-0000-000000000007",
-                      "numberValue": 4,
-                      "color": "ORANGE",
-                      "gridColumn": 7,
-                      "gridRow": 10
-                    }
-                  ]
-                },
-                {
-                  "tileSetId": "00000000-0000-0000-0000-000000000003",
-                  "startCoordinate": 11,
-                  "endCoordinate": 13,
-                  "tiles": [
-                    {
-                      "tileId": "00000000-0000-0000-0000-000000000006",
-                      "numberValue": 3,
-                      "color": "BLACK",
-                      "gridColumn": 7,
-                      "gridRow": 8
-                    },
-                    {
-                      "tileId": "00000000-0000-0000-0000-000000000005",
-                      "numberValue": 2,
-                      "color": "RED",
-                      "gridColumn": 4,
-                      "gridRow": 6
-                    }
-                  ]
-                }
-              ],
-              "playerDeckDto": {
-                   "tilesInDeck": [
+                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "startCoordinate": 1,
+                      "endCoordinate": 3,
+                      "tiles": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000062",
-                          "numberValue": 5,
-                          "color": "ORANGE",
-                          "gridColumn": 0,
-                          "gridRow": 0
+                          "tileId": "00000000-0000-0000-0000-000000000004",
+                          "numberValue": 1,
+                          "color": "BLUE",
+                          "gridColumn": 4,
+                          "gridRow": 5
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000063",
-                          "numberValue": 5,
-                          "color": "RED",
-                          "gridColumn": 0,
-                          "gridRow": 0
+                          "tileId": "00000000-0000-0000-0000-000000000007",
+                          "numberValue": 4,
+                          "color": "ORANGE",
+                          "gridColumn": 7,
+                          "gridRow": 10
                         }
-                   ]
-                 }
-            }
-            """.formatted(gameId, firstPlayerTurnId);
+                      ]
+                    },
+                    {
+                      "tileSetId": "00000000-0000-0000-0000-000000000003",
+                      "startCoordinate": 11,
+                      "endCoordinate": 13,
+                      "tiles": [
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000006",
+                          "numberValue": 3,
+                          "color": "BLACK",
+                          "gridColumn": 7,
+                          "gridRow": 8
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000005",
+                          "numberValue": 2,
+                          "color": "RED",
+                          "gridColumn": 4,
+                          "gridRow": 6
+                        }
+                      ]
+                    }
+                  ],
+                  "playerDeckDto": {
+                       "tilesInDeck": [
+                            {
+                              "tileId": "00000000-0000-0000-0000-000000000062",
+                              "numberValue": 5,
+                              "color": "ORANGE",
+                              "gridColumn": 0,
+                              "gridRow": 0
+                            },
+                            {
+                              "tileId": "00000000-0000-0000-0000-000000000063",
+                              "numberValue": 5,
+                              "color": "RED",
+                              "gridColumn": 0,
+                              "gridRow": 0
+                            }
+                       ]
+                     }
+                }
+                """.formatted(gameId, firstPlayerTurnId);
 
         mockMvc.perform(post("/api/turns/player-make-move")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -485,5 +485,29 @@ class GameUserControllerTest {
         mockMvc.perform(get("/api/gameuser/friendRequests?userId=1c14c66a-b034-4531-a1e2-dfb07e7f5707")
                         .contentType("application/json"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void happyRemoveFriend() throws Exception {
+        mockMvc.perform(post("/api/gameuser/friend/remove/fbe4a1d1-1c44-49b8-911f-7bc77a78b001?friendId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
+                        .contentType("application/json"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void unHappyRemoveFriendNoUser() throws Exception {
+        mockMvc.perform(post("/api/gameuser/friend/remove/3beae1d1-1c44-49b8-911f-7bc77a78b001?friendId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
+                        .contentType("application/json"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void unHappyRemoveFriendNotFriends() throws Exception {
+        mockMvc.perform(post("/api/gameuser/friend/remove/fbe4a1d1-1c44-49b8-911f-7bc77a78b001?friendId=00000000-0000-0000-0000-000000000009")
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
     }
 }
