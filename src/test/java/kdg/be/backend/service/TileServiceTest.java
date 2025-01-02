@@ -1,14 +1,19 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
+import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
+import kdg.be.backend.controller.dto.tiles.TileDto;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.domain.TileSet;
 import kdg.be.backend.domain.enums.TileColor;
+import kdg.be.backend.exception.TileSetException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,132 +21,104 @@ import static org.junit.jupiter.api.Assertions.*;
 class TileServiceTest {
 
     @Autowired
-    private TileService tileService;
+    private MoveValidationService moveValidationService;
 
     @Test
     void TileServiceTestOnColorDontThrow() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(1, TileColor.RED),
-                new Tile(2, TileColor.RED),
-                new Tile(3, TileColor.RED),
-                new Tile(4, TileColor.RED),
-                new Tile(5, TileColor.RED)));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(5);
-        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 1, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 2, TileColor.RED, 2, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 3, TileColor.RED, 3, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 4, TileColor.RED, 4, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 5, TileColor.RED, 5, 1)
+        ));
+        assertDoesNotThrow(() -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestOnNumbersDontThrow() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(11, TileColor.RED),
-                new Tile(11, TileColor.ORANGE),
-                new Tile(11, TileColor.BLUE)));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(3);
-        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.ORANGE, 2, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.BLUE, 3, 1)
+        ));
+        assertDoesNotThrow(() -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestThrowException() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(11, TileColor.RED),
-                new Tile(11, TileColor.ORANGE)));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(2);
-        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.ORANGE, 2, 1)
+        ));
+        assertThrows(TileSetException.class, () -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestThrowExceptionSetWrongColors() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(1, TileColor.RED),
-                new Tile(2, TileColor.BLUE),
-                new Tile(3, TileColor.RED),
-                new Tile(4, TileColor.RED),
-                new Tile(5, TileColor.BLACK)));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(5);
-        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 1, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 2, TileColor.BLUE, 2, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 3, TileColor.RED, 3, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 4, TileColor.RED, 4, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 5, TileColor.BLACK, 5, 1)
+        ));
+        assertThrows(TileSetException.class, () -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestThrowExceptionSetWrongNumbers() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(new Tile(1, TileColor.RED), new Tile(2, TileColor.RED), new Tile(3, TileColor.RED), new Tile(7, TileColor.RED), new Tile(8, TileColor.RED)));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(5);
-        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 1, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 2, TileColor.RED, 2, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 3, TileColor.RED, 3, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 7, TileColor.RED, 4, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 8, TileColor.RED, 5, 1)
+        ));
+        assertThrows(TileSetException.class, () -> moveValidationService.checkTileSet(tiles));
     }
 
-    //Joker checks
     @Test
     void TileServiceTestWithJokerInSequenceDontThrow() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(1, TileColor.RED),
-                new Tile(2, TileColor.RED),
-                new Tile(0, TileColor.RED), // <----------Joker
-                new Tile(4, TileColor.RED),
-                new Tile(5, TileColor.RED)
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 1, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 2, TileColor.RED, 2, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 0, TileColor.RED, 3, 1), // <----------Joker
+                new PlayerMoveTileDto(UUID.randomUUID(), 4, TileColor.RED, 4, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 5, TileColor.RED, 5, 1)
         ));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(5);
-        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
+        assertDoesNotThrow(() -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestWithJokerDifferentColorsDontThrow() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(11, TileColor.RED),
-                new Tile(0, TileColor.BLUE), // <----------Joker
-                new Tile(11, TileColor.ORANGE),
-                new Tile(11, TileColor.BLACK)
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 0, TileColor.BLUE, 2, 1), // <----------Joker
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.ORANGE, 3, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 11, TileColor.BLACK, 4, 1)
         ));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(4);
-        assertDoesNotThrow(() -> tileService.checkTileSet(tiles));
+        assertDoesNotThrow(() -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestWithJokerMisplacedThrowException() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(1, TileColor.RED),
-                new Tile(0, TileColor.RED), // <----------Joker
-                new Tile(3, TileColor.RED),
-                new Tile(5, TileColor.RED)
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto( UUID.randomUUID(), 9, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 0, TileColor.BLUE, 2, 1), // <----------Joker
+                new PlayerMoveTileDto(UUID.randomUUID(), 12, TileColor.BLACK, 3, 1)
         ));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(4);
-        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
+        assertThrows(TileSetException.class, () -> moveValidationService.checkTileSet(tiles));
     }
 
     @Test
     void TileServiceTestWithJokersThrowException() {
-        TileSet tileSet = new TileSet();
-        LinkedList<Tile> tiles = new LinkedList<>(List.of(
-                new Tile(9, TileColor.RED),
-                new Tile(0, TileColor.BLUE), // <----------Joker
-                new Tile(12, TileColor.BLACK)
+        List<PlayerMoveTileDto> tiles = new LinkedList<>(List.of(
+                new PlayerMoveTileDto(UUID.randomUUID(), 9, TileColor.RED, 1, 1),
+                new PlayerMoveTileDto(UUID.randomUUID(), 0, TileColor.BLUE, 2, 1), // <----------Joker
+                new PlayerMoveTileDto(UUID.randomUUID(), 12, TileColor.BLACK, 3, 1)
         ));
-        tileSet.setTiles(tiles);
-        tileSet.setStartCoordinate(1);
-        tileSet.setEndCoordinate(3);
-        assertThrows(IllegalStateException.class, () -> tileService.checkTileSet(tiles));
+        assertThrows(TileSetException.class, () -> moveValidationService.checkTileSet(tiles));
     }
 
 }

@@ -3,6 +3,7 @@ package kdg.be.backend.service;
 import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
+import kdg.be.backend.exception.TileSetException;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,9 @@ public class TurnService {
     private final GameUserAchievementService gameUserAchievementService;
 
     private static final Logger log = LoggerFactory.getLogger(TurnService.class);
+    private final TileSetService tileSetService;
 
-    public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, DeckRepository deckRepository, TileRepository tileRepository, TilePoolRepository tilePoolRepository, GameUserAchievementService gameUserAchievementService) {
+    public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, PlayingFieldService playingFieldService, MoveValidationService moveValidationService, DeckRepository deckRepository, TileRepository tileRepository, TilePoolRepository tilePoolRepository, GameUserAchievementService gameUserAchievementService, TileSetService tileSetService) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
         this.playingFieldService = playingFieldService;
@@ -35,6 +37,7 @@ public class TurnService {
         this.tileRepository = tileRepository;
         this.tilePoolRepository = tilePoolRepository;
         this.gameUserAchievementService = gameUserAchievementService;
+        this.tileSetService = tileSetService;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
@@ -97,6 +100,14 @@ public class TurnService {
 
     private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
         checkFirstTurn(player, deckDto);
+        try {
+            for (PlayerMoveTileSetDto tileSetDto : tileSetDtos) {
+                moveValidationService.checkTileSet(tileSetDto.tiles());
+            }
+        } catch (TileSetException e) {
+            log.error("Player {} made an invalid move: {} Skipping to next player", player.getGameUser().getUsername(), e.getMessage());
+            return;
+        }
         playingFieldService.handlePlayerMoves(tileSetDtos);
         playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
