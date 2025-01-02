@@ -17,13 +17,13 @@ Authorization: Bearer {{access_token}}
 > {% client.global.set("threadId", response.body); %}
 
 ### Send a message to the chatbot
-# @settings timeout 1800000
+# @timeout 1800000
 POST http://localhost:8080/api/chat/sendMessage
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "question": "What is a trump tile?",
+  "question": "What is a joker tile?",
   "threadId": "{{threadId}}"
 }
 

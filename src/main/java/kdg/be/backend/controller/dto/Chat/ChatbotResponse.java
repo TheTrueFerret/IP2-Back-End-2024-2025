@@ -1,4 +1,6 @@
 package kdg.be.backend.controller.dto.Chat;
 
-public record ChatbotResponse(String answer) {
+import java.util.UUID;
+
+public record ChatbotResponse(String answer, UUID threadId) {
 }

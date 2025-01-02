@@ -23,8 +23,7 @@ public class ChatController {
 
     @PostMapping("/sendMessage")
     public ChatbotResponse sendMessageToChatbot(@RequestBody ChatbotRequest request) {
-        String answer = chatService.sendMessageToChatbot(request.threadId(), request.question());
-        return new ChatbotResponse(answer);
+        return chatService.sendMessageToChatbot(request.threadId(), request.question());
     }
 
     @PostMapping("/createThread/{gameUserId}")
@@ -33,13 +32,19 @@ public class ChatController {
     }
 
     @GetMapping("/api/chat/{chatId}/history")
-    public List<ChatMessageDTO> getChatHistory(@PathVariable UUID chatId) {
+    public ResponseEntity<?> getChatHistory(@PathVariable UUID chatId) {
         Map<String, Object> response = chatService.getChatHistory(chatId);
 
         List<Map<String, Object>> messages = (List<Map<String, Object>>) ((Map<String, Object>) response.get("values")).get("messages");
 
-        return messages.stream()
+        if (messages == null) {
+            return ResponseEntity.ok("There are no messages for this chat.");
+        }
+
+        List<ChatMessageDTO> chatMessages = messages.stream()
                 .map(message -> new ChatMessageDTO((String) message.get("content"), (String) message.get("type")))
                 .toList();
+
+        return ResponseEntity.ok(chatMessages);
     }
 }

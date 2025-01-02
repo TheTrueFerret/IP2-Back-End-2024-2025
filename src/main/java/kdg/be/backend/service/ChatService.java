@@ -1,5 +1,6 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.controller.dto.Chat.ChatbotResponse;
 import kdg.be.backend.domain.chatting.Chat;
 import kdg.be.backend.repository.ChatRepository;
 import kdg.be.backend.repository.GameUserRepository;
@@ -33,7 +34,7 @@ public class ChatService {
         return threadId;
     }
 
-    public String sendMessageToChatbot(UUID chatId, String message) {
+    public ChatbotResponse sendMessageToChatbot(UUID chatId, String message) {
         chatRepository.findById(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found for ID: " + chatId));
 
@@ -44,7 +45,15 @@ public class ChatService {
         if (response == null) {
             throw new IllegalArgumentException("Chatbot response is null");
         }
-        return (String) response.get("answer");
+
+        UUID responseThreadId = UUID.fromString((String) response.get("thread_id"));
+        if (!responseThreadId.equals(chatId)) {
+            throw new IllegalArgumentException("Thread ID in response does not match the given chat ID");
+        }
+
+        String answer = (String) response.get("answer");
+
+        return new ChatbotResponse(answer, responseThreadId);
     }
 
     public Map<String, Object> getChatHistory(UUID chatId) {
