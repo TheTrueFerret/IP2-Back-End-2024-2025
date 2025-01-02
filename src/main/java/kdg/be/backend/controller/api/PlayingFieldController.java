@@ -1,21 +1,18 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.AddTileToTilesetRequestDTO;
-import kdg.be.backend.controller.dto.tiles.TileDto;
-import kdg.be.backend.controller.dto.tiles.TileSetDto;
-import kdg.be.backend.domain.TileSet;
+import kdg.be.backend.controller.dto.game.PlayingFieldDto;
 import kdg.be.backend.service.PlayingFieldService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
+
+import static kdg.be.backend.controller.dto.mapper.GameDtoMapper.mapToPlayingFieldDto;
 
 @RestController
-@RequestMapping("/api/playing-fields")
+@RequestMapping("/api/playingFields")
 public class PlayingFieldController {
     private final PlayingFieldService playingFieldService;
 
@@ -23,29 +20,9 @@ public class PlayingFieldController {
         this.playingFieldService = playingFieldService;
     }
 
-    //TODO: playingfield post voor nieuwe te maken
-    @PostMapping("/add-tile")
-    public ResponseEntity<TileSetDto> addTileToTileSet(@RequestBody AddTileToTilesetRequestDTO request) {
-        // Call the service to add the tile to the TileSet
-        TileSet updatedTileSet = playingFieldService.addTileToTileSet(
-                request.playingFieldId(),
-                request.tileSetId(),
-                request.tileId()
-        );
-
-        // Map the TileSet entity to TileSetDto before returning it
-        TileSetDto tileSetDto = toDto(updatedTileSet);
-
-        // Return the updated TileSetDto
-        return ResponseEntity.ok(tileSetDto);
+    @GetMapping("/{gameId}")
+    public PlayingFieldDto getPlayingFieldByGameId(@PathVariable UUID gameId) {
+        return mapToPlayingFieldDto(playingFieldService.getPlayingFieldByGameId(gameId));
     }
 
-    private TileSetDto toDto(TileSet tileSet) {
-        // Map the TileSet entity to TileSetDto
-        List<TileDto> tileDtos = tileSet.getTiles().stream()
-                .map(tile -> new TileDto(tile.getNumberValue(), tile.getTileColor()))
-                .collect(Collectors.toList());
-
-        return new TileSetDto(tileSet.getStartCoordinate(), tileSet.getEndCoordinate(), tileDtos);
-    }
 }

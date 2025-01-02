@@ -2,6 +2,8 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'jacoco'
+    id 'checkstyle'
 }
 
 group = 'kdg.be'
@@ -30,7 +32,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-logging'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-	compileOnly 'org.projectlombok:lombok'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
@@ -49,4 +53,46 @@ tasks.named('test') {
 
 bootBuildImage {
 	imageName = 'registry.gitlab.com/kdg-ti/integratieproject-2/2024-2025/team12/back-end'
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+    afterEvaluate { //Deze klassen uit de coverage halen omdat het geen nut heeft om deze te testen
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, exclude: [
+                            'kdg/be/backend/config/**',
+                            'kdg/be/backend/controller/dto/**',
+                            'kdg/be/backend/domain/enums/**',
+                            'kdg/be/backend/domain/games/**',
+                    ])
+                })
+        )
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+checkstyle {
+    toolVersion = '10.12.2'
+    configFile = file('checkstyle-config/checkstyle/checkstyle.xml')
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+    ignoreFailures = true
 }

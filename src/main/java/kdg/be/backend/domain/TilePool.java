@@ -15,6 +15,7 @@ public class TilePool {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    // relaties
     @OneToMany(mappedBy = "tilePool", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tile> tiles;
 
@@ -24,6 +25,10 @@ public class TilePool {
 
     public TilePool(List<Tile> tiles) {
         this.tiles = tiles;
+    }
+
+    public int getRemainingTilesSize() {
+        return tiles.size();
     }
 
     // Shuffle the tiles
@@ -36,13 +41,8 @@ public class TilePool {
         if (tiles.isEmpty()) {
             throw new IllegalStateException("No tiles left in the pool!");
         }
-        // Remove and return the first tile (or any specific logic for "drawing")
+        // Remove and return the first tile
         return tiles.removeFirst();
-    }
-
-    // Add tiles to the pool (if replenishment is needed)
-    public void addTiles(List<Tile> newTiles) {
-        tiles.addAll(newTiles);
     }
 
     // Check if the pool is empty

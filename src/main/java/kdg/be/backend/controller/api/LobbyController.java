@@ -1,14 +1,13 @@
 package kdg.be.backend.controller.api;
 
 import jakarta.validation.Valid;
-import kdg.be.backend.controller.dto.GameUserDto;
-import kdg.be.backend.controller.dto.LobbyDto;
+import kdg.be.backend.controller.dto.game.LobbyDto;
 import kdg.be.backend.controller.dto.mapper.GameUserDtoMapper;
 import kdg.be.backend.controller.dto.requests.CreateJoinLobbyRequest;
 import kdg.be.backend.controller.dto.requests.CreateLobbySettingsRequest;
+import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.domain.Lobby;
 import kdg.be.backend.service.LobbyService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +51,11 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyDtos);
     }
 
+    // Most of these requests could be optimized by just returning a lobbyId
+    /**
+     * To Create a new Lobby
+     * Returns: a Lobby Object
+     */
     @PostMapping("/create")
     public ResponseEntity<LobbyDto> createLobby(@RequestParam UUID userId, @Valid @RequestBody CreateLobbySettingsRequest req) {
         return lobbyService.createLobby(userId, req.minimumPlayers(), req.maximumPlayers(), req.joinCode())
@@ -59,56 +63,38 @@ public class LobbyController {
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
+    /**
+     * For when the frontend already knows the lobbyId
+     * Returns: a Lobby Object
+     */
     @PatchMapping("/join/{id}")
-    public ResponseEntity<LobbyDto> joinLobby(@PathVariable UUID id, @RequestParam UUID userId, @Valid @RequestBody CreateJoinLobbyRequest req) {
-        return lobbyService.addPlayerToLobby(id, userId, req.joinCode())
+    public ResponseEntity<LobbyDto> joinLobby(@PathVariable UUID id, @RequestParam UUID userId) {
+        return lobbyService.addPlayerToLobbyByLobbyId(id, userId)
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
-    @PatchMapping("/leave/{id}")
-    public ResponseEntity<LobbyDto> leaveLobby(@PathVariable UUID id, @RequestParam UUID userId) {
-        return lobbyService.removePlayerFromLobby(id, userId)
+    /**
+     * For When you want to join a Lobby By the LobbyCode
+     * Returns: a Lobby Object
+     */
+    @PatchMapping("/join")
+    public ResponseEntity<LobbyDto> joinLobbyWithCode(@RequestParam UUID userId, @Valid @RequestBody CreateJoinLobbyRequest req) {
+        return lobbyService.addPlayerToLobbyByCode(userId, req.joinCode())
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
-    @PatchMapping("/start/{id}")
+    @PostMapping("/leave/{id}")
+    public boolean leaveLobby(@PathVariable UUID id, @RequestParam UUID userId) {
+        return lobbyService.removeUserFromLobby(id, userId);
+    }
+
+
+    @PatchMapping("/ready/{id}")
     public ResponseEntity<LobbyDto> startGame(@PathVariable UUID id, @RequestParam UUID userId) {
         return lobbyService.readyLobby(id, userId)
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", IllegalArgumentException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalStateException(IllegalStateException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", IllegalStateException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", NullPointerException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", DataIntegrityViolationException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
