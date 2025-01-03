@@ -1,6 +1,5 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.domain.Player;
@@ -25,7 +24,7 @@ public class MoveValidationService {
         this.tileRepository = tileRepository;
     }
 
-    public void isValidInitialMove(UUID playerId, PlayerMoveDeckDto playerMoveDeckDto) {
+    public void isValidInitialMove(UUID playerId, List<PlayerMoveTileDto> deckDto) {
         Player player = playerRepository.findPlayerById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found for ID: " + playerId));
         List<Tile> deckTiles = player.getDeck().getTiles();
@@ -35,31 +34,31 @@ public class MoveValidationService {
                 .mapToInt(Tile::getNumberValue)
                 .sum();
 
-        int dtoSum = playerMoveDeckDto.tilesInDeck().stream()
+        int dtoSum = deckDto.stream()
                 .mapToInt(PlayerMoveTileDto::numberValue)
                 .sum();
 
-        validateTileAttributes(playerMoveDeckDto);
+        validateTileAttributes(deckDto);
 
         if ((deckSum - dtoSum) < 30) {
             throw new InvalidMoveException("You can not place a tileset with a total value of less than 30 in your first move.");
         }
     }
 
-    public void validateTileAttributes(PlayerMoveDeckDto playerMoveDeckDto) {
-        List<Tile> tilesFromDb = playerMoveDeckDto.tilesInDeck().stream()
-                .map(dto -> tileRepository.findById(dto.tileId())
-                        .orElseThrow(() -> new IllegalArgumentException("Tile not found for ID: " + dto.tileId())))
+    public void validateTileAttributes(List<PlayerMoveTileDto> deckDto) {
+        List<Tile> tilesFromDb = deckDto.stream()
+                .map(dto -> tileRepository.findById(dto.id())
+                        .orElseThrow(() -> new IllegalArgumentException("Tile not found for ID: " + dto.id())))
                 .collect(Collectors.toList());
 
         for (Tile tileFromDb : tilesFromDb) {
-            PlayerMoveTileDto tileDto = playerMoveDeckDto.tilesInDeck().stream()
-                    .filter(dto -> dto.tileId().equals(tileFromDb.getId()))
+            PlayerMoveTileDto tileDto = deckDto.stream()
+                    .filter(dto -> dto.id().equals(tileFromDb.getId()))
                     .findFirst()
                     .orElseThrow(() -> new InvalidMoveException("Tile ID does not exist: " + tileFromDb.getId()));
 
             if (tileFromDb.getNumberValue() != tileDto.numberValue() || !tileFromDb.getTileColor().equals(tileDto.color())) {
-                throw new InvalidMoveException("Tile attributes do not match for tile ID: " + tileDto.tileId());
+                throw new InvalidMoveException("Tile attributes do not match for tile ID: " + tileDto.id());
             }
         }
     }

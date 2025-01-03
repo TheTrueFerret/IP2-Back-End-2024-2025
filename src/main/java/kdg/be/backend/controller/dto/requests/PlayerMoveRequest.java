@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record PlayerMoveRequest(UUID gameId,
                                 UUID playerId,
-                                List<PlayerMoveTileSetDto> tileSets,
-                                PlayerMoveDeckDto playerDeckDto
+                                List<PlayerMoveTileSetDto> playingField,
+                                List<PlayerMoveTileDto> deck
                                 ) {
 }

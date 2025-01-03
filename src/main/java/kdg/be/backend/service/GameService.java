@@ -81,7 +81,7 @@ public class GameService {
 
                     // Create a game and save it
                     Game game = new Game(
-                            roundTime,
+                            roundTime + 6,
                             startTileAmount,
                             LocalDateTime.now(),
                             playingField,

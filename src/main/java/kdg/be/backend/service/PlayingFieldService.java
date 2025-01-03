@@ -1,6 +1,5 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
@@ -42,13 +41,13 @@ public class PlayingFieldService {
     }
 
     @Transactional
-    public void handlePlayerMoves(List<PlayerMoveTileSetDto> playerMoveTileSetDtos) {
+    public void handlePlayerMoves(UUID gameId, List<PlayerMoveTileSetDto> playerMoveTileSetDtos) {
         List<TileSet> updatedTileSets = new ArrayList<>();
 
         for (PlayerMoveTileSetDto playerMoveTileSetDto : playerMoveTileSetDtos) {
             // Extract tile IDs from the DTO
             List<UUID> tileIds = playerMoveTileSetDto.tiles().stream()
-                    .map(PlayerMoveTileDto::tileId)
+                    .map(PlayerMoveTileDto::id)
                     .collect(Collectors.toList());
 
             // Retrieve the tiles from the database
@@ -57,36 +56,61 @@ public class PlayingFieldService {
                 throw new IllegalArgumentException("The tiles from the dto don't exist");
             }
 
-
             TileSet tileSet;
 
             if (playerMoveTileSetDto.tileSetId() == null) {
                 // Create a new TileSet if no ID is provided
                 tileSet = new TileSet();
+
+                Game game = gameRepository.findByGameId(gameId)
+                        .orElseThrow(() -> new IllegalStateException("No game found"));
+                tileSet.setPlayingField(game.getPlayingField());
+
+                // Update tile positions based on the DTO
+                for (Tile tile : tiles) {
+                    PlayerMoveTileDto tileDto = playerMoveTileSetDto.tiles()
+                            .stream()
+                            .filter(dto -> dto.id().equals(tile.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch: " + tile.getId()));
+
+                    // Update the tile's column and row
+                    tile.setGridColumn(tileDto.gridColumn());
+                    tile.setGridRow(tileDto.gridRow());
+                    tile.setTileSet(tileSet);
+                }
+
+                Set<Tile> tileSetSet = new HashSet<>(tiles);
+                tileSet.setTiles(tileSetSet);
+                tileSet.setGridRow(playerMoveTileSetDto.gridRow());
+                tileSet.setStartCoordinate(playerMoveTileSetDto.startCoord());
+                tileSet.setEndCoordinate(playerMoveTileSetDto.endCoord());
+
             } else {
                 // Retrieve the existing TileSet if ID is provided
                 tileSet = tileSetRepository.findByIdWithTiles(playerMoveTileSetDto.tileSetId())
                         .orElseThrow(() -> new IllegalArgumentException("TileSet not found for ID: " + playerMoveTileSetDto.tileSetId()));
-            }
 
-            // Assign the updated tiles to the TileSet
-            tileSet.getTiles().clear(); // Clear existing tiles if any
-            tileSet.getTiles().addAll(tiles);
-            tileSet.setStartCoordinate(playerMoveTileSetDto.startCoordinate());
-            tileSet.setEndCoordinate(playerMoveTileSetDto.endCoordinate());
+                // Update tile positions based on the DTO
+                for (Tile tile : tiles) {
+                    PlayerMoveTileDto tileDto = playerMoveTileSetDto.tiles()
+                            .stream()
+                            .filter(dto -> dto.id().equals(tile.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch: " + tile.getId()));
 
-            // Update tile positions based on the DTO
-            for (Tile tile : tiles) {
-                PlayerMoveTileDto tileDto = playerMoveTileSetDto.tiles()
-                        .stream()
-                        .filter(dto -> dto.tileId().equals(tile.getId()))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch: " + tile.getId()));
+                    // Update the tile's column and row
+                    tile.setGridColumn(tileDto.gridColumn());
+                    tile.setGridRow(tileDto.gridRow());
+                    tile.setTileSet(tileSet);
+                }
 
-                // Update the tile's column and row
-                tile.setGridColumn(tileDto.gridColumn());
-                tile.setGridRow(tileDto.gridRow());
-                tile.setTileSet(tileSet);
+                // Assign the updated tiles to the TileSet
+                tileSet.getTiles().clear(); // Clear existing tiles if any
+                tileSet.getTiles().addAll(tiles);
+                tileSet.setGridRow(playerMoveTileSetDto.gridRow());
+                tileSet.setStartCoordinate(playerMoveTileSetDto.startCoord());
+                tileSet.setEndCoordinate(playerMoveTileSetDto.endCoord());
             }
 
             // Save the updated tiles
@@ -98,8 +122,8 @@ public class PlayingFieldService {
     }
 
     @Transactional
-    public void handlePlayerDeck(UUID playerId, PlayerMoveDeckDto playerDeckDto) {
-        moveValidationService.validateTileAttributes(playerDeckDto);
+    public void handlePlayerDeck(UUID playerId, List<PlayerMoveTileDto> deckDto) {
+        moveValidationService.validateTileAttributes(deckDto);
 
         Player player = playerRepository.findPlayerById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found for ID: " + playerId));
@@ -109,8 +133,8 @@ public class PlayingFieldService {
 
 
         // Extract tile IDs from the DTO
-        List<UUID> tileIds = playerDeckDto.tilesInDeck().stream()
-                .map(PlayerMoveTileDto::tileId)
+        List<UUID> tileIds = deckDto.stream()
+                .map(PlayerMoveTileDto::id)
                 .collect(Collectors.toList());
 
         // Retrieve the tiles from the database
@@ -125,9 +149,9 @@ public class PlayingFieldService {
 
         // Update tile positions based on the DTO
         for (Tile tile : tiles) {
-            PlayerMoveTileDto tileDto = playerDeckDto.tilesInDeck()
+            PlayerMoveTileDto tileDto = deckDto
                     .stream()
-                    .filter(dto -> dto.tileId().equals(tile.getId()))
+                    .filter(dto -> dto.id().equals(tile.getId()))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch in deck: " + tile.getId()));
 

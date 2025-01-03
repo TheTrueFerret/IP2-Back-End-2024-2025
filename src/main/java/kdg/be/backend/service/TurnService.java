@@ -1,6 +1,6 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
+import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.repository.*;
@@ -44,7 +44,7 @@ public class TurnService {
     }
 
     @Transactional
-    public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+    public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, List<PlayerMoveTileDto> deckDto) {
         return Optional.of(gameRepository.findGameById(gameId)
                 .map(game -> {
                     Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
@@ -56,7 +56,7 @@ public class TurnService {
                     managePlayerTurns(player, playerTurnOrders);
 
                     if (LocalTime.now().isAfter(player.getTurnStartTime()) && LocalTime.now().isBefore(player.getTurnEndTime())) {
-                        makePlayerMove(player, tileSetDtos, deckDto);
+                        makePlayerMove(player, gameId, tileSetDtos, deckDto);
                     } else {
                         log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                                 , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -95,9 +95,9 @@ public class TurnService {
         return nextPlayer;
     }
 
-    private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+    private void makePlayerMove(Player player, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, List<PlayerMoveTileDto> deckDto) {
         checkFirstTurn(player, deckDto);
-        playingFieldService.handlePlayerMoves(tileSetDtos);
+        playingFieldService.handlePlayerMoves(gameId, tileSetDtos);
         playingFieldService.handlePlayerDeck(player.getId(), deckDto);
         log.info("Player {} made a move within the time limit: from {} to {}, move was made at {}",
                 player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(),
@@ -106,7 +106,7 @@ public class TurnService {
         gameUserAchievementService.checkAndAssignParticipationAchievement(player.getGameUser().getId());
     }
 
-    private void checkFirstTurn(Player player, PlayerMoveDeckDto deckDto) {
+    private void checkFirstTurn(Player player, List<PlayerMoveTileDto> deckDto) {
         Game game = player.getGame();
         if (!game.getPlayerTurnHistory().contains(player.getId())) {
             moveValidationService.isValidInitialMove(player.getId(), deckDto);

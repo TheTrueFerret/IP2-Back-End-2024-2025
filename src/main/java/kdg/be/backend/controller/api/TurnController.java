@@ -24,7 +24,7 @@ public class TurnController {
 
     @PostMapping("/player-make-move")
     public ResponseEntity<PlayerDto> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
-        return turnService.managePlayerMoves(req.playerId(), req.gameId(), req.tileSets(), req.playerDeckDto())
+        return turnService.managePlayerMoves(req.playerId(), req.gameId(), req.playingField(), req.deck())
                 .map(player -> ResponseEntity.ok(mapToPlayerDto(player)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
