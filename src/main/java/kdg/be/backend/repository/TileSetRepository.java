@@ -13,7 +13,4 @@ import java.util.UUID;
 public interface TileSetRepository extends JpaRepository<TileSet, UUID> {
     @Query("SELECT ts FROM TileSet ts LEFT JOIN FETCH ts.tiles WHERE ts.id = :id")
     Optional<TileSet> findByIdWithTiles(UUID id);
-
-    @Query("SELECT DISTINCT ts FROM PlayingField pf JOIN pf.tileSets ts JOIN FETCH ts.tiles WHERE pf.id = :playingFieldId")
-    List<TileSet> findAllByPlayingFieldIdWithTiles(@Param("playingFieldId") UUID playingFieldId);
 }

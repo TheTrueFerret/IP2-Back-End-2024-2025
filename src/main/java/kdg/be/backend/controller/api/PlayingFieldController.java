@@ -24,5 +24,4 @@ public class PlayingFieldController {
     public PlayingFieldDto getPlayingFieldByGameId(@PathVariable UUID gameId) {
         return mapToPlayingFieldDto(playingFieldService.getPlayingFieldByGameId(gameId));
     }
-
 }

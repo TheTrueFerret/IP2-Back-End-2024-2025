@@ -81,16 +81,6 @@ public class TileSetService {
     }
 
 
-
-    public List<TileSet> getTilesetsByPlayingField(UUID playingFieldId) {
-        List<TileSet> tileSets = tileSetRepository.findAllByPlayingFieldIdWithTiles(playingFieldId);
-        if (tileSets.isEmpty()) {
-            throw new IllegalArgumentException("No TileSets found for Playing Field: " + playingFieldId);
-        }
-        return tileSets;
-    }
-
-
     public TileSet getTileSetById(UUID tileSetId) {
         return tileSetRepository.findByIdWithTiles(tileSetId)
                 .orElseThrow(() -> new IllegalArgumentException("TileSet not found"));
@@ -101,8 +91,4 @@ public class TileSetService {
         tileSet.getTiles().add(tile);
         tileSetRepository.save(tileSet);
     }
-
-
-
-
 }

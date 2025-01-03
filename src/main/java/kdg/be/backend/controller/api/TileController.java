@@ -46,6 +46,7 @@ public class TileController {
 
     private TileDto mapToDto(Tile tile) {
         return new TileDto(
+                tile.getId(),
                 tile.getNumberValue(),
                 tile.getTileColor(),
                 tile.getGridColumn(),

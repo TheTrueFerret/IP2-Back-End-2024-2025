@@ -47,6 +47,7 @@ public class GameDtoMapper {
         return new TileSetDto(
                 tileSet.getStartCoordinate(),
                 tileSet.getEndCoordinate(),
+                tileSet.getGridRow(),
                 tileSet.getTiles().stream()
                         .map(GameDtoMapper::mapToTileDto)
                         .toList()
@@ -62,7 +63,7 @@ public class GameDtoMapper {
     }
 
     public static TileDto mapToTileDto(Tile tile) {
-        return new TileDto(tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow());
+        return new TileDto(tile.getId(), tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow());
     }
 
     public static PlayerDto mapToPlayerDto(Player player) {

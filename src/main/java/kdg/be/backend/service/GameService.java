@@ -2,8 +2,6 @@ package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
-import kdg.be.backend.domain.enums.TileColor;
-import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -136,7 +133,17 @@ public class GameService {
             log.error("user is not a part of this Lobby: {}", lobbyId);
             throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
         }
+        return gameId;
+    }
 
+
+    public Optional<UUID> getGameIdByPlayerId(UUID playerId) {
+        Optional<UUID> gameId = gameRepository.findGameByPlayerId(playerId).map(Game::getId);
+
+        if (gameId.isEmpty()) {
+            log.error("no Game Found for the PlayerId: {}", playerId);
+            throw new IllegalArgumentException("No Game Found for the PlayerId: " + playerId);
+        }
         return gameId;
     }
 }
