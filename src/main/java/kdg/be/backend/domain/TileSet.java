@@ -18,6 +18,7 @@ public class TileSet {
     private UUID id;
     private int startCoordinate;
     private int endCoordinate;
+    private int gridRow;
 
     @OneToMany(mappedBy = "tileSet",cascade = CascadeType.MERGE, orphanRemoval = true)
     private Set<Tile> tiles;
@@ -28,9 +29,10 @@ public class TileSet {
     public TileSet() {
     }  // jpa
 
-    public TileSet(int startCoordinate, int endCoordinate, Set<Tile> tiles, PlayingField playingField) {
+    public TileSet(int startCoordinate, int endCoordinate, int gridRow, Set<Tile> tiles, PlayingField playingField) {
         this.startCoordinate = startCoordinate;
         this.endCoordinate = endCoordinate;
+        this.gridRow = gridRow;
         this.tiles = tiles;
         this.playingField = playingField;
     }

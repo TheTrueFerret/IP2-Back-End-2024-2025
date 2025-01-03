@@ -20,6 +20,7 @@ public class TilesetController {
         this.tilesetService = tilesetService;
     }
 
+    // Word niet gebruikt door de frontend!
     @GetMapping("/playingfield/{playingFieldId}")
     public ResponseEntity<List<TileSetDto>> getTilesetsByPlayingField(@PathVariable UUID playingFieldId) {
         List<TileSet> tileSets = tilesetService.getTilesetsByPlayingField(playingFieldId);
@@ -31,12 +32,13 @@ public class TilesetController {
 
     private TileSetDto toDTO(TileSet tileSet) {
         List<TileDto> tileDtos = tileSet.getTiles().stream()
-                .map(tile -> new TileDto(tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow()))
+                .map(tile -> new TileDto(tile.getId(), tile.getNumberValue(), tile.getTileColor(), tile.getGridColumn(), tile.getGridRow()))
                 .collect(Collectors.toList());
 
         return new TileSetDto(
                 tileSet.getStartCoordinate(),
                 tileSet.getEndCoordinate(),
+                tileSet.getGridRow(),
                 tileDtos
         );
     }

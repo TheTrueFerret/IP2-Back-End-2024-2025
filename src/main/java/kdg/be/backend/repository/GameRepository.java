@@ -72,4 +72,13 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             WHERE g.id = :gameId
             """)
     Optional<TilePool> findTilePoolByGameId(UUID gameId);
+
+
+    @Query("""
+            SELECT g
+            FROM Game g
+            JOIN FETCH g.players p
+            WHERE p.id = :playerId
+            """)
+    Optional<Game> findGameByPlayerId(UUID playerId);
 }
