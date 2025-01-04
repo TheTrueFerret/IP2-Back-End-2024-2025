@@ -309,4 +309,24 @@ class LobbyControllerTest {
                     System.out.println("Plain Text Response: " + response);
                 });
     }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void testGetOpenLobbies() throws Exception {
+        mockMvc.perform(get("/api/lobby/openLobbies")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].status").value("WAITING"))
+                .andExpect(jsonPath("$[0].users").isNotEmpty())
+                .andDo(result -> {
+                    String response = result.getResponse().getContentAsString();
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
+                });
+    }
 }

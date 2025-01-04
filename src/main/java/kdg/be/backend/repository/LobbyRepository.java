@@ -45,6 +45,11 @@ public interface LobbyRepository extends JpaRepository<Lobby, UUID> {
             """)
     Optional<Lobby> findLobbyByHostUserOrGameUserId(UUID userId);
 
-    @Query("SELECT l FROM Lobby l WHERE l.status = :status")
+    @Query("""
+    SELECT l
+    FROM Lobby l
+    LEFT JOIN FETCH l.users
+    WHERE l.status = :status
+    """)
     List<Lobby> findLobbiesByStatus(LobbyStatus status);
 }

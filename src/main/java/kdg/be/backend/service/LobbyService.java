@@ -223,4 +223,10 @@ public class LobbyService {
 
         return Optional.empty();
     }
+
+    public List<Lobby> getOpenLobbies() {
+        return lobbyRepository.findLobbiesByStatus(LobbyStatus.WAITING).stream()
+                .filter(lobby -> lobby.getUsers().size() < lobby.getMaximumPlayers())
+                .collect(Collectors.toList());
+    }
 }

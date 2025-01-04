@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/lobby")
@@ -106,5 +107,17 @@ public class LobbyController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No lobbies were found, try again later");
         }
+    }
+
+    @GetMapping("/openLobbies")
+    public ResponseEntity<List<LobbyDto>> getOpenLobbies() {
+        List<Lobby> openLobbies = lobbyService.getOpenLobbies();
+        if (openLobbies.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        List<LobbyDto> openLobbiesDto = openLobbies.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(openLobbiesDto);
     }
 }
