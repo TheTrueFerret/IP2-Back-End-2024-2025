@@ -155,29 +155,19 @@ public class LobbyService {
 
         usersInLobby.removeIf(user -> user.getId().equals(userId));
 
-        if (lobby.getHostUser().getId().equals(userId) && !usersInLobby.isEmpty()) {
-            lobby.setHostUser(usersInLobby.getFirst());
+        if (lobby.getHostUser().getId().equals(userId)) {
+            if (usersInLobby.isEmpty()) {
+                lobbyRepository.delete(lobby);
+            } else {
+                lobby.setHostUser(usersInLobby.getFirst());
+            }
         }
 
-        lobby.setUsers(usersInLobby);
-        lobbyRepository.save(lobby);
-
-        //TODO Delete Lobby if No more Players inside (and game and everything related to it....)
-
+        if (!usersInLobby.isEmpty()) {
+            lobby.setUsers(usersInLobby);
+            lobbyRepository.save(lobby);
+        }
         return true;
-    }
-
-
-    // this deletes the Lobby
-    public void deleteLobby(UUID lobbyId) {
-        lobbyRepository.findById(lobbyId).ifPresentOrElse(
-                        existingLobby -> {
-                            lobbyRepository.deleteById(lobbyId);
-                        },
-                        () -> {
-                            log.error("Error deleting lobby");
-                            throw new DataIntegrityViolationException("Error deleting lobby");
-                        });
     }
 
     public Optional<Lobby> readyLobby(UUID lobbyId, UUID hostUserId) {

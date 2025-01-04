@@ -36,7 +36,7 @@ public class GameController {
     }
 
     @GetMapping("/player/{playerId}")
-    public  ResponseEntity<UUID> getGameIdByPlayerId(@PathVariable UUID playerId) {
+    public ResponseEntity<UUID> getGameIdByPlayerId(@PathVariable UUID playerId) {
         return gameService.getGameIdByPlayerId(playerId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());

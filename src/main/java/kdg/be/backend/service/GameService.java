@@ -2,6 +2,7 @@ package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class GameService {
 
                     // Create a game and save it
                     Game game = new Game(
-                            roundTime + 6,
+                            roundTime,
                             startTileAmount,
                             LocalDateTime.now(),
                             playingField,
@@ -145,5 +146,41 @@ public class GameService {
             throw new IllegalArgumentException("No Game Found for the PlayerId: " + playerId);
         }
         return gameId;
+    }
+
+    @Transactional
+    public Boolean leaveGame(UUID playerId) {
+        Game game = gameRepository.findGameByPlayerId(playerId)
+                .orElseThrow(() -> new IllegalArgumentException(""));
+
+        if (!removePlayerFromGame(game.getId(), playerId)) {
+            throw new IllegalArgumentException("Player is not in this game");
+        }
+        return true;
+    }
+
+    @Transactional
+    public boolean removePlayerFromGame(UUID gameId, UUID playerId) {
+        Game game = gameRepository.findByGameId(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("game does not exist"));
+
+        List<Player> playersInGame = game.getPlayers();
+        boolean isPlayerPresent = playersInGame.stream()
+                .anyMatch(playerInGame -> playerInGame.getId().equals(playerId));
+
+        if (!isPlayerPresent) {
+            throw new IllegalArgumentException("Player Not in This Game");
+        }
+
+        playersInGame.removeIf(player -> player.getId().equals(playerId));
+
+        if (playersInGame.isEmpty()) {
+            gameRepository.delete(game);
+            // maybe not fully deleted but ait
+        } else {
+            game.setPlayers(playersInGame);
+            gameRepository.save(game);
+        }
+        return true;
     }
 }
