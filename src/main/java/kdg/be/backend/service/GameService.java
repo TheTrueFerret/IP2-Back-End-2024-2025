@@ -2,6 +2,7 @@ package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
+import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
