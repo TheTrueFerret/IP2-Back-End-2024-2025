@@ -70,9 +70,7 @@ jacocoTestReport {
                 files(classDirectories.files.collect {
                     fileTree(dir: it, exclude: [
                             'kdg/be/backend/config/**',
-                            'kdg/be/backend/controller/dto/**',
-                            'kdg/be/backend/domain/enums/**',
-                            'kdg/be/backend/domain/games/**',
+                            'kdg/be/backend/controller/dto/**'
                     ])
                 })
         )
