@@ -1,15 +1,14 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
-import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
 import kdg.be.backend.exception.InvalidMoveException;
+import kdg.be.backend.exception.TileSetException;
 import kdg.be.backend.repository.PlayerRepository;
 import kdg.be.backend.repository.TileRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -60,6 +59,57 @@ public class MoveValidationService {
 
             if (tileFromDb.getNumberValue() != tileDto.numberValue() || !tileFromDb.getTileColor().equals(tileDto.color())) {
                 throw new InvalidMoveException("Tile attributes do not match for tile ID: " + tileDto.tileId());
+            }
+        }
+    }
+
+    public void checkTileSet(List<PlayerMoveTileDto> tileGroup) {
+        if (tileGroup.size() < 3) {
+            throw new TileSetException("The tile set must contain at least 3 tiles.");
+        }
+
+        for (int i = 0; i < tileGroup.size(); i++) {
+            // Skip the first tile
+            if (i > 0) {
+                PlayerMoveTileDto currentTile = tileGroup.get(i);
+                PlayerMoveTileDto previousTile = tileGroup.get(i - 1);
+
+                //If last tile is a joker, skip check
+                if (i == tileGroup.size() - 1 && currentTile.numberValue() == 0 || previousTile.numberValue() == 0) {
+                    continue;
+                }
+
+                if (currentTile.numberValue() == 0) {
+                    // Check if joker is last tile
+                    if (i < tileGroup.size() - 1) {
+                        PlayerMoveTileDto nextTile = tileGroup.get(i + 1);
+
+                        // Jokers bridging a sequence for the same color tiles
+                        if (nextTile.color().equals(previousTile.color())) {
+                            if (nextTile.numberValue() != previousTile.numberValue() + 2) {
+                                throw new TileSetException("Joker does not correctly bridge a sequence for tiles of the same color.");
+                            }
+                        }
+                        // Jokers matching numbers between different colors tiles
+                        else {
+                            if (nextTile.numberValue() != previousTile.numberValue()) {
+                                throw new TileSetException("Joker does not correctly match numbers between different colors.");
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+
+                if (currentTile.color().equals(previousTile.color())) {
+                    if (currentTile.numberValue() != previousTile.numberValue() + 1) {
+                        throw new TileSetException("Tiles of the same color must be in sequential order.");
+                    }
+                } else {
+                    if (currentTile.numberValue() != previousTile.numberValue()) {
+                        throw new TileSetException("Tiles of different colors must have the same number.");
+                    }
+                }
             }
         }
     }
