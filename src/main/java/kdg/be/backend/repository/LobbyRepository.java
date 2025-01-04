@@ -1,6 +1,7 @@
 package kdg.be.backend.repository;
 
 import kdg.be.backend.domain.Lobby;
+import kdg.be.backend.domain.enums.LobbyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -43,4 +44,7 @@ public interface LobbyRepository extends JpaRepository<Lobby, UUID> {
             WHERE u.id = :userId OR hu.id = :userId
             """)
     Optional<Lobby> findLobbyByHostUserOrGameUserId(UUID userId);
+
+    @Query("SELECT l FROM Lobby l WHERE l.status = :status")
+    List<Lobby> findLobbiesByStatus(LobbyStatus status);
 }

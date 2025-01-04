@@ -195,4 +195,32 @@ public class LobbyService {
                     return lobbyRepository.save(lobby);
                 });
     }
+
+    @Transactional
+    public Optional<Lobby> findLobbyForPlayer(UUID gameUserId) {
+        GameUser gameUser = gameUserRepository.findGameUserWithAchievementsById(gameUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Game user for matchmaking not found"));
+
+        int achievementLevel = gameUser.getAchievementLevel();
+
+        List<Lobby> waitingLobbies = lobbyRepository.findLobbiesByStatus(LobbyStatus.WAITING);
+        for (Lobby lobby : waitingLobbies) {
+            double averageAchievementLevel = lobby.getUsers().stream()
+                    .mapToInt(GameUser::getAchievementLevel)
+                    .average()
+                    .orElse(0);
+
+            if (lobby.getUsers().size() >= lobby.getMaximumPlayers()) {
+                continue;
+            }
+
+            if (achievementLevel == Math.abs(averageAchievementLevel)) {
+                lobby.getUsers().add(gameUser);
+                lobbyRepository.save(lobby);
+                return Optional.of(lobby);
+            }
+        }
+
+        return Optional.empty();
+    }
 }

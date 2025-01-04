@@ -276,4 +276,37 @@ class LobbyControllerTest {
                     }
                 });
     }
+
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void testFindLobbyForPlayerShouldReturnOk() throws Exception {
+        mockMvc.perform(post("/api/lobby/findLobbyForPlayer/44444444-4444-4444-4444-444444444444")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hostUser.id").value("33333333-3333-3333-3333-333333333333"))
+                .andDo(result -> {
+                    String response = result.getResponse().getContentAsString();
+                    if (response.startsWith("{")) {
+                        String prettyResponse = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(response));
+                        System.out.println("Formatted JSON Response: " + prettyResponse);
+
+                    } else {
+                        System.out.println("Plain Text Response: " + response);
+                    }
+                });
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void testFindLobbyForNonExistentUserShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/api/lobby/findLobbyForPlayer/00000000-0000-0000-0000-000000000000")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Game user for matchmaking not found"))
+                .andDo(result -> {
+                    String response = result.getResponse().getContentAsString();
+                    System.out.println("Plain Text Response: " + response);
+                });
+    }
 }

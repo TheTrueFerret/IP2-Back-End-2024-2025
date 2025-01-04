@@ -97,4 +97,14 @@ public class LobbyController {
                 .map(lobby -> ResponseEntity.ok(mapToDto(lobby)))
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
+
+    @PostMapping("/findLobbyForPlayer/{gameUserId}")
+    public ResponseEntity<?> findLobbyForPlayer(@PathVariable UUID gameUserId) {
+        Optional<Lobby> lobby = lobbyService.findLobbyForPlayer(gameUserId);
+        if (lobby.isPresent()) {
+            return ResponseEntity.ok(mapToDto(lobby.get()));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No lobbies were found, try again later");
+        }
+    }
 }
