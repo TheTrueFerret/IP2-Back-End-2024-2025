@@ -105,8 +105,7 @@ public class TurnService {
                 moveValidationService.checkTileSet(tileSetDto.tiles());
             }
         } catch (TileSetException e) {
-            log.error("Player {} made an invalid move: {} Skipping to next player", player.getGameUser().getUsername(), e.getMessage());
-            return;
+            throw new IllegalArgumentException("Player" + player.getGameUser().getUsername() + " made an invalid move:" + e.getMessage() + " Skipping to next player");
         }
         playingFieldService.handlePlayerMoves(tileSetDtos);
         playingFieldService.handlePlayerDeck(player.getId(), deckDto);

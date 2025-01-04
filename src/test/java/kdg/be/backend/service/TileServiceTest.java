@@ -1,5 +1,6 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.TestContainerIPConfiguration;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.controller.dto.tiles.TileDto;
@@ -10,6 +11,7 @@ import kdg.be.backend.exception.TileSetException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Import(TestContainerIPConfiguration.class)
 class TileServiceTest {
 
     @Autowired

@@ -148,12 +148,12 @@ class TurnControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testMakePlayerMove_Initial_ValidMove_ShouldBeOk() throws Exception {
         String startGameRequest = """
-           {
-               "turnTime": 60,
-               "startTileAmount": 14,
-               "hostUserId": "11111111-1111-1111-1111-111111111113"
-           }
-           """;
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                }
+                """;
 
 
         MvcResult startGameResult = mockMvc.perform(post("/api/games/start/31111111-1111-1111-1111-111111111111")
@@ -179,73 +179,80 @@ class TurnControllerTest {
 
 
         String playerTurnRequest = """
-           {
-             "gameId": "%s",
-             "playerId": "%s",
-             "tileSets": [
-               {
-                 "tileSetId": "00000000-0000-0000-0000-000000000002",
-                 "startCoordinate": 1,
-                 "endCoordinate": 3,
-                 "tiles": [
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000004",
-                     "numberValue": 1,
-                     "color": "BLUE",
-                     "gridColumn": 4,
-                     "gridRow": 5
-                   },
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000007",
-                     "numberValue": 4,
-                     "color": "ORANGE",
-                     "gridColumn": 7,
-                     "gridRow": 10
+                {
+                   "gameId": "%s",
+                   "playerId": "%s",
+                   "tileSets": [
+                     {
+                       "tileSetId": "00000000-0000-0000-0000-000000000002",
+                       "startCoordinate": 1,
+                       "endCoordinate": 3,
+                       "tiles": [
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "numberValue": 5,
+                           "color": "RED",
+                           "gridColumn": 2,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000064",
+                           "numberValue": 6,
+                           "color": "RED",
+                           "gridColumn": 3,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000065",
+                           "numberValue": 7,
+                           "color": "RED",
+                           "gridColumn": 4,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000066",
+                           "numberValue": 8,
+                           "color": "RED",
+                           "gridColumn": 5,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000067",
+                           "numberValue": 9,
+                           "color": "RED",
+                           "gridColumn": 6,
+                           "gridRow": 5
+                         }
+                       ]
+                     }
+                   ],
+                   "playerDeckDto": {
+                     "tilesInDeck": [
+                       {
+                         "tileId": "00000000-0000-0000-0000-000000000004",
+                         "numberValue": 1,
+                         "color": "BLUE",
+                         "gridColumn": 5,
+                         "gridRow": 4
+                       },
+                       {
+                         "tileId": "00000000-0000-0000-0000-000000000005",
+                         "numberValue": 2,
+                         "color": "RED",
+                         "gridColumn": 5,
+                         "gridRow": 3
+                       },
+                       {
+                           "tileId": "00000000-0000-0000-0000-000000000068",
+                           "numberValue": 10,
+                           "color": "RED",
+                           "gridColumn": 6,
+                           "gridRow": 5
+                         }
+                     ]
                    }
-                 ]
-               },
-               {
-                 "tileSetId": "00000000-0000-0000-0000-000000000003",
-                 "startCoordinate": 11,
-                 "endCoordinate": 13,
-                 "tiles": [
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000006",
-                     "numberValue": 3,
-                     "color": "BLACK",
-                     "gridColumn": 7,
-                     "gridRow": 8
-                   },
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000005",
-                     "numberValue": 2,
-                     "color": "RED",
-                     "gridColumn": 4,
-                     "gridRow": 6
-                   }
-                 ]
-               }
-             ],
-             "playerDeckDto": {
-                  "tilesInDeck": [
-                    {
-                      "tileId": "00000000-0000-0000-0000-000000000062",
-                      "numberValue": 5,
-                      "color": "ORANGE",
-                      "gridColumn": 0,
-                      "gridRow": 0
-                    },
-                    {
-                      "tileId": "00000000-0000-0000-0000-000000000063",
-                      "numberValue": 5,
-                      "color": "RED",
-                      "gridColumn": 0,
-                      "gridRow": 0
-                    }
-                  ]
-                }
-           }
-           """.formatted(gameId, firstPlayerTurnId);
+                 }
+                """.formatted(gameId, firstPlayerTurnId);
 
 
         mockMvc.perform(post("/api/turns/player-make-move")
@@ -259,77 +266,75 @@ class TurnControllerTest {
                 });
 
 
-
-
         // First move for the second player
         String secondPlayerTurnRequest = """
-           {
-             "gameId": "%s",
-             "playerId": "%s",
-             "tileSets": [
-             {
-                     "tileSetId": "00000000-0000-0000-0000-000000000002",
-                     "startCoordinate": 1,
-                     "endCoordinate": 3,
-                     "tiles": [
+                 {
+                   "gameId": "%s",
+                   "playerId": "%s",
+                   "tileSets": [
+                     {
+                       "tileSetId": "00000000-0000-0000-0000-000000000002",
+                       "startCoordinate": 1,
+                       "endCoordinate": 3,
+                       "tiles": [
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "numberValue": 5,
+                           "color": "BLUE",
+                           "gridColumn": 2,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000064",
+                           "numberValue": 6,
+                           "color": "BLUE",
+                           "gridColumn": 3,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000065",
+                           "numberValue": 7,
+                           "color": "BLUE",
+                           "gridColumn": 4,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000066",
+                           "numberValue": 8,
+                           "color": "BLUE",
+                           "gridColumn": 5,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000067",
+                           "numberValue": 9,
+                           "color": "BLUE",
+                           "gridColumn": 6,
+                           "gridRow": 5
+                         }
+                       ]
+                     }
+                   ],
+                   "playerDeckDto": {
+                     "tilesInDeck": [
                        {
-                         "tileId": "00000000-0000-0000-0000-000000000004",
-                         "numberValue": 1,
-                         "color": "BLUE",
-                         "gridColumn": 4,
-                         "gridRow": 5
+                         "tileId": "00000000-0000-0000-0000-000000000006",
+                         "numberValue": 3,
+                         "color": "BLACK",
+                         "gridColumn": 6,
+                         "gridRow": 7
                        },
                        {
                          "tileId": "00000000-0000-0000-0000-000000000007",
                          "numberValue": 4,
                          "color": "ORANGE",
-                         "gridColumn": 7,
-                         "gridRow": 10
+                         "gridColumn": 6,
+                         "gridRow": 9
                        }
                      ]
-                   },
-               {
-                 "tileSetId": "00000000-0000-0000-0000-000000000003",
-                 "startCoordinate": 11,
-                 "endCoordinate": 13,
-                 "tiles": [
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000006",
-                     "numberValue": 3,
-                     "color": "BLACK",
-                     "gridColumn": 7,
-                     "gridRow": 8
-                   },
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000005",
-                     "numberValue": 2,
-                     "color": "RED",
-                     "gridColumn": 4,
-                     "gridRow": 6
                    }
-                 ]
-               }
-             ],
-             "playerDeckDto": {
-               "tilesInDeck": [
-                        {
-                          "tileId": "00000000-0000-0000-0000-000000000060",
-                          "numberValue": 5,
-                          "color": "BLUE",
-                          "gridColumn": 0,
-                          "gridRow": 0
-                        },
-                        {
-                          "tileId": "00000000-0000-0000-0000-000000000061",
-                          "numberValue": 5,
-                          "color": "BLACK",
-                          "gridColumn": 0,
-                          "gridRow": 0
-                        }
-               ]
-             }
-           }
-           """.formatted(gameId, secondPlayerTurnId);
+                 }
+                """.formatted(gameId, secondPlayerTurnId);
 
 
         mockMvc.perform(post("/api/turns/player-make-move")
@@ -338,77 +343,82 @@ class TurnControllerTest {
                 .andExpect(status().isOk());
 
 
-
-
         // Second move for the first player
         String secondMoveFirstPlayerRequest = """
-           {
-             "gameId": "%s",
-             "playerId": "%s",
-             "tileSets": [
-             {
-                     "tileSetId": "00000000-0000-0000-0000-000000000002",
-                     "startCoordinate": 1,
-                     "endCoordinate": 3,
-                     "tiles": [
+               {
+                   "gameId": "%s",
+                   "playerId": "%s",
+                   "tileSets": [
+                     {
+                       "tileSetId": "00000000-0000-0000-0000-000000000002",
+                       "startCoordinate": 1,
+                       "endCoordinate": 3,
+                       "tiles": [
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "numberValue": 5,
+                           "color": "RED",
+                           "gridColumn": 2,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000064",
+                           "numberValue": 6,
+                           "color": "RED",
+                           "gridColumn": 3,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000065",
+                           "numberValue": 7,
+                           "color": "RED",
+                           "gridColumn": 4,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000066",
+                           "numberValue": 8,
+                           "color": "RED",
+                           "gridColumn": 5,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000067",
+                           "numberValue": 9,
+                           "color": "RED",
+                           "gridColumn": 6,
+                           "gridRow": 5
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000068",
+                           "numberValue": 10,
+                           "color": "RED",
+                           "gridColumn": 6,
+                           "gridRow": 6
+                        }
+                       ]
+                     }
+                   ],
+                   "playerDeckDto": {
+                     "tilesInDeck": [
                        {
                          "tileId": "00000000-0000-0000-0000-000000000004",
                          "numberValue": 1,
                          "color": "BLUE",
-                         "gridColumn": 4,
-                         "gridRow": 5
+                         "gridColumn": 5,
+                         "gridRow": 4
                        },
                        {
-                         "tileId": "00000000-0000-0000-0000-000000000007",
-                         "numberValue": 4,
-                         "color": "ORANGE",
-                         "gridColumn": 7,
-                         "gridRow": 10
+                         "tileId": "00000000-0000-0000-0000-000000000005",
+                         "numberValue": 2,
+                         "color": "RED",
+                         "gridColumn": 5,
+                         "gridRow": 3
                        }
                      ]
-                   },
-               {
-                 "tileSetId": "00000000-0000-0000-0000-000000000003",
-                 "startCoordinate": 11,
-                 "endCoordinate": 13,
-                 "tiles": [
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000006",
-                     "numberValue": 3,
-                     "color": "BLACK",
-                     "gridColumn": 7,
-                     "gridRow": 8
-                   },
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000005",
-                     "numberValue": 2,
-                     "color": "RED",
-                     "gridColumn": 4,
-                     "gridRow": 6
                    }
-                 ]
-               }
-             ],
-             "playerDeckDto": {
-               "tilesInDeck": [
-                 {
-                   "tileId": "00000000-0000-0000-0000-000000000056",
-                   "numberValue": 10,
-                   "color": "BLUE",
-                   "gridColumn": 0,
-                   "gridRow": 0
-                 },
-                 {
-                   "tileId": "00000000-0000-0000-0000-000000000059",
-                   "numberValue": 25,
-                   "color": "BLACK",
-                   "gridColumn": 0,
-                   "gridRow": 0
                  }
-               ]
-             }
-           }
-           """.formatted(gameId, firstPlayerTurnId);
+                """.formatted(gameId, firstPlayerTurnId);
 
 
         mockMvc.perform(post("/api/turns/player-make-move")
@@ -649,12 +659,12 @@ class TurnControllerTest {
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testMakePlayerMove_WrongTileAttribute_ShouldBeBadRequest() throws Exception {
         String startGameRequest = """
-           {
-               "turnTime": 60,
-               "startTileAmount": 14,
-               "hostUserId": "11111111-1111-1111-1111-111111111113"
-           }
-           """;
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                }
+                """;
 
 
         MvcResult startGameResult = mockMvc.perform(post("/api/games/start/31111111-1111-1111-1111-111111111111")
@@ -679,73 +689,73 @@ class TurnControllerTest {
 
 
         String playerTurnRequest = """
-           {
-             "gameId": "%s",
-             "playerId": "%s",
-             "tileSets": [
-               {
-                 "tileSetId": "00000000-0000-0000-0000-000000000002",
-                 "startCoordinate": 1,
-                 "endCoordinate": 3,
-                 "tiles": [
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000004",
-                     "numberValue": 1,
-                     "color": "BLUE",
-                     "gridColumn": 4,
-                     "gridRow": 5
-                   },
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000007",
-                     "numberValue": 4,
-                     "color": "ORANGE",
-                     "gridColumn": 7,
-                     "gridRow": 10
-                   }
-                 ]
-               },
-               {
-                 "tileSetId": "00000000-0000-0000-0000-000000000003",
-                 "startCoordinate": 11,
-                 "endCoordinate": 13,
-                 "tiles": [
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000006",
-                     "numberValue": 3,
-                     "color": "BLACK",
-                     "gridColumn": 7,
-                     "gridRow": 8
-                   },
-                   {
-                     "tileId": "00000000-0000-0000-0000-000000000005",
-                     "numberValue": 2,
-                     "color": "RED",
-                     "gridColumn": 4,
-                     "gridRow": 6
-                   }
-                 ]
-               }
-             ],
-             "playerDeckDto": {
-                  "tilesInDeck": [
+                {
+                  "gameId": "%s",
+                  "playerId": "%s",
+                  "tileSets": [
                     {
-                      "tileId": "00000000-0000-0000-0000-000000000062",
-                      "numberValue": 6,
-                      "color": "ORANGE",
-                      "gridColumn": 0,
-                      "gridRow": 0
+                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "startCoordinate": 1,
+                      "endCoordinate": 3,
+                      "tiles": [
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000004",
+                          "numberValue": 1,
+                          "color": "BLUE",
+                          "gridColumn": 4,
+                          "gridRow": 5
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000007",
+                          "numberValue": 4,
+                          "color": "ORANGE",
+                          "gridColumn": 7,
+                          "gridRow": 10
+                        }
+                      ]
                     },
                     {
-                      "tileId": "00000000-0000-0000-0000-000000000063",
-                      "numberValue": 5,
-                      "color": "RED",
-                      "gridColumn": 0,
-                      "gridRow": 0
+                      "tileSetId": "00000000-0000-0000-0000-000000000003",
+                      "startCoordinate": 11,
+                      "endCoordinate": 13,
+                      "tiles": [
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000006",
+                          "numberValue": 3,
+                          "color": "BLACK",
+                          "gridColumn": 7,
+                          "gridRow": 8
+                        },
+                        {
+                          "tileId": "00000000-0000-0000-0000-000000000005",
+                          "numberValue": 2,
+                          "color": "RED",
+                          "gridColumn": 4,
+                          "gridRow": 6
+                        }
+                      ]
                     }
-                  ]
+                  ],
+                  "playerDeckDto": {
+                       "tilesInDeck": [
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000062",
+                           "numberValue": 6,
+                           "color": "ORANGE",
+                           "gridColumn": 0,
+                           "gridRow": 0
+                         },
+                         {
+                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "numberValue": 5,
+                           "color": "RED",
+                           "gridColumn": 0,
+                           "gridRow": 0
+                         }
+                       ]
+                     }
                 }
-           }
-           """.formatted(gameId, firstPlayerTurnId);
+                """.formatted(gameId, firstPlayerTurnId);
 
 
         mockMvc.perform(post("/api/turns/player-make-move")
