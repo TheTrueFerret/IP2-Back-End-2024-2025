@@ -33,6 +33,6 @@ public class TurnController {
     public ResponseEntity<TileDto> getPulledTileFromTilePool(@Valid @RequestBody CreateSimpleRequest req) {
         return turnService.managePullingTileFromTilePool(req.gameId(), req.playerId())
                 .map(tile -> ResponseEntity.ok(GameDtoMapper.mapToTileDto(tile)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
