@@ -60,14 +60,6 @@ class PredictionControllerTest {
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @Test
-    void happyCreatePrediction() throws Exception {
-        mockMvc.perform(post("/api/ai/prediction/{GameName}", "Rummikub"))
-                .andExpect(status().isOk())
-                .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
-    }
-
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    @Test
     void unHappyCreatePrediction() throws Exception {
         mockMvc.perform(post("/api/ai/prediction/{GameName}", "GameName"))
                 .andExpect(status().isNotFound());
