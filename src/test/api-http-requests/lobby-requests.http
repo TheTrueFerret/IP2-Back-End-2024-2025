@@ -57,3 +57,8 @@ Authorization: Bearer {{access_token}}
 PATCH http://localhost:8080/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
+
+### POST matchmaking lobby join
+POST http://localhost:8080/api/lobby/findLobbyForPlayer/44444444-4444-4444-4444-444444444444
+Content-Type: application/json
+Authorization: Bearer {{access_token}}

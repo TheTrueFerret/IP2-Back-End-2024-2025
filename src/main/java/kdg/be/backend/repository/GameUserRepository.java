@@ -37,4 +37,9 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
 
     @Query("SELECT COUNT(g) FROM Game g JOIN g.players p WHERE p.gameUser.id = :userId")
     long countGamesPlayedByUser(UUID userId);
+
+    @Query("SELECT g FROM GameUser g " +
+            "LEFT JOIN FETCH g.achievements " +
+            "WHERE g.id = :id")
+    Optional<GameUser> findGameUserWithAchievementsById(@Param("id") UUID id);
 }

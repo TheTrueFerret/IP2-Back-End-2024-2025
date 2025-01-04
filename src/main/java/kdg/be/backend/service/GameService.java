@@ -1,8 +1,8 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
+import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.domain.enums.LobbyStatus;
-import kdg.be.backend.domain.enums.TileColor;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
@@ -11,21 +11,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class GameService {
+    // repositories
     private final TileRepository tileRepository;
     private final LobbyRepository lobbyRepository;
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final TilePoolRepository tilePoolRepository;
+
+    // services
     private final TileService tileService;
     private final PlayerService playerService;
     private final GameTurnService gameTurnService;
 
+    // other
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
     public GameService(TileRepository tileRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, TilePoolRepository tilePoolRepository, TileService tileService, PlayerService playerService, GameTurnService gameTurnService) {
@@ -77,6 +80,7 @@ public class GameService {
                     // Save the tile pool
                     tiles.forEach(tile -> tile.setTilePool(tilePool));
                     tileRepository.saveAll(tiles);
+                    tilePoolRepository.save(tilePool);
 
                     // Create a playing field
                     PlayingField playingField = new PlayingField(new ArrayList<>());
@@ -103,7 +107,6 @@ public class GameService {
                             .collect(Collectors.joining(", "));
                     log.info("The tilepool has the following tiles left: {}", tilesInfo);
 
-                    tilePoolRepository.save(tilePool);
                     game.setPlayers(players);
 
                     // Validate if all players have the same amount of tiles
@@ -117,7 +120,6 @@ public class GameService {
                     return game;
                 });
     }
-
 
     public Optional<UUID> getGameIdByLobbyIdAndUserId(UUID lobbyId, UUID userId) {
         Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
@@ -136,7 +138,28 @@ public class GameService {
             log.error("user is not a part of this Lobby: {}", lobbyId);
             throw new IllegalArgumentException("user is not a part of this Lobby: " + lobbyId);
         }
-
         return gameId;
+    }
+
+
+    public Optional<UUID> getGameIdByPlayerId(UUID playerId) {
+        Optional<UUID> gameId = gameRepository.findGameByPlayerId(playerId).map(Game::getId);
+
+        if (gameId.isEmpty()) {
+            log.error("no Game Found for the PlayerId: {}", playerId);
+            throw new IllegalArgumentException("No Game Found for the PlayerId: " + playerId);
+        }
+        return gameId;
+    }
+
+    public List<UUID> getGameLeaderboard(UUID gameId) {
+        Game game = gameRepository.findGameWithLeaderboardById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("No game found with id: " + gameId));
+
+        if (game.getGameState() != GameState.ENDED) {
+            throw new IllegalStateException("Game is not finished yet");
+        }
+
+        return game.getPlayerLeaderboard();
     }
 }

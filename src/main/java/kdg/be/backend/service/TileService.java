@@ -71,7 +71,6 @@ public class TileService {
                 tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
             }
         }
-
         tiles.add(new Tile(0, TileColor.BLACK)); // Joker 1
         tiles.add(new Tile(0, TileColor.RED)); // Joker 2
 

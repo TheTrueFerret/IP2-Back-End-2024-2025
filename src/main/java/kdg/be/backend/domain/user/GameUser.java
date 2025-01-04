@@ -46,4 +46,8 @@ public class GameUser {
         this.friendList = new ArrayList<>();
         this.chats = new ArrayList<>();
     }
+
+    public int getAchievementLevel() {
+        return this.achievements.size();
+    }
 }
