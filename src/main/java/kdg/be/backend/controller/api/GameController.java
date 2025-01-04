@@ -37,7 +37,7 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/leaderboard")
-    public ResponseEntity<List<UUID>> getGameIdByLobbyIdAndUserId(@PathVariable UUID gameId) {
+    public ResponseEntity<List<UUID>> getGameLeaderboard(@PathVariable UUID gameId) {
         return ResponseEntity.ok(gameService.getGameLeaderboard(gameId));
     }
 }

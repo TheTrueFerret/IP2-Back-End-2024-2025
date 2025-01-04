@@ -1,6 +1,7 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
+import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.DeckRepository;
 import kdg.be.backend.repository.GameRepository;
@@ -9,7 +10,6 @@ import kdg.be.backend.repository.TileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -145,20 +145,24 @@ public class PlayerService {
     }
 
     public void calculateNoTilesInTilePoolPlayerScores(Game game) {
-        game.setGameState(GameState.ENDED);
-        gameRepository.save(game);
-        log.info("Game has ended, no tiles left in the tilepool!");
+        if (game.getTilePool().isEmpty()) {
 
-        for (Player playerScore : game.getPlayers()) {
-            int score = playerScore.getDeck().getTiles().stream()
-                    .mapToInt(Tile::getNumberValue)
-                    .sum();
+            game.setGameState(GameState.ENDED);
+            gameRepository.save(game);
+            log.info("Game has ended, no tiles left in the tilepool!");
 
-            playerScore.setScore(-score);
-            playerRepository.save(playerScore);
+            for (Player playerScore : game.getPlayers()) {
+                int score = playerScore.getDeck().getTiles().stream()
+                        .mapToInt(Tile::getNumberValue)
+                        .sum();
+
+                playerScore.setScore(-score);
+                playerRepository.save(playerScore);
+            }
+
+            setGameLeaderboard(game);
         }
 
-        setGameLeaderboard(game);
     }
 
     public void setGameLeaderboard(Game game) {

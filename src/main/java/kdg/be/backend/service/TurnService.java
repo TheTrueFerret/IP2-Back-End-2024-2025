@@ -3,6 +3,7 @@ package kdg.be.backend.service;
 import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
+import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,6 @@ public class TurnService {
             makePlayerMove(player, tileSetDtos, deckDto);
             log.info("Player with id {}, has score {}", player.getId(), player.getScore());
         } else {
-            //TODO als je niet op tijd bent, moet je een tegel trekken
             log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
                     , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), player.getTurnMoveTime());
         }
@@ -160,9 +160,7 @@ public class TurnService {
 
         if (LocalDateTime.now().isAfter(player.getTurnStartTime()) && LocalDateTime.now().isBefore(player.getTurnEndTime())) {
             drawnTileFromTilePool = drawTileFromTilePool(player, playerTurnOrders, game);
-            if (game.getTilePool().isEmpty()) {
-                playerService.calculateNoTilesInTilePoolPlayerScores(game);
-            }
+            playerService.calculateNoTilesInTilePoolPlayerScores(game);
         } else {
             log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"
                     , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());

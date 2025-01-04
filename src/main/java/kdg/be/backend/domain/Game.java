@@ -1,6 +1,7 @@
 package kdg.be.backend.domain;
 
 import jakarta.persistence.*;
+import kdg.be.backend.domain.enums.GameState;
 import lombok.Getter;
 import lombok.Setter;
 

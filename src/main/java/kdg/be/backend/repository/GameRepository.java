@@ -24,7 +24,7 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     @Query("""
             SELECT g
             FROM Game g
-            JOIN FETCH g.playerLeaderboard
+            LEFT JOIN FETCH g.playerLeaderboard
             WHERE g.id = :gameId
             """)
     Optional<Game> findGameWithLeaderboardById(UUID gameId);
