@@ -1,5 +1,6 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.TestContainerIPConfiguration;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.domain.enums.LobbyStatus;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Import(TestContainerIPConfiguration.class)
 public class PlayerServiceTest {
     @MockBean
     private PlayerRepository playerRepository;
