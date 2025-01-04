@@ -54,60 +54,62 @@ public class TurnService {
     }
 
     @Transactional
-    public Optional<Player> managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
-        return Optional.of(gameRepository.findGameById(gameId)
-                .map(game -> {
+    public void managePlayerMoves(UUID playerId, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
+        Game game = gameRepository.findGameById(gameId)
+                .orElseThrow(() -> new NullPointerException("Game not found"));
 
-                    if (game.getGameState() != GameState.ENDED) {
-                        throw new IllegalStateException("Game has already ended!");
-                    }
+        if (game.getGameState() == GameState.ENDED) {
+            throw new IllegalStateException("Game has already ended! You can't make a move anymore.");
+        }
 
-                    Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
-                            .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
+        Player player = playerRepository.findPlayerInGameByGameIdAndPlayerId(gameId, playerId)
+                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
 
-                    List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
-                            .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
+        List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
+                .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
 
-                    managePlayerTurns(player, playerTurnOrders);
-                    if (LocalDateTime.now().isAfter(player.getTurnStartTime()) && LocalDateTime.now().isBefore(player.getTurnEndTime())) {
-                        player.setTurnMoveTime(LocalDateTime.now());
-                        makePlayerMove(player, tileSetDtos, deckDto);
-                    } else {
-                        log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
-                                , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), player.getTurnMoveTime());
-                    }
+        managePlayerTurns(player, playerTurnOrders);
 
-                    log.info("Player with id {}, has score {}", player.getId(), player.getScore());
-                    return getNextPlayer(playerTurnOrders, game, player);
-                }).orElseThrow(() -> new NullPointerException("Game not found")));
+        if (LocalDateTime.now().isAfter(player.getTurnStartTime()) && LocalDateTime.now().isBefore(player.getTurnEndTime())) {
+            player.setTurnMoveTime(LocalDateTime.now());
+            makePlayerMove(player, tileSetDtos, deckDto);
+            log.info("Player with id {}, has score {}", player.getId(), player.getScore());
+        } else {
+            //TODO als je niet op tijd bent, moet je een tegel trekken
+            log.warn("{} didn't make a move when it was their turn from {} to {}. Move was made at {}"
+                    , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), player.getTurnMoveTime());
+        }
+
+        getNextPlayer(playerTurnOrders, game, player);
     }
 
-    private Player getNextPlayer(List<UUID> turnOrders, Game game, Player currentPlayer) {
-        Deque<UUID> nextPlayerTurnOrders = new ArrayDeque<>(turnOrders);
+    private void getNextPlayer(List<UUID> turnOrders, Game game, Player currentPlayer) {
+        if (game.getGameState() != GameState.ENDED) {
+            Deque<UUID> nextPlayerTurnOrders = new ArrayDeque<>(turnOrders);
 
-        UUID firstPlayerId = nextPlayerTurnOrders.pollFirst();
-        if (firstPlayerId != null && !firstPlayerId.equals(currentPlayer.getId())) {
-            throw new IllegalStateException("It is not your turn: " + currentPlayer.getGameUser().getUsername());
+            UUID firstPlayerId = nextPlayerTurnOrders.pollFirst();
+            if (firstPlayerId != null && !firstPlayerId.equals(currentPlayer.getId())) {
+                throw new IllegalStateException("It is not your turn: " + currentPlayer.getGameUser().getUsername());
+            }
+            nextPlayerTurnOrders.offerLast(firstPlayerId);
+
+            game.setPlayerTurnOrder(new ArrayList<>(nextPlayerTurnOrders));
+            gameRepository.save(game);
+
+            UUID nextPlayerId = nextPlayerTurnOrders.peekFirst();
+            Player nextPlayer = playerRepository.findPlayerById(nextPlayerId)
+                    .orElseThrow(() -> new NullPointerException("Next player not found"));
+
+            playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
+                    .ifPresent(player -> {
+                        nextPlayer.setTurnStartTime(LocalDateTime.now());
+                        nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
+                        playerRepository.save(nextPlayer);
+                    });
+
+            log.info("The next turn is for player: {}, make a move within the time limit: from {} to {}",
+                    nextPlayer.getGameUser().getUsername(), nextPlayer.getTurnStartTime(), nextPlayer.getTurnEndTime());
         }
-        nextPlayerTurnOrders.offerLast(firstPlayerId);
-
-        game.setPlayerTurnOrder(new ArrayList<>(nextPlayerTurnOrders));
-        gameRepository.save(game);
-
-        UUID nextPlayerId = nextPlayerTurnOrders.peekFirst();
-        Player nextPlayer = playerRepository.findPlayerById(nextPlayerId)
-                .orElseThrow(() -> new NullPointerException("Next player not found"));
-
-        playerRepository.findPlayerInGameByGameIdAndPlayerId(game.getId(), firstPlayerId)
-                .ifPresent(player -> {
-                    nextPlayer.setTurnStartTime(LocalDateTime.now());
-                    nextPlayer.setTurnEndTime(nextPlayer.getTurnStartTime().plusSeconds(game.getTurnTime()));
-                    playerRepository.save(nextPlayer);
-                });
-
-        log.info("The next turn is for player: {}, make a move within the time limit: from {} to {}",
-                nextPlayer.getGameUser().getUsername(), nextPlayer.getTurnStartTime(), nextPlayer.getTurnEndTime());
-        return nextPlayer;
     }
 
     private void makePlayerMove(Player player, List<PlayerMoveTileSetDto> tileSetDtos, PlayerMoveDeckDto deckDto) {
@@ -152,8 +154,15 @@ public class TurnService {
         Game game = gameRepository.findGameByIdWithTilePoolTilesWithDeckIsNull(gameId)
                 .orElseThrow(() -> new IllegalStateException("No tiles left in the tilepool of the game"));
 
+        if (game.getGameState() == GameState.ENDED) {
+            throw new IllegalStateException("Game has already ended! You can't pull a tile anymore.");
+        }
+
         if (LocalDateTime.now().isAfter(player.getTurnStartTime()) && LocalDateTime.now().isBefore(player.getTurnEndTime())) {
             drawnTileFromTilePool = drawTileFromTilePool(player, playerTurnOrders, game);
+            if (game.getTilePool().isEmpty()) {
+                playerService.calculateNoTilesInTilePoolPlayerScores(game);
+            }
         } else {
             log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"
                     , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
@@ -173,6 +182,9 @@ public class TurnService {
         tilePool.shuffleTiles();
 
         log.info("TILE POOL TILES: {}", tilePool.getTiles().size());
+        log.info("TILE POOL TILE ORDER: {}", tilePool.getTiles().stream()
+                .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
+                .collect(Collectors.joining(", ")));
 
         // Trek een tegel uit de pool
         Tile drawnTile = tilePool.drawTile();

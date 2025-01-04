@@ -15,7 +15,7 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-  "turnTime": 6000,
+  "turnTime": 60,
   "startTileAmount": 1,
   "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
 }
@@ -26,37 +26,12 @@ Authorization: Bearer {{access_token}}
     client.global.set("playerId2", response.body.playerTurnOrder[1]);
 %}
 
-### call om de zet te cheken op basis van heel de playingfield
-POST http://localhost:8080/api/turns/player-make-move
+### PATCH call om een tile uit een tilepool te halen van een game
+PATCH http://localhost:8080/api/turns/player-pull-tile
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
   "gameId": "{{gameId}}",
-  "playerId": "{{playerId}}",
-  "tileSets": [
-    {
-      "tileSetId": "00000000-0000-0000-0000-000000000002",
-      "startCoordinate": 1,
-      "endCoordinate": 3,
-      "tiles": [
-        {
-          "tileId": "db8dbdb0-a886-418b-9308-48188e43deeb",
-          "numberValue": 100,
-          "color": "RED",
-          "gridColumn": 0,
-          "gridRow": 0
-        }
-      ]
-    }
-  ],
-  "playerDeckDto": {
-    "tilesInDeck": [
-    ]
-  }
+  "playerId": "{{playerId}}"
 }
-
-### GET game leaderboard by gameid
-GET http://localhost:8080/api/games/{{gameId}}/leaderboard
-Accept: application/json
-Authorization: Bearer {{access_token}}

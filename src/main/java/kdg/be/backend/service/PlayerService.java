@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,14 +25,12 @@ public class PlayerService {
     private final DeckRepository deckRepository;
 
     private static final Logger log = LoggerFactory.getLogger(PlayerService.class);
-    private final GameService gameService;
 
-    public PlayerService(PlayerRepository playerRepository, TileRepository tileRepository, GameRepository gameRepository, DeckRepository deckRepository, GameService gameService) {
+    public PlayerService(PlayerRepository playerRepository, TileRepository tileRepository, GameRepository gameRepository, DeckRepository deckRepository) {
         this.playerRepository = playerRepository;
         this.tileRepository = tileRepository;
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
-        this.gameService = gameService;
     }
 
     public UUID getPlayerIdByUserId(UUID userId) {
@@ -107,7 +106,6 @@ public class PlayerService {
      * (= if the player has no tiles left in his deck)
      * TODO add achievement for winning the game
      */
-    @Transactional
     public void checkPlayerTiles(Player winner) {
         if (winner.getDeck().getTiles().isEmpty()) {
             Game game = winner.getGame();
@@ -137,13 +135,48 @@ public class PlayerService {
                     winnerScore += score;
 
                     playerRepository.save(player);
-                    log.info("Player {} has a score of {}", player.getGameUser().getUsername(), player.getScore());
                 }
             }
 
             winner.setScore(winnerScore);
             playerRepository.save(winner);
-            gameService.setGameLeaderboard(game);
+            setGameLeaderboard(game);
         }
+    }
+
+    public void calculateNoTilesInTilePoolPlayerScores(Game game) {
+        game.setGameState(GameState.ENDED);
+        gameRepository.save(game);
+        log.info("Game has ended, no tiles left in the tilepool!");
+
+        for (Player playerScore : game.getPlayers()) {
+            int score = playerScore.getDeck().getTiles().stream()
+                    .mapToInt(Tile::getNumberValue)
+                    .sum();
+
+            playerScore.setScore(-score);
+            playerRepository.save(playerScore);
+        }
+
+        setGameLeaderboard(game);
+    }
+
+    public void setGameLeaderboard(Game game) {
+        if (game.getGameState() != GameState.ENDED) {
+            throw new IllegalStateException("Game is not finished yet, cannot create leaderboard");
+        }
+
+        List<Player> players = game.getPlayers();
+        players.sort(Comparator.comparingInt(Player::getScore).reversed());
+
+        List<UUID> playerIds = players.stream()
+                .map(Player::getId)
+                .collect(Collectors.toList());
+        game.setPlayerLeaderboard(playerIds);
+        gameRepository.save(game);
+
+        log.info("Leaderboard for game with id: {}", game.getId());
+        players.forEach(player -> log.info("Player: {} has {} tiles left with a score of {}",
+                player.getGameUser().getUsername(), player.getDeck().getTiles().size(), player.getScore()));
     }
 }

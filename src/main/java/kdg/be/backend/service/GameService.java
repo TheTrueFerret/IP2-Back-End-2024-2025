@@ -78,6 +78,7 @@ public class GameService {
                     // Save the tile pool
                     tiles.forEach(tile -> tile.setTilePool(tilePool));
                     tileRepository.saveAll(tiles);
+                    tilePoolRepository.save(tilePool);
 
                     // Create a playing field
                     PlayingField playingField = new PlayingField(new ArrayList<>());
@@ -104,7 +105,6 @@ public class GameService {
                             .collect(Collectors.joining(", "));
                     log.info("The tilepool has the following tiles left: {}", tilesInfo);
 
-                    tilePoolRepository.save(tilePool);
                     game.setPlayers(players);
 
                     // Validate if all players have the same amount of tiles
@@ -118,7 +118,6 @@ public class GameService {
                     return game;
                 });
     }
-
 
     public Optional<UUID> getGameIdByLobbyIdAndUserId(UUID lobbyId, UUID userId) {
         Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
@@ -142,7 +141,7 @@ public class GameService {
     }
 
     public List<UUID> getGameLeaderboard(UUID gameId) {
-        Game game = gameRepository.findGameById(gameId)
+        Game game = gameRepository.findGameWithLeaderboardById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("No game found with id: " + gameId));
 
         if (game.getGameState() != GameState.ENDED) {
@@ -150,24 +149,5 @@ public class GameService {
         }
 
         return game.getPlayerLeaderboard();
-    }
-
-    public void setGameLeaderboard(Game game){
-        if (game.getGameState() != GameState.ENDED) {
-            throw new IllegalStateException("Game is not finished yet, cannot create leaderboard");
-        }
-
-        List<Player> players = game.getPlayers();
-        players.sort(Comparator.comparingInt(Player::getScore));
-
-        List<UUID> playerIds = players.stream()
-                .map(Player::getId)
-                .collect(Collectors.toList());
-        game.setPlayerLeaderboard(playerIds);
-        gameRepository.save(game);
-
-        log.info("Leaderboard for game with id: {}", game.getId());
-        players.forEach(player -> log.info("Player: {} has {} tiles left with a score of {}",
-                player.getGameUser().getUsername(), player.getDeck().getTiles().size(), player.getScore()));
     }
 }
