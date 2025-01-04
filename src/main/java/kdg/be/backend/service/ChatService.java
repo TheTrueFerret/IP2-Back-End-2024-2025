@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
@@ -73,4 +74,12 @@ public class ChatService {
         String url = chatbotApiHistoryUrl + "/" + chatId + "/state";
         return restTemplate.getForObject(url, Map.class);
     }
+
+    public List<UUID> getAllChatIdsByUserId(UUID userId) {
+        return chatRepository.findAllByGameUserId(userId)
+                .stream()
+                .map(Chat::getId)
+                .collect(Collectors.toList());
+    }
+
 }
