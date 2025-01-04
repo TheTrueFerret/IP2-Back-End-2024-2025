@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -98,5 +100,17 @@ public class PlayerService {
             log.info("Player {} has the following tiles in their deck: {}", user.getUsername(), tilesInfo);
         }
         return players;
+    }
+
+    public int getCurrentTurnTime(UUID playerId) {
+        Player player = playerRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
+
+        if (!LocalTime.now().isAfter(player.getTurnStartTime()) && !LocalTime.now().isBefore(player.getTurnEndTime())) {
+
+            log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"
+                    , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
+        }
+        return (int) Duration.between(LocalTime.now(), player.getTurnEndTime()).toSeconds();
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -161,7 +162,7 @@ public class GameService {
 
     @Transactional
     public boolean removePlayerFromGame(UUID gameId, UUID playerId) {
-        Game game = gameRepository.findByGameId(gameId)
+        Game game = gameRepository.findByGameIdAndIsActive(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("game does not exist"));
 
         List<Player> playersInGame = game.getPlayers();
@@ -174,13 +175,12 @@ public class GameService {
 
         playersInGame.removeIf(player -> player.getId().equals(playerId));
 
-        if (playersInGame.isEmpty()) {
-            gameRepository.delete(game);
-            // maybe not fully deleted but ait
-        } else {
+        if (!playersInGame.isEmpty()) {
             game.setPlayers(playersInGame);
             gameRepository.save(game);
         }
         return true;
     }
+
+
 }

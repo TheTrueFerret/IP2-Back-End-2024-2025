@@ -90,4 +90,13 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             WHERE g.id = :gameId
             """)
     Optional<Game> findByGameId(UUID gameId);
+
+    // TODO: FIKS THIS TO HAVE isACTIVE GAME!!!!
+    @Query("""
+            SELECT g
+            FROM Game g
+            LEFT JOIN FETCH g.playingField
+            WHERE g.id = :gameId
+            """)
+    Optional<Game> findByGameIdAndIsActive(UUID gameId);
 }
