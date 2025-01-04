@@ -52,7 +52,6 @@ public class TileSetService {
         tileSetRepository.save(newTileSet); // This saves the TileSet and generates its ID
 
         // Initialize the collection of tiles for the new TileSet
-        Set<Tile> tilesToSet = new HashSet<>();
         for (Tile tile : tiles) {
 
             // Detach the tile from its current TileSet if it belongs to one
@@ -64,11 +63,8 @@ public class TileSetService {
 
             // Associate the tile with the new TileSet
             tile.setTileSet(newTileSet);  // Set the new TileSet
-            tilesToSet.add(tile);  // Add the tile to the new TileSet's collection
         }
 
-        // Set the collection of tiles to the new TileSet
-        newTileSet.setTiles(tilesToSet);
 
         // Log the new TileSet and its associated Tiles
 

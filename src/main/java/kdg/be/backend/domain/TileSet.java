@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter
@@ -20,7 +17,7 @@ public class TileSet {
     private int endCoordinate;
     private int gridRow;
 
-    @OneToMany(mappedBy = "tileSet",cascade = CascadeType.MERGE, orphanRemoval = true)
+    @OneToMany(mappedBy = "tileSet", cascade = CascadeType.ALL)
     private Set<Tile> tiles;
 
     @ManyToOne

@@ -33,17 +33,19 @@ public class PlayingFieldService {
         this.moveValidationService = moveValidationService;
     }
 
-    public PlayingField getPlayingFieldByGameId(UUID gameId) {
-        Game game = gameRepository.findGameByIdWithPlayingField(gameId)
-                .orElseThrow(() -> new IllegalStateException("No game found"));
-
-        return game.getPlayingField();
+    public List<TileSet> getPlayingFieldByGameId(UUID gameId) {
+        List<TileSet> tileSets = tileSetRepository.findTileSetsByGameId(gameId);
+        for (TileSet tileSet : tileSets) {
+            tileSet.setTiles(new HashSet<>(tileRepository.findTilesByTileSetId(tileSet.getId())));
+        }
+        if (tileSets.isEmpty()) {
+            throw new IllegalArgumentException("No TileSets found for Game ID: " + gameId);
+        }
+        return tileSets;
     }
 
     @Transactional
     public void handlePlayerMoves(UUID gameId, List<PlayerMoveTileSetDto> playerMoveTileSetDtos) {
-        List<TileSet> updatedTileSets = new ArrayList<>();
-
         for (PlayerMoveTileSetDto playerMoveTileSetDto : playerMoveTileSetDtos) {
             // Extract tile IDs from the DTO
             List<UUID> tileIds = playerMoveTileSetDto.tiles().stream()
@@ -56,69 +58,42 @@ public class PlayingFieldService {
                 throw new IllegalArgumentException("The tiles from the dto don't exist");
             }
 
-            TileSet tileSet;
+            TileSet tileSet = playerMoveTileSetDto.id() == null
+                    ? createNewTileSet(gameId)
+                    : tileSetRepository.findByIdWithTiles(playerMoveTileSetDto.id())
+                    .orElseThrow(() -> new IllegalArgumentException("TileSet not found"));
 
-            if (playerMoveTileSetDto.tileSetId() == null) {
-                // Create a new TileSet if no ID is provided
-                tileSet = new TileSet();
 
-                Game game = gameRepository.findByGameId(gameId)
-                        .orElseThrow(() -> new IllegalStateException("No game found"));
-                tileSet.setPlayingField(game.getPlayingField());
+            // Set TileSet properties
+            tileSet.setGridRow(playerMoveTileSetDto.gridRow());
+            tileSet.setStartCoordinate(playerMoveTileSetDto.startCoord());
+            tileSet.setEndCoordinate(playerMoveTileSetDto.endCoord());
 
-                // Update tile positions based on the DTO
-                for (Tile tile : tiles) {
-                    PlayerMoveTileDto tileDto = playerMoveTileSetDto.tiles()
-                            .stream()
-                            .filter(dto -> dto.id().equals(tile.getId()))
-                            .findFirst()
-                            .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch: " + tile.getId()));
 
-                    // Update the tile's column and row
-                    tile.setGridColumn(tileDto.gridColumn());
-                    tile.setGridRow(tileDto.gridRow());
-                    tile.setTileSet(tileSet);
-                }
+            // Update tile positions and associate with the saved TileSet
+            for (Tile tile : tiles) {
+                PlayerMoveTileDto tileDto = playerMoveTileSetDto.tiles().stream()
+                        .filter(dto -> dto.id().equals(tile.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch: " + tile.getId()));
 
-                Set<Tile> tileSetSet = new HashSet<>(tiles);
-                tileSet.setTiles(tileSetSet);
-                tileSet.setGridRow(playerMoveTileSetDto.gridRow());
-                tileSet.setStartCoordinate(playerMoveTileSetDto.startCoord());
-                tileSet.setEndCoordinate(playerMoveTileSetDto.endCoord());
-
-            } else {
-                // Retrieve the existing TileSet if ID is provided
-                tileSet = tileSetRepository.findByIdWithTiles(playerMoveTileSetDto.tileSetId())
-                        .orElseThrow(() -> new IllegalArgumentException("TileSet not found for ID: " + playerMoveTileSetDto.tileSetId()));
-
-                // Update tile positions based on the DTO
-                for (Tile tile : tiles) {
-                    PlayerMoveTileDto tileDto = playerMoveTileSetDto.tiles()
-                            .stream()
-                            .filter(dto -> dto.id().equals(tile.getId()))
-                            .findFirst()
-                            .orElseThrow(() -> new IllegalArgumentException("Tile ID mismatch: " + tile.getId()));
-
-                    // Update the tile's column and row
-                    tile.setGridColumn(tileDto.gridColumn());
-                    tile.setGridRow(tileDto.gridRow());
-                    tile.setTileSet(tileSet);
-                }
-
-                // Assign the updated tiles to the TileSet
-                tileSet.getTiles().clear(); // Clear existing tiles if any
-                tileSet.getTiles().addAll(tiles);
-                tileSet.setGridRow(playerMoveTileSetDto.gridRow());
-                tileSet.setStartCoordinate(playerMoveTileSetDto.startCoord());
-                tileSet.setEndCoordinate(playerMoveTileSetDto.endCoord());
+                tile.setGridColumn(tileDto.gridColumn());
+                tile.setGridRow(tileDto.gridRow());
+                tile.setDeck(null);
+                tile.setTileSet(tileSet);
             }
 
-            // Save the updated tiles
-            tileRepository.saveAll(tiles);
-
-            // Save the TileSet and add it to the result list
-            updatedTileSets.add(tileSetRepository.save(tileSet));
+            tileSet.setTiles(new HashSet<>(tiles));
+            tileSetRepository.save(tileSet);
         }
+    }
+
+    private TileSet createNewTileSet(UUID gameId) {
+        TileSet tileSet = new TileSet();
+        Game game = gameRepository.findByGameId(gameId)
+                .orElseThrow(() -> new IllegalStateException("No game found"));
+        tileSet.setPlayingField(game.getPlayingField());
+        return tileSet;
     }
 
     @Transactional
@@ -147,6 +122,8 @@ public class PlayingFieldService {
         deck.getTiles().clear();
         deck.getTiles().addAll(tiles);
 
+        List<Tile> saveTiles = new ArrayList<>();
+
         // Update tile positions based on the DTO
         for (Tile tile : tiles) {
             PlayerMoveTileDto tileDto = deckDto
@@ -158,10 +135,11 @@ public class PlayingFieldService {
             tile.setGridColumn(tileDto.gridColumn());
             tile.setGridRow(tileDto.gridRow());
             tile.setDeck(deck);
+            saveTiles.add(tile);
         }
 
         // Save the updated tiles and deck
-        tileRepository.saveAll(tiles);
+        tileRepository.saveAll(saveTiles);
         deckRepository.save(deck);
 
         // Update the player's score

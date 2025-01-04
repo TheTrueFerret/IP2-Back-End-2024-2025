@@ -9,6 +9,7 @@ import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.user.GameUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameDtoMapper {
@@ -45,6 +46,7 @@ public class GameDtoMapper {
 
     public static TileSetDto mapToTileSetDto(TileSet tileSet) {
         return new TileSetDto(
+                tileSet.getId(),
                 tileSet.getStartCoordinate(),
                 tileSet.getEndCoordinate(),
                 tileSet.getGridRow(),
@@ -89,5 +91,12 @@ public class GameDtoMapper {
                         .map(GameDtoMapper::mapToTileDto)
                         .toList()
         );
+    }
+
+    public static List<TileSetDto> mapToTileSetListDto(List<TileSet> tileSets) {
+        return tileSets
+                .stream()
+                .map(GameDtoMapper::mapToTileSetDto)
+                .toList();
     }
 }

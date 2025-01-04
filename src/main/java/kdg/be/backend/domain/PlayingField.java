@@ -19,6 +19,9 @@ public class PlayingField {
     @OneToMany(mappedBy = "playingField")
     private Collection<TileSet> tileSets;
 
+    @OneToOne(mappedBy = "playingField", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Game game;
+
     public PlayingField() {
     }  // jpa
 
