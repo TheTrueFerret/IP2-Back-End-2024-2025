@@ -1,6 +1,7 @@
 package kdg.be.backend.controller.api;
 
 import kdg.be.backend.exception.InvalidMoveException;
+import kdg.be.backend.exception.PredictionException;
 import kdg.be.backend.exception.UserDoesNotExistException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -60,5 +61,13 @@ public class GlobalExceptionHandler {
         response.put("error", UserDoesNotExistException.class.getSimpleName());
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(PredictionException.class)
+    public ResponseEntity<?> handlePredictionException(PredictionException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

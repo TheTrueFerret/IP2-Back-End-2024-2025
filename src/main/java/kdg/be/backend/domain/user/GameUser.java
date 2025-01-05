@@ -17,6 +17,7 @@ public class GameUser {
     private UUID id;
     private String username;
     private String avatar;
+    private int points;
 
     // relaties
     @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -45,6 +46,7 @@ public class GameUser {
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         this.chats = new ArrayList<>();
+        this.points = 0;
     }
 
     public int getAchievementLevel() {
