@@ -59,6 +59,6 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 ### POST matchmaking lobby join
-POST http://localhost:8080/api/lobby/findLobbyForPlayer/44444444-4444-4444-4444-444444444444
+PATCH http://localhost:8080/api/lobby/findLobbyForPlayer/44444444-4444-4444-4444-444444444444
 Content-Type: application/json
 Authorization: Bearer {{access_token}}

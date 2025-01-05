@@ -303,7 +303,7 @@ class LobbyControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testFindLobbyForNonExistentUserShouldReturnBadRequest() throws Exception {
-        mockMvc.perform(post("/api/lobby/findLobbyForPlayer/00000000-0000-0000-0000-000000000000")
+        mockMvc.perform(patch("/api/lobby/findLobbyForPlayer/00000000-0000-0000-0000-000000000000")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Game user for matchmaking not found"))

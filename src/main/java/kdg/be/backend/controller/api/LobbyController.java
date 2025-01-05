@@ -99,7 +99,7 @@ public class LobbyController {
                 .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
-    @PostMapping("/findLobbyForPlayer/{gameUserId}")
+    @PatchMapping("/findLobbyForPlayer/{gameUserId}")
     public ResponseEntity<?> findLobbyForPlayer(@PathVariable UUID gameUserId) {
         Optional<Lobby> lobby = lobbyService.findLobbyForPlayer(gameUserId);
         if (lobby.isPresent()) {
