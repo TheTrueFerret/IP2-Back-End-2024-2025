@@ -284,7 +284,7 @@ class LobbyControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testFindLobbyForPlayerShouldReturnOk() throws Exception {
-        mockMvc.perform(post("/api/lobby/findLobbyForPlayer/44444444-4444-4444-4444-444444444444")
+        mockMvc.perform(patch("/api/lobby/findLobbyForPlayer/44444444-4444-4444-4444-444444444444")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.hostUser.id").value("33333333-3333-3333-3333-333333333333"))
