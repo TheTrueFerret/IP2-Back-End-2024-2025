@@ -31,7 +31,6 @@ public class TurnService {
     private final MoveValidationService moveValidationService;
     private final GameUserAchievementService gameUserAchievementService;
     private final PlayerService playerService;
-    private final TileSetService tileSetService;
 
     // other
     private static final Logger log = LoggerFactory.getLogger(TurnService.class);
@@ -39,7 +38,7 @@ public class TurnService {
     public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, DeckRepository deckRepository,
                        TileRepository tileRepository, TilePoolRepository tilePoolRepository, PlayingFieldService playingFieldService,
                        MoveValidationService moveValidationService, GameUserAchievementService gameUserAchievementService,
-                       PlayerService playerService, TileSetService tileSetService) {
+                       PlayerService playerService) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
         this.deckRepository = deckRepository;
@@ -49,7 +48,6 @@ public class TurnService {
         this.moveValidationService = moveValidationService;
         this.gameUserAchievementService = gameUserAchievementService;
         this.playerService = playerService;
-        this.tileSetService = tileSetService;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
