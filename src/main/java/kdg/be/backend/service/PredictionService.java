@@ -32,19 +32,6 @@ public class PredictionService {
         this.gameStatRepository = gameStatRepository;
     }
 
-
-    public PredictionDto getLastPrediction(String gameName) {
-        Prediction prediction = predictionRepository.getLastPredictionByGameStatName(gameName);
-        if (prediction == null) {
-            if (createPrediction(gameName, new FormDataDto(0, 0, 0, 0, ""))) {
-                prediction = predictionRepository.getLastPredictionByGameStatName(gameName);
-            } else {
-                throw new PredictionException("Prediction not found");
-            }
-        }
-        return new PredictionDto(prediction);
-    }
-
     public boolean createPrediction(String gameName, FormDataDto formDataDto) {
         GameStat gameStat = gameStatRepository.findByGameNameIsIgnoreCase(gameName);
         if (gameStat == null) {

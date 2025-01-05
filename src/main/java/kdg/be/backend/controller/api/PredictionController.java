@@ -22,14 +22,6 @@ public class PredictionController {
         this.predictionService = predictionService;
     }
 
-    @GetMapping("/prediction/{GameName}")
-    public ResponseEntity<PredictionDto> getPrediction(@PathVariable String GameName) {
-        if (GameName == null || GameName.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(predictionService.getLastPrediction(GameName));
-    }
-
     @GetMapping("/predictions/{GameName}")
     public ResponseEntity<List<PredictionDto>> getAllPredictions(@PathVariable String GameName) {
         if (GameName == null || GameName.isBlank()) {

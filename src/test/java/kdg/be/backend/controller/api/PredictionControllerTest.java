@@ -21,29 +21,7 @@ class PredictionControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    @Test
-    void happyGetPrediction() throws Exception {
-        mockMvc.perform(get("/api/ai/prediction/{GameName}", "Rummikub"))
-                .andExpect(status().isOk())
-                .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
-    }
-
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    @Test
-    void unHappyGetPrediction() throws Exception {
-        mockMvc.perform(get("/api/ai/prediction/{GameName}", "GameName"))
-                .andExpect(status().isNotFound());
-    }
-
-    @WithMockUser(username = "user", roles = "USER")
-    @Test
-    void unHappyNoAdminGetPrediction() throws Exception {
-        mockMvc.perform(get("/api/ai/prediction/{GameName}", "Rummikub"))
-                .andExpect(status().isForbidden());
-    }
-
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @WithMockUser(username = "admin", authorities = {"ADMIN"})
     @Test
     void happyGetAllPredictions() throws Exception {
         mockMvc.perform(get("/api/ai/predictions/{GameName}", "Rummikub"))
@@ -51,17 +29,37 @@ class PredictionControllerTest {
                 .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
     }
 
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @WithMockUser(username = "admin", authorities = {"ADMIN"})
     @Test
     void unHappyGetAllPredictions() throws Exception {
         mockMvc.perform(get("/api/ai/predictions/{GameName}", "GameName"))
                 .andExpect(status().isNotFound());
     }
 
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @WithMockUser(username = "admin", authorities = {"USER"})
+    @Test
+    void unHappyNoAdminGetAllPredictions() throws Exception {
+        mockMvc.perform(get("/api/ai/predictions/{GameName}", "GameName"))
+                .andExpect(status().isForbidden());
+    }
+
+    @WithMockUser(username = "admin", authorities = {"ADMIN"})
+    @Test
+    void happyCreatePrediction() throws Exception {
+        String requestBody = "{ \"min_players\": \"1\", \"max_players\": \"4\", \"play_time\": \"60\", \"board_game_honor\": \"5\", \"mechanics\": \"strategy\" }";
+        mockMvc.perform(post("/api/ai/prediction/{GameName}", "Rummikub")
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andExpect(status().isOk());
+    }
+
+    @WithMockUser(username = "admin", authorities = {"ADMIN"})
     @Test
     void unHappyCreatePrediction() throws Exception {
-        mockMvc.perform(post("/api/ai/prediction/{GameName}", "GameName"))
+        String requestBody = "{ \"min_players\": \"1\", \"max_players\": \"4\", \"play_time\": \"60\", \"board_game_honor\": \"5\", \"mechanics\": \"strategy\" }";
+        mockMvc.perform(post("/api/ai/prediction/{GameName}", "GameName")
+                        .contentType("application/json")
+                        .content(requestBody))
                 .andExpect(status().isNotFound());
     }
 }
