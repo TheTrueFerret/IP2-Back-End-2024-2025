@@ -241,6 +241,6 @@ INSERT INTO customizable (id, name, description, color, points)
 VALUES ('00000000-0000-0000-0000-000000000024', 'Red_Background', 'Makes the background red', 'red', 5),
        ('00000000-0000-0000-0000-000000000025', 'Blue_Background', 'Makes the background blue', 'blue', 10),
        ('00000000-0000-0000-0000-000000000026', 'Golden_Background', 'Makes the background gold', 'white', 15),
-       ('00000000-0000-0000-0000-000000000027', 'Red_Profile_Background', 'Makes the background red', 'RED', 5),
-       ('00000000-0000-0000-0000-000000000028', 'Blue_Profile_Background', 'Makes the background blue', 'Blue', 10),
-       ('00000000-0000-0000-0000-000000000029', 'Golden_Profile_Background', 'Makes the background gold', 'Whit', 15);
+       ('00000000-0000-0000-0000-000000000027', 'Red_Profile_Background', 'Makes the background red', 'red', 5),
+       ('00000000-0000-0000-0000-000000000028', 'Blue_Profile_Background', 'Makes the background blue', 'blue', 10),
+       ('00000000-0000-0000-0000-000000000029', 'Golden_Profile_Background', 'Makes the background gold', 'white', 15);

@@ -200,4 +200,9 @@ public class GameUserService {
         }
         return customizables;
     }
+
+    public Integer getUserPoints(UUID userId) {
+        GameUser gameUser = gameUserRepository.findGameUserByIdWithCustomizables(userId).orElseThrow(() -> new UserDoesNotExistException(userId.toString()));
+        return gameUser.getPoints();
+    }
 }

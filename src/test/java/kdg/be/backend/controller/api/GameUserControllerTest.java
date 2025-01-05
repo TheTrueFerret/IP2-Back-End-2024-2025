@@ -460,17 +460,25 @@ class GameUserControllerTest {
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    public void getCustomizables() throws Exception {
-        mockMvc.perform(get("/api/gameuser/customizables?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
+    public void happyGetUserCustomizables() throws Exception {
+        mockMvc.perform(get("/api/gameuser/userCustomizables?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
                         .contentType("application/json"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(username = "test", password = "test", roles = "USER")
-    public void unHappyGetCustomizables() throws Exception {
+    public void unHappyGetUserCustomizables() throws Exception {
+        mockMvc.perform(get("/api/gameuser/userCustomizables?userId=4e861d2e-5f89-47b1-91e4-a3aef9000000")
+                        .contentType("application/json"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    public void happyGetCustomizables() throws Exception {
         mockMvc.perform(get("/api/gameuser/customizables?userId=4e861d2e-5f89-47b1-91e4-a3aef9000000")
                         .contentType("application/json"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
     }
 }

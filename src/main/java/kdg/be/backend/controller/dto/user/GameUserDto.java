@@ -14,6 +14,7 @@ public class GameUserDto {
     private UUID id;
     private String username;
     private String avatar;
+    private int points;
     private List<GameUserAchievementDto> achievements;
     private List<GameUserDto> friendList;
     private int gamesPlayed;
@@ -39,6 +40,7 @@ public class GameUserDto {
         this.id = gameUser.getId();
         this.username = gameUser.getUsername();
         this.avatar = gameUser.getAvatar();
+        this.points = gameUser.getPoints();
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         if (!gameUser.getFriendList().isEmpty()) {
