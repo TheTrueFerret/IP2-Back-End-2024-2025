@@ -1,0 +1,15 @@
+### GET request to example server
+POST http://localhost:8001/api/predict/
+Content-Type: application/json
+
+{
+  "year_published": 2008,
+  "min_players": 2,
+  "max_players": 6,
+  "play_time": 30,
+  "min_age": 6,
+  "board_game_honor": 4,
+  "mechanics": "test"
+}
+
+###

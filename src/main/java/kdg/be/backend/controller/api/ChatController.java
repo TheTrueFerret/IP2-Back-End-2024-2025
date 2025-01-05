@@ -49,4 +49,11 @@ public class ChatController {
 
         return ResponseEntity.ok(chatMessages);
     }
+
+    @GetMapping("/user/{userId}/chats")
+    public ResponseEntity<List<UUID>> getAllChatIdsByUserId(@PathVariable UUID userId) {
+        List<UUID> chatIds = chatService.getAllChatIdsByUserId(userId);
+        return ResponseEntity.ok(chatIds);
+    }
+
 }

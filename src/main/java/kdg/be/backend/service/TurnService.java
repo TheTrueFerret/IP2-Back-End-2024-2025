@@ -5,6 +5,7 @@ import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileSetDto;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.GameState;
+import kdg.be.backend.exception.TileSetException;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class TurnService {
     private final MoveValidationService moveValidationService;
     private final GameUserAchievementService gameUserAchievementService;
     private final PlayerService playerService;
+    private final TileSetService tileSetService;
 
     // other
     private static final Logger log = LoggerFactory.getLogger(TurnService.class);
@@ -37,7 +39,7 @@ public class TurnService {
     public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, DeckRepository deckRepository,
                        TileRepository tileRepository, TilePoolRepository tilePoolRepository, PlayingFieldService playingFieldService,
                        MoveValidationService moveValidationService, GameUserAchievementService gameUserAchievementService,
-                       PlayerService playerService) {
+                       PlayerService playerService, TileSetService tileSetService) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
         this.deckRepository = deckRepository;
@@ -47,6 +49,7 @@ public class TurnService {
         this.moveValidationService = moveValidationService;
         this.gameUserAchievementService = gameUserAchievementService;
         this.playerService = playerService;
+        this.tileSetService = tileSetService;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
@@ -116,6 +119,14 @@ public class TurnService {
     private void makePlayerMove(Player player, UUID gameId, List<PlayerMoveTileSetDto> tileSetDtos, List<PlayerMoveTileDto> deckDto) {
         // First turn check
         checkFirstTurn(player, deckDto);
+
+        try {
+            for (PlayerMoveTileSetDto tileSetDto : tileSetDtos) {
+                moveValidationService.checkTileSet(tileSetDto.tiles());
+            }
+        } catch (TileSetException e) {
+            throw new IllegalArgumentException("Player" + player.getGameUser().getUsername() + " made an invalid move:" + e.getMessage() + " Skipping to next player");
+        }
 
         // Handle player moves
         playingFieldService.handlePlayerMoves(gameId, tileSetDtos);

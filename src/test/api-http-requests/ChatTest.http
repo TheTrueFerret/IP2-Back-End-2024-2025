@@ -31,3 +31,9 @@ Authorization: Bearer {{access_token}}
 GET http://localhost:8080/api/chat/{{threadId}}/history
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
+
+
+### Get all chat IDs for a user
+GET http://localhost:8080/api/chat/user/00000000-0000-0000-0000-000000000008/chats
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
