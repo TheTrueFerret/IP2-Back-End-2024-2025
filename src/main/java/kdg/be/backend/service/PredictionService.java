@@ -1,5 +1,6 @@
 package kdg.be.backend.service;
 
+import kdg.be.backend.controller.dto.prediction.FormDataDto;
 import kdg.be.backend.controller.dto.prediction.GameStatDto;
 import kdg.be.backend.controller.dto.prediction.PredictionDto;
 import kdg.be.backend.domain.ai.GameStat;
@@ -35,7 +36,7 @@ public class PredictionService {
     public PredictionDto getLastPrediction(String gameName) {
         Prediction prediction = predictionRepository.getLastPredictionByGameStatName(gameName);
         if (prediction == null) {
-            if (createPrediction(gameName)) {
+            if (createPrediction(gameName, new FormDataDto(0, 0, 0, 0, ""))) {
                 prediction = predictionRepository.getLastPredictionByGameStatName(gameName);
             } else {
                 throw new PredictionException("Prediction not found");
@@ -44,13 +45,21 @@ public class PredictionService {
         return new PredictionDto(prediction);
     }
 
-    public boolean createPrediction(String gameName) {
+    public boolean createPrediction(String gameName, FormDataDto formDataDto) {
         GameStat gameStat = gameStatRepository.findByGameNameIsIgnoreCase(gameName);
         if (gameStat == null) {
             throw new PredictionException("GameStat not found");
         }
-        GameStatDto body = new GameStatDto(gameStat.getYear_published(), gameStat.getMin_players(), gameStat.getMax_players(), gameStat.getPlay_time(), gameStat.getMin_age(), gameStat.getBoard_game_honor(), gameStat.getMechanics());
-        Prediction prediction = restTemplate.postForObject(predictionApiBaseUrl, body, Prediction.class);
+        GameStatDto gameStatDto = new GameStatDto(
+                gameStat.getYear_published(),
+                formDataDto.getMin_players() != 0 ? formDataDto.getMin_players() : gameStat.getMin_players(),
+                formDataDto.getMax_players() != 0 ? formDataDto.getMax_players() : gameStat.getMax_players(),
+                formDataDto.getPlay_time() != 0 ? formDataDto.getPlay_time() : gameStat.getPlay_time(),
+                gameStat.getMin_age(),
+                formDataDto.getBoard_game_honor() != 0 ? formDataDto.getBoard_game_honor() : gameStat.getBoard_game_honor(),
+                formDataDto.getMechanics() != null && !formDataDto.getMechanics().isEmpty() ? formDataDto.getMechanics() : gameStat.getMechanics()
+        );
+        Prediction prediction = restTemplate.postForObject(predictionApiBaseUrl, gameStatDto, Prediction.class);
         if (prediction == null) {
             throw new PredictionException("Prediction not created");
         }

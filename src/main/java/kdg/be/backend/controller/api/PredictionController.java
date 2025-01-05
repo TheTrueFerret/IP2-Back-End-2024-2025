@@ -1,5 +1,6 @@
 package kdg.be.backend.controller.api;
 
+import kdg.be.backend.controller.dto.prediction.FormDataDto;
 import kdg.be.backend.controller.dto.prediction.PredictionDto;
 import kdg.be.backend.exception.PredictionException;
 import kdg.be.backend.service.PredictionService;
@@ -34,15 +35,16 @@ public class PredictionController {
         if (GameName == null || GameName.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(predictionService.getAllPredictions(GameName));
+        List<PredictionDto> predictions = predictionService.getAllPredictions(GameName);
+        return ResponseEntity.ok(predictions);
     }
 
     @PostMapping("/prediction/{GameName}")
-    public ResponseEntity<?> createPrediction(@PathVariable String GameName) {
+    public ResponseEntity<?> createPrediction(@PathVariable String GameName,@RequestBody FormDataDto formDataDto) {
         if (GameName == null || GameName.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        predictionService.createPrediction(GameName);
+        predictionService.createPrediction(GameName,formDataDto);
         return ResponseEntity.ok().build();
     }
 

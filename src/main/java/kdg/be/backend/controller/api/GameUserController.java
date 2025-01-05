@@ -201,6 +201,6 @@ public class GameUserController {
         if (response.get("message").equals("Error creating friend request: Friend request already exists")) {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
