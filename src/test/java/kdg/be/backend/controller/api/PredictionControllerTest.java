@@ -23,7 +23,7 @@ class PredictionControllerTest {
     @WithMockUser(username = "admin", authorities = {"ADMIN"})
     @Test
     void happyGetAllPredictions() throws Exception {
-        mockMvc.perform(get("/api/ai/predictions/{GameName}", "Rummikub"))
+        mockMvc.perform(get("/api/predictions/{GameName}", "Rummikub"))
                 .andExpect(status().isOk())
                 .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
     }
@@ -31,14 +31,14 @@ class PredictionControllerTest {
     @WithMockUser(username = "admin", authorities = {"ADMIN"})
     @Test
     void unHappyGetAllPredictions() throws Exception {
-        mockMvc.perform(get("/api/ai/predictions/{GameName}", "GameName"))
+        mockMvc.perform(get("/api/predictions/{GameName}", "GameName"))
                 .andExpect(status().isNotFound());
     }
 
     @WithMockUser(username = "admin", authorities = {"USER"})
     @Test
     void unHappyNoAdminGetAllPredictions() throws Exception {
-        mockMvc.perform(get("/api/ai/predictions/{GameName}", "GameName"))
+        mockMvc.perform(get("/api/predictions/{GameName}", "GameName"))
                 .andExpect(status().isForbidden());
     }
 }

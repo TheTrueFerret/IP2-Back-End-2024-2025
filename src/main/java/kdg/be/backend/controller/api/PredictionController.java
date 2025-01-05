@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/ai")
+@RequestMapping("/api/predictions")
 public class PredictionController {
 
     private final PredictionService predictionService;
@@ -22,7 +22,7 @@ public class PredictionController {
         this.predictionService = predictionService;
     }
 
-    @GetMapping("/predictions/{GameName}")
+    @GetMapping("/{GameName}")
     public ResponseEntity<List<PredictionDto>> getAllPredictions(@PathVariable String GameName) {
         if (GameName == null || GameName.isBlank()) {
             return ResponseEntity.badRequest().build();
@@ -31,7 +31,7 @@ public class PredictionController {
         return ResponseEntity.ok(predictions);
     }
 
-    @PostMapping("/prediction/{GameName}")
+    @PostMapping("/{GameName}")
     public ResponseEntity<?> createPrediction(@PathVariable String GameName,@RequestBody FormDataDto formDataDto) {
         if (GameName == null || GameName.isBlank()) {
             return ResponseEntity.badRequest().build();
