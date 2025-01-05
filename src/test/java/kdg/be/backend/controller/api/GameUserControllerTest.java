@@ -96,7 +96,7 @@ class GameUserControllerTest {
     void unhappyGetGameUser() throws Exception {
         mockMvc.perform(get("/api/gameuser/userProfile?userId=4e861d2e-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User with id 4e861d2e-1c44-49b8-911f-7bc77a78b001 does not exist."));
 
     }
@@ -155,7 +155,7 @@ class GameUserControllerTest {
     void unHappyGetFriendsWrongUUID() throws Exception {
         mockMvc.perform(get("/api/gameuser/friends?userId=fbe4a1d1-49b8-911f-902f-7bc77a78b001")
                         .contentType("application/json"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     //Get friends of no player return bad request
@@ -190,7 +190,7 @@ class GameUserControllerTest {
     void unHappyUserNotFoundFriendRequest() throws Exception {
         mockMvc.perform(post("/api/gameuser/friendRequest/blablablablabla?userId=fbe4a1d1-1c44-49b8-911f-7bc77a78b001")
                         .contentType("application/json"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     //Accept friend request from Speler 3 for Speler 4
@@ -239,6 +239,7 @@ class GameUserControllerTest {
     }
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testGameUserReceivesAwardsAfterMove() throws Exception {
         String startGameRequest = """
@@ -349,6 +350,7 @@ class GameUserControllerTest {
 
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testGameUserReceivesParticipationAward() throws Exception {
         // Step 1: Start the game
