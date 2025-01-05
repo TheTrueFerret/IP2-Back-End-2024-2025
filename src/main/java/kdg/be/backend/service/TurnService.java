@@ -34,11 +34,12 @@ public class TurnService {
 
     // other
     private static final Logger log = LoggerFactory.getLogger(TurnService.class);
+    private final TileSetRepository tileSetRepository;
 
     public TurnService(GameRepository gameRepository, PlayerRepository playerRepository, DeckRepository deckRepository,
                        TileRepository tileRepository, TilePoolRepository tilePoolRepository, PlayingFieldService playingFieldService,
                        MoveValidationService moveValidationService, GameUserAchievementService gameUserAchievementService,
-                       PlayerService playerService) {
+                       PlayerService playerService, TileSetRepository tileSetRepository) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
         this.deckRepository = deckRepository;
@@ -48,6 +49,7 @@ public class TurnService {
         this.moveValidationService = moveValidationService;
         this.gameUserAchievementService = gameUserAchievementService;
         this.playerService = playerService;
+        this.tileSetRepository = tileSetRepository;
     }
 
     private void managePlayerTurns(Player player, List<UUID> playerTurnOrders) {
@@ -194,25 +196,57 @@ public class TurnService {
                 .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))
                 .collect(Collectors.joining(", ")));
 
-        // Trek een tegel uit de pool
-        Tile drawnTile = tilePool.drawTile();
-
-        // Update de tegel en voeg deze toe aan het deck van de speler
         Deck playerDeck = player.getDeck();
-        drawnTile.setDeck(playerDeck);
-        playerDeck.getTiles().add(drawnTile);
+        Tile drawnTile = null;
 
-        // Wijzigingen opslaan
-        tileRepository.save(drawnTile);
-        deckRepository.save(playerDeck);
-        tilePoolRepository.save(tilePool);
+        boolean tileDuplicate = true;
+        while (tileDuplicate) {
+            boolean tileInSet;
+            boolean tileInDecks;
+            // Trek een tegel uit de pool
+            drawnTile = tilePool.drawTile();
 
-        log.info("Player {} drew a tile: {} {}. Remaining tiles in pool: {}",
-                player.getGameUser().getUsername(),
-                drawnTile.getNumberValue(),
-                drawnTile.getTileColor(),
-                tilePool.getTiles().size()
-        );
+            Tile managedTile = tileRepository.findById(drawnTile.getId())
+                    .orElseThrow(() -> new IllegalStateException("Tile not found in database"));
+
+            // check if it isn't in the playerDeck
+            List<Deck> decks = deckRepository.findDecksByGameId(game.getId());
+            if (decks.isEmpty()) {
+                throw new IllegalStateException("decks are empty");
+            }
+            tileInDecks = decks.stream().anyMatch(deck -> deck.getTiles().contains(managedTile));
+
+            // Check if tile doesn't exist in any tileSet
+            List<TileSet> tileSets = tileSetRepository.findTileSetsByGameId(game.getId());
+            tileInSet = tileSets.stream().anyMatch(tileSet -> tileSet.getTiles().contains(managedTile));
+
+            if (!tileInDecks || !tileInSet) {
+                // Tile is valid - not a duplicate and exists in a tileSet
+                tileDuplicate = false;
+
+                // Assign tile to the player's deck
+                managedTile.setDeck(playerDeck);
+                playerDeck.getTiles().add(managedTile);
+
+                // Save the tile and the deck
+                tileRepository.save(managedTile);
+                deckRepository.save(playerDeck);
+
+                // Remove the tile from the tile pool for extra measure!!!
+                tilePool.getTiles().removeIf(tile -> tile.equals(managedTile));
+                tilePoolRepository.save(tilePool);
+
+                log.info("Player {} drew a tile: {} {}. Remaining tiles in pool: {}",
+                        player.getGameUser().getUsername(),
+                        drawnTile.getNumberValue(),
+                        drawnTile.getTileColor(),
+                        tilePool.getTiles().size()
+                );
+            } else {
+                // Add the drawn tile back to the pool
+                tilePool.getTiles().add(drawnTile);
+            }
+        }
 
         String tilesInfo = tilePool.getTiles().stream()
                 .map(tile -> String.format("%d %s", tile.getNumberValue(), tile.getTileColor()))

@@ -16,7 +16,7 @@ public class TilePool {
     private UUID id;
 
     // relaties
-    @OneToMany(mappedBy = "tilePool", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tilePool", cascade = CascadeType.ALL)
     private List<Tile> tiles;
 
     public TilePool() {

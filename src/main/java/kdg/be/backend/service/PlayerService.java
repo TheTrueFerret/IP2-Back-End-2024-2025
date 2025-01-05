@@ -37,7 +37,7 @@ public class PlayerService {
     }
 
     public UUID getPlayerIdByUserId(UUID userId) {
-        return playerRepository.findPlayerByUserId(userId)
+        return playerRepository.findPlayerByUserId(userId, GameState.ONGOING)
                 .map(Player::getId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found with userId: " + userId));
     }
@@ -81,7 +81,6 @@ public class PlayerService {
         for (int i = 0; i < tilesPerPlayer; i++) {
             playerTiles.add(tilePool.drawTile());
         }
-
         return new Deck(playerTiles);
     }
 

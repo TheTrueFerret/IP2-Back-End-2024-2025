@@ -1,6 +1,8 @@
 package kdg.be.backend.repository;
 
+import kdg.be.backend.domain.Deck;
 import kdg.be.backend.domain.Player;
+import kdg.be.backend.domain.enums.GameState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,7 +44,10 @@ public interface PlayerRepository extends JpaRepository<Player, UUID> {
             SELECT p
             FROM Player p
             JOIN FETCH p.gameUser gu
-            WHERE gu.id = :userId
+            JOIN FETCH p.game g
+            WHERE gu.id = :userId AND g.gameState = :gameState
             """)
-    Optional<Player> findPlayerByUserId(UUID userId);
+    Optional<Player> findPlayerByUserId(UUID userId, GameState gameState);
+
+
 }
