@@ -37,7 +37,7 @@ class PlayingFieldControllerTest {
 
         mockMvc.perform(get("/api/playingFields/" + gameId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tileSetDtos").isArray())
+                .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andDo(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
@@ -52,7 +52,7 @@ class PlayingFieldControllerTest {
 
         mockMvc.perform(get("/api/playingFields/" + gameId))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("No game found"))
+                .andExpect(jsonPath("$.message").value("No TileSets found for Game ID: " + gameId))
                 .andDo(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     System.out.println("Response: " + jsonResponse);

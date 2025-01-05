@@ -268,28 +268,29 @@ class GameUserControllerTest {
                 {
                   "gameId": "%s",
                   "playerId": "%s",
-                  "tileSets": [
+                  "playingField": [
                     {
-                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "id": "00000000-0000-0000-0000-000000000002",
                       "startCoordinate": 1,
                       "endCoordinate": 3,
+                      "gridRow": 2,
                       "tiles": [
                           {
-                            "tileId": "00000000-0000-0000-0000-000000000063",
+                            "id": "00000000-0000-0000-0000-000000000063",
                             "numberValue": 5,
                             "color": "RED",
                             "gridColumn": 1,
                             "gridRow": 4
                           },
                           {
-                            "tileId": "00000000-0000-0000-0000-000000000064",
+                            "id": "00000000-0000-0000-0000-000000000064",
                             "numberValue": 6,
                             "color": "RED",
                             "gridColumn": 2,
                             "gridRow": 4
                           },
                           {
-                            "tileId": "00000000-0000-0000-0000-000000000065",
+                            "id": "00000000-0000-0000-0000-000000000065",
                             "numberValue": 7,
                             "color": "RED",
                             "gridColumn": 3,
@@ -298,24 +299,22 @@ class GameUserControllerTest {
                         ]
                     }
                   ],
-                  "playerDeckDto": {
-                       "tilesInDeck": [
+                  "deck": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000062",
+                          "id": "00000000-0000-0000-0000-000000000062",
                           "numberValue": 5,
                           "color": "ORANGE",
                           "gridColumn": 0,
                           "gridRow": 0
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000063",
+                          "id": "00000000-0000-0000-0000-000000000063",
                           "numberValue": 5,
                           "color": "RED",
                           "gridColumn": 0,
                           "gridRow": 0
                         }
                        ]
-                     }
                 }
                 """.formatted(gameId, firstPlayerTurnId);
 
@@ -350,12 +349,12 @@ class GameUserControllerTest {
     void testGameUserReceivesParticipationAward() throws Exception {
         // Step 1: Start the game
         String startGameRequest = """
-            {
-                "turnTime": 60,
-                "startTileAmount": 14,
-                "hostUserId": "11111111-1111-1111-1111-111111111113"
-            }
-            """;
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "11111111-1111-1111-1111-111111111113"
+                }
+                """;
 
         MvcResult startGameResult = mockMvc.perform(post("/api/games/start/31111111-1111-1111-1111-111111111111")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -380,28 +379,29 @@ class GameUserControllerTest {
                 {
                   "gameId": "%s",
                   "playerId": "%s",
-                  "tileSets": [
+                  "playingField": [
                     {
-                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "id": "00000000-0000-0000-0000-000000000002",
                       "startCoordinate": 1,
                       "endCoordinate": 3,
+                      "gridRow": 2,
                       "tiles": [
                           {
-                            "tileId": "00000000-0000-0000-0000-000000000063",
+                            "id": "00000000-0000-0000-0000-000000000063",
                             "numberValue": 5,
                             "color": "RED",
                             "gridColumn": 1,
                             "gridRow": 4
                           },
                           {
-                            "tileId": "00000000-0000-0000-0000-000000000064",
+                            "id": "00000000-0000-0000-0000-000000000064",
                             "numberValue": 6,
                             "color": "RED",
                             "gridColumn": 2,
                             "gridRow": 4
                           },
                           {
-                            "tileId": "00000000-0000-0000-0000-000000000065",
+                            "id": "00000000-0000-0000-0000-000000000065",
                             "numberValue": 7,
                             "color": "RED",
                             "gridColumn": 3,
@@ -410,24 +410,22 @@ class GameUserControllerTest {
                         ]
                     }
                   ],
-                  "playerDeckDto": {
-                       "tilesInDeck": [
+                  "deck": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000062",
+                          "id": "00000000-0000-0000-0000-000000000062",
                           "numberValue": 5,
                           "color": "ORANGE",
                           "gridColumn": 0,
                           "gridRow": 0
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000063",
+                          "id": "00000000-0000-0000-0000-000000000063",
                           "numberValue": 5,
                           "color": "RED",
                           "gridColumn": 0,
                           "gridRow": 0
                         }
                        ]
-                     }
                 }
                 """.formatted(gameId, firstPlayerTurnId);
 

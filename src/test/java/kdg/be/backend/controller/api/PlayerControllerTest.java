@@ -35,15 +35,13 @@ class PlayerControllerTest {
         UUID playerId = UUID.fromString("00000000-0000-0000-0000-000000000014");
 
         MvcResult result = mockMvc.perform(get("/api/players/{playerId}/score", playerId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.ALL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.playerId").value(playerId.toString()))
-                .andExpect(jsonPath("$.score").isNumber())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         System.out.println("Get Player Score Response: " + jsonResponse);
-        int score = JsonPath.parse(jsonResponse).read("$.score", Integer.class);
+        int score = Integer.parseInt(jsonResponse);
         assertTrue(score >= 0, "The player's score should be a non-negative integer.");
     }
 

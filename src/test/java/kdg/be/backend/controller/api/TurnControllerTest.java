@@ -74,7 +74,7 @@ class TurnControllerTest {
                 {
                   "gameId": "0000000-00000-000-0000",
                   "playerId": "%s",
-                  "tileSets": [
+                  "playingField": [
                     {
                       "tileSetId": "00000000-0000-0000-0000-000000000002",
                       "startCoordinate": 1,
@@ -118,8 +118,7 @@ class TurnControllerTest {
                       ]
                     }
                   ],
-                  "playerDeckDto": {
-                    "tilesInDeck": [
+                  "deck": [
                       {
                         "tileId": "00000000-0000-0000-0000-000000000055",
                         "numberValue": 10,
@@ -128,7 +127,6 @@ class TurnControllerTest {
                         "gridRow": 0
                       }
                     ]
-                  }
                 }
                 """.formatted(firstPlayerTurnId);
 
@@ -182,42 +180,43 @@ class TurnControllerTest {
                 {
                    "gameId": "%s",
                    "playerId": "%s",
-                   "tileSets": [
+                   "playingField": [
                      {
-                       "tileSetId": "00000000-0000-0000-0000-000000000002",
+                       "id": "00000000-0000-0000-0000-000000000002",
                        "startCoordinate": 1,
                        "endCoordinate": 3,
+                       "gridRow": 2,
                        "tiles": [
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "id": "00000000-0000-0000-0000-000000000063",
                            "numberValue": 5,
                            "color": "RED",
                            "gridColumn": 2,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000064",
+                           "id": "00000000-0000-0000-0000-000000000064",
                            "numberValue": 6,
                            "color": "RED",
                            "gridColumn": 3,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000065",
+                           "id": "00000000-0000-0000-0000-000000000065",
                            "numberValue": 7,
                            "color": "RED",
                            "gridColumn": 4,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000066",
+                           "id": "00000000-0000-0000-0000-000000000066",
                            "numberValue": 8,
                            "color": "RED",
                            "gridColumn": 5,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000067",
+                           "id": "00000000-0000-0000-0000-000000000067",
                            "numberValue": 9,
                            "color": "RED",
                            "gridColumn": 6,
@@ -226,31 +225,29 @@ class TurnControllerTest {
                        ]
                      }
                    ],
-                   "playerDeckDto": {
-                     "tilesInDeck": [
+                   "deck": [
                        {
-                         "tileId": "00000000-0000-0000-0000-000000000004",
+                         "id": "00000000-0000-0000-0000-000000000004",
                          "numberValue": 1,
                          "color": "BLUE",
                          "gridColumn": 5,
                          "gridRow": 4
                        },
                        {
-                         "tileId": "00000000-0000-0000-0000-000000000005",
+                         "id": "00000000-0000-0000-0000-000000000005",
                          "numberValue": 2,
                          "color": "RED",
                          "gridColumn": 5,
                          "gridRow": 3
                        },
                        {
-                           "tileId": "00000000-0000-0000-0000-000000000068",
-                           "numberValue": 10,
-                           "color": "RED",
-                           "gridColumn": 6,
-                           "gridRow": 5
-                         }
-                     ]
-                   }
+                          "id": "00000000-0000-0000-0000-000000000068",
+                          "numberValue": 10,
+                          "color": "RED",
+                          "gridColumn": 6,
+                          "gridRow": 5
+                       }
+                   ]
                  }
                 """.formatted(gameId, firstPlayerTurnId);
 
@@ -271,42 +268,43 @@ class TurnControllerTest {
                  {
                    "gameId": "%s",
                    "playerId": "%s",
-                   "tileSets": [
+                   "playingField": [
                      {
-                       "tileSetId": "00000000-0000-0000-0000-000000000002",
+                       "id": "00000000-0000-0000-0000-000000000002",
                        "startCoordinate": 1,
                        "endCoordinate": 3,
+                       "gridRow": 2,
                        "tiles": [
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "id": "00000000-0000-0000-0000-000000000063",
                            "numberValue": 5,
                            "color": "BLUE",
                            "gridColumn": 2,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000064",
+                           "id": "00000000-0000-0000-0000-000000000064",
                            "numberValue": 6,
                            "color": "BLUE",
                            "gridColumn": 3,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000065",
+                           "id": "00000000-0000-0000-0000-000000000065",
                            "numberValue": 7,
                            "color": "BLUE",
                            "gridColumn": 4,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000066",
+                           "id": "00000000-0000-0000-0000-000000000066",
                            "numberValue": 8,
                            "color": "BLUE",
                            "gridColumn": 5,
                            "gridRow": 5
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000067",
+                           "id": "00000000-0000-0000-0000-000000000067",
                            "numberValue": 9,
                            "color": "BLUE",
                            "gridColumn": 6,
@@ -315,24 +313,22 @@ class TurnControllerTest {
                        ]
                      }
                    ],
-                   "playerDeckDto": {
-                     "tilesInDeck": [
+                   "deck": [
                        {
-                         "tileId": "00000000-0000-0000-0000-000000000006",
+                         "id": "00000000-0000-0000-0000-000000000006",
                          "numberValue": 3,
                          "color": "BLACK",
                          "gridColumn": 6,
                          "gridRow": 7
                        },
                        {
-                         "tileId": "00000000-0000-0000-0000-000000000007",
+                         "id": "00000000-0000-0000-0000-000000000007",
                          "numberValue": 4,
                          "color": "ORANGE",
                          "gridColumn": 6,
                          "gridRow": 9
                        }
                      ]
-                   }
                  }
                 """.formatted(gameId, secondPlayerTurnId);
 
@@ -345,79 +341,78 @@ class TurnControllerTest {
 
         // Second move for the first player
         String secondMoveFirstPlayerRequest = """
-               {
-                   "gameId": "%s",
-                   "playerId": "%s",
-                   "tileSets": [
-                     {
-                       "tileSetId": "00000000-0000-0000-0000-000000000002",
-                       "startCoordinate": 1,
-                       "endCoordinate": 3,
-                       "tiles": [
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000063",
-                           "numberValue": 5,
-                           "color": "RED",
-                           "gridColumn": 2,
-                           "gridRow": 5
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000064",
-                           "numberValue": 6,
-                           "color": "RED",
-                           "gridColumn": 3,
-                           "gridRow": 5
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000065",
-                           "numberValue": 7,
-                           "color": "RED",
-                           "gridColumn": 4,
-                           "gridRow": 5
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000066",
-                           "numberValue": 8,
-                           "color": "RED",
-                           "gridColumn": 5,
-                           "gridRow": 5
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000067",
-                           "numberValue": 9,
-                           "color": "RED",
-                           "gridColumn": 6,
-                           "gridRow": 5
-                         },
-                         {
-                           "tileId": "00000000-0000-0000-0000-000000000068",
-                           "numberValue": 10,
-                           "color": "RED",
-                           "gridColumn": 6,
-                           "gridRow": 6
+                {
+                    "gameId": "%s",
+                    "playerId": "%s",
+                    "playingField": [
+                      {
+                        "id": "00000000-0000-0000-0000-000000000002",
+                        "startCoordinate": 1,
+                        "endCoordinate": 3,
+                        "gridRow": 2,
+                        "tiles": [
+                          {
+                            "id": "00000000-0000-0000-0000-000000000063",
+                            "numberValue": 5,
+                            "color": "RED",
+                            "gridColumn": 2,
+                            "gridRow": 5
+                          },
+                          {
+                            "id": "00000000-0000-0000-0000-000000000064",
+                            "numberValue": 6,
+                            "color": "RED",
+                            "gridColumn": 3,
+                            "gridRow": 5
+                          },
+                          {
+                            "id": "00000000-0000-0000-0000-000000000065",
+                            "numberValue": 7,
+                            "color": "RED",
+                            "gridColumn": 4,
+                            "gridRow": 5
+                          },
+                          {
+                            "id": "00000000-0000-0000-0000-000000000066",
+                            "numberValue": 8,
+                            "color": "RED",
+                            "gridColumn": 5,
+                            "gridRow": 5
+                          },
+                          {
+                            "id": "00000000-0000-0000-0000-000000000067",
+                            "numberValue": 9,
+                            "color": "RED",
+                            "gridColumn": 6,
+                            "gridRow": 5
+                          },
+                          {
+                            "id": "00000000-0000-0000-0000-000000000068",
+                            "numberValue": 10,
+                            "color": "RED",
+                            "gridColumn": 6,
+                            "gridRow": 6
+                         }
+                        ]
+                      }
+                    ],
+                    "deck": [
+                        {
+                          "id": "00000000-0000-0000-0000-000000000004",
+                          "numberValue": 1,
+                          "color": "BLUE",
+                          "gridColumn": 5,
+                          "gridRow": 4
+                        },
+                        {
+                          "id": "00000000-0000-0000-0000-000000000005",
+                          "numberValue": 2,
+                          "color": "RED",
+                          "gridColumn": 5,
+                          "gridRow": 3
                         }
-                       ]
-                     }
-                   ],
-                   "playerDeckDto": {
-                     "tilesInDeck": [
-                       {
-                         "tileId": "00000000-0000-0000-0000-000000000004",
-                         "numberValue": 1,
-                         "color": "BLUE",
-                         "gridColumn": 5,
-                         "gridRow": 4
-                       },
-                       {
-                         "tileId": "00000000-0000-0000-0000-000000000005",
-                         "numberValue": 2,
-                         "color": "RED",
-                         "gridColumn": 5,
-                         "gridRow": 3
-                       }
-                     ]
-                   }
-                 }
+                      ]
+                  }
                 """.formatted(gameId, firstPlayerTurnId);
 
 
@@ -557,21 +552,21 @@ class TurnControllerTest {
                 {
                   "gameId": "%s",
                   "playerId": "%s",
-                  "tileSets": [
+                  "playingField": [
                     {
-                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "id": "00000000-0000-0000-0000-000000000002",
                       "startCoordinate": 1,
                       "endCoordinate": 3,
                       "tiles": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000004",
+                          "id": "00000000-0000-0000-0000-000000000004",
                           "numberValue": 1,
                           "color": "BLUE",
                           "gridColumn": 4,
                           "gridRow": 5
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000007",
+                          "id": "00000000-0000-0000-0000-000000000007",
                           "numberValue": 4,
                           "color": "ORANGE",
                           "gridColumn": 7,
@@ -580,19 +575,19 @@ class TurnControllerTest {
                       ]
                     },
                     {
-                      "tileSetId": "00000000-0000-0000-0000-000000000003",
+                      "id": "00000000-0000-0000-0000-000000000003",
                       "startCoordinate": 11,
                       "endCoordinate": 13,
                       "tiles": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000006",
+                          "id": "00000000-0000-0000-0000-000000000006",
                           "numberValue": 3,
                           "color": "BLACK",
                           "gridColumn": 7,
                           "gridRow": 8
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000005",
+                          "id": "00000000-0000-0000-0000-000000000005",
                           "numberValue": 2,
                           "color": "RED",
                           "gridColumn": 4,
@@ -601,38 +596,37 @@ class TurnControllerTest {
                       ]
                     }
                   ],
-                  "playerDeckDto": {
-                    "tilesInDeck": [
+                  "deck": [
                       {
-                        "tileId": "00000000-0000-0000-0000-000000000055",
+                        "id": "00000000-0000-0000-0000-000000000055",
                         "numberValue": 10,
                         "color": "BLUE",
                         "gridColumn": 0,
                         "gridRow": 0
                       },
                       {
-                        "tileId": "00000000-0000-0000-0000-000000000056",
+                        "id": "00000000-0000-0000-0000-000000000056",
                         "numberValue": 10,
                         "color": "BLUE",
                         "gridColumn": 0,
                         "gridRow": 0
                       },
                       {
-                        "tileId": "00000000-0000-0000-0000-000000000057",
+                        "id": "00000000-0000-0000-0000-000000000057",
                         "numberValue": 35,
                         "color": "RED",
                         "gridColumn": 0,
                         "gridRow": 0
                       },
                       {
-                        "tileId": "00000000-0000-0000-0000-000000000058",
+                        "id": "00000000-0000-0000-0000-000000000058",
                         "numberValue": 35,
                         "color": "ORANGE",
                         "gridColumn": 0,
                         "gridRow": 0
                       },
                       {
-                        "tileId": "00000000-0000-0000-0000-000000000059",
+                        "id": "00000000-0000-0000-0000-000000000059",
                         "numberValue": 25,
                         "color": "BLACK",
                         "gridColumn": 0,
@@ -694,19 +688,19 @@ class TurnControllerTest {
                   "playerId": "%s",
                   "tileSets": [
                     {
-                      "tileSetId": "00000000-0000-0000-0000-000000000002",
+                      "id": "00000000-0000-0000-0000-000000000002",
                       "startCoordinate": 1,
                       "endCoordinate": 3,
                       "tiles": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000004",
+                          "id": "00000000-0000-0000-0000-000000000004",
                           "numberValue": 1,
                           "color": "BLUE",
                           "gridColumn": 4,
                           "gridRow": 5
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000007",
+                          "id": "00000000-0000-0000-0000-000000000007",
                           "numberValue": 4,
                           "color": "ORANGE",
                           "gridColumn": 7,
@@ -715,19 +709,19 @@ class TurnControllerTest {
                       ]
                     },
                     {
-                      "tileSetId": "00000000-0000-0000-0000-000000000003",
+                      "id": "00000000-0000-0000-0000-000000000003",
                       "startCoordinate": 11,
                       "endCoordinate": 13,
                       "tiles": [
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000006",
+                          "id": "00000000-0000-0000-0000-000000000006",
                           "numberValue": 3,
                           "color": "BLACK",
                           "gridColumn": 7,
                           "gridRow": 8
                         },
                         {
-                          "tileId": "00000000-0000-0000-0000-000000000005",
+                          "id": "00000000-0000-0000-0000-000000000005",
                           "numberValue": 2,
                           "color": "RED",
                           "gridColumn": 4,
@@ -736,17 +730,16 @@ class TurnControllerTest {
                       ]
                     }
                   ],
-                  "playerDeckDto": {
-                       "tilesInDeck": [
+                  "deck": [
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000062",
+                           "id": "00000000-0000-0000-0000-000000000062",
                            "numberValue": 6,
                            "color": "ORANGE",
                            "gridColumn": 0,
                            "gridRow": 0
                          },
                          {
-                           "tileId": "00000000-0000-0000-0000-000000000063",
+                           "id": "00000000-0000-0000-0000-000000000063",
                            "numberValue": 5,
                            "color": "RED",
                            "gridColumn": 0,
