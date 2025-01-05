@@ -1,6 +1,7 @@
 package kdg.be.backend.service;
 
 
+import kdg.be.backend.controller.dto.customization.CustomizableDto;
 import kdg.be.backend.controller.dto.user.FriendRequestDto;
 import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.controller.dto.user.UserFriendDto;
@@ -15,7 +16,10 @@ import kdg.be.backend.repository.GameRepository;
 import kdg.be.backend.repository.GameUserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -186,5 +190,14 @@ public class GameUserService {
             userFriendDtos.add(new UserFriendDto(friend, true));
         }
         return userFriendDtos;
+    }
+
+    public List<CustomizableDto> getCustomizables(UUID userId) {
+        GameUser gameUser = gameUserRepository.findGameUserByIdWithCustomizables(userId).orElseThrow(() -> new UserDoesNotExistException(userId.toString()));
+        List<CustomizableDto> customizables = gameUser.getCustomizables().stream().map(customizable -> new CustomizableDto(customizable.getName(), customizable.getDescription(), customizable.getColor(), customizable.getPoints())).collect(Collectors.toList());
+        if (customizables.isEmpty()) {
+            return new ArrayList<CustomizableDto>();
+        }
+        return customizables;
     }
 }

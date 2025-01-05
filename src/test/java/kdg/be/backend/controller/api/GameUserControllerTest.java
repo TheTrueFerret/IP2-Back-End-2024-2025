@@ -5,7 +5,6 @@ import com.jayway.jsonpath.JsonPath;
 import kdg.be.backend.TestContainerIPConfiguration;
 import kdg.be.backend.domain.user.GameUserAchievement;
 import kdg.be.backend.repository.GameUserAchievementRepository;
-import kdg.be.backend.repository.GameUserRepository;
 import kdg.be.backend.repository.PlayerRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -454,5 +453,22 @@ class GameUserControllerTest {
                 .anyMatch(achievement -> "First Move".equals(achievement.getAchievement().getTitle()));
 
         assertTrue(hasParticipationAward, "GameUser should have received the 'Participation' award after playing a game");
+    }
+
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    public void getCustomizables() throws Exception {
+        mockMvc.perform(get("/api/gameuser/customizables?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
+                        .contentType("application/json"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    public void unHappyGetCustomizables() throws Exception {
+        mockMvc.perform(get("/api/gameuser/customizables?userId=4e861d2e-5f89-47b1-91e4-a3aef9000000")
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
     }
 }

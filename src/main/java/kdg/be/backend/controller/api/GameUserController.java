@@ -1,5 +1,6 @@
 package kdg.be.backend.controller.api;
 
+import kdg.be.backend.controller.dto.customization.CustomizableDto;
 import kdg.be.backend.controller.dto.game.AchievementDto;
 import kdg.be.backend.controller.dto.user.FriendRequestDto;
 import kdg.be.backend.controller.dto.user.GameUserDto;
@@ -166,6 +167,16 @@ public class GameUserController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(gameUserService.getFriendRequests(userId));
+    }
+
+    //Get all customizables from single user
+    @GetMapping("/customizables")
+    public ResponseEntity<List<CustomizableDto>> getCustomizables(@RequestParam UUID userId) {
+        if (userId == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(gameUserService.getCustomizables(userId));
     }
 
     // Exception handling

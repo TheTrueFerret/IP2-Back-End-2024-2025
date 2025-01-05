@@ -2,6 +2,9 @@ package kdg.be.backend.domain.customization;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import kdg.be.backend.domain.user.GameUser;
 import lombok.Getter;
 
 import java.util.UUID;
@@ -15,6 +18,10 @@ public class Customizable {
     private String description;
     private String color;
     private int points;
+
+    @ManyToOne
+    @JoinColumn(name = "game_user_id")
+    private GameUser gameUser;
 
     public Customizable() {
         //JPA
