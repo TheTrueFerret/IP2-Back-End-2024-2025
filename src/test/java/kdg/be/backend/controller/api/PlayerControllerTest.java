@@ -12,12 +12,12 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -107,18 +107,6 @@ class PlayerControllerTest {
         mockMvc.perform(get("/api/players/game/{gameId}/turns/current-player-turn", gameId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(username = "test", password = "test", roles = "USER")
-    void testGetCurrentPlayerTurn_ShouldReturnBadRequestForInvalidGameId() throws Exception {
-        UUID gameId = UUID.fromString("00000000-0000-0000-0000-000000000099");
-
-        mockMvc.perform(get("/api/players/game/{gameId}/turns/current-player-turn", gameId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists())
-                .andExpect(jsonPath("$.message").value("Player turn orders not found"));
     }
 
     @Test

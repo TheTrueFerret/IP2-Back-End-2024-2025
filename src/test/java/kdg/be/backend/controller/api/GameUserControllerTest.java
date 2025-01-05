@@ -191,6 +191,7 @@ class GameUserControllerTest {
 
     //Accept friend request from Speler 3 for Speler 4
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void happyFriend() throws Exception {
         mockMvc.perform(post("/api/gameuser/friendRequest/accept/00000000-0000-0000-0000-000000000001?userId=4e861d2e-5f89-47b1-91e4-a3aef9c97b02")
