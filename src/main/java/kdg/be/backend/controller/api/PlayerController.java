@@ -53,8 +53,15 @@ public class PlayerController {
     }
 
     @GetMapping("/{playerId}/score")
-    public ResponseEntity<PlayerScoreReturnDto> getPlayerScore(@PathVariable UUID playerId) {
+    public ResponseEntity<Integer> getPlayerScore(@PathVariable UUID playerId) {
         int score = playerService.getPlayerScore(playerId);
-        return ResponseEntity.ok(new PlayerScoreReturnDto(playerId, score));
+        return ResponseEntity.ok(score);
+    }
+
+    // TODO add TEST
+    @GetMapping("/time/{playerId}")
+    public ResponseEntity<Integer> getCurrentTurnTime(@PathVariable UUID playerId) {
+        int time = playerService.getCurrentTurnTime(playerId);
+        return ResponseEntity.ok(time);
     }
 }

@@ -11,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -100,6 +103,19 @@ public class PlayerService {
         }
         return players;
     }
+
+    public int getCurrentTurnTime(UUID playerId) {
+        Player player = playerRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new NullPointerException("Player trying to play not found"));
+
+        if (!LocalDateTime.now().isAfter(player.getTurnStartTime()) && !LocalDateTime.now().isBefore(player.getTurnEndTime())) {
+
+            log.warn("{} didn't pull a tile when it was their turn from {} to {}. Move was made at {}"
+                    , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
+        }
+        return (int) Duration.between(LocalTime.now(), player.getTurnEndTime()).toSeconds();
+    }
+
 
     /**
      * Check if the player has won the game

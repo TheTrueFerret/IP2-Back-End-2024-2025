@@ -28,7 +28,8 @@ public class Game {
     private List<UUID> playerLeaderboard;
 
     // relaties
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "playing_field_id", referencedColumnName = "id")
     private PlayingField playingField;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

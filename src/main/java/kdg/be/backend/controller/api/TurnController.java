@@ -24,7 +24,7 @@ public class TurnController {
 
     @PostMapping("/player-make-move")
     public ResponseEntity<Void> makePlayerMove(@Valid @RequestBody PlayerMoveRequest req) {
-        turnService.managePlayerMoves(req.playerId(), req.gameId(), req.tileSets(), req.playerDeckDto());
+        turnService.managePlayerMoves(req.playerId(), req.gameId(), req.playingField(), req.deck());
         return ResponseEntity.ok().build();
     }
 
@@ -32,6 +32,6 @@ public class TurnController {
     public ResponseEntity<TileDto> getPulledTileFromTilePool(@Valid @RequestBody CreateSimpleRequest req) {
         return turnService.managePullingTileFromTilePool(req.gameId(), req.playerId())
                 .map(tile -> ResponseEntity.ok(GameDtoMapper.mapToTileDto(tile)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }

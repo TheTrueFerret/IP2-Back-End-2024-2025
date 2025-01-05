@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Iterator;
 import java.util.UUID;
 
 @RestController
@@ -46,5 +47,13 @@ public class GameController {
     @GetMapping("/{gameId}/leaderboard")
     public ResponseEntity<List<UUID>> getGameLeaderboard(@PathVariable UUID gameId) {
         return ResponseEntity.ok(gameService.getGameLeaderboard(gameId));
+    }
+
+    // TODO add TEST
+    @GetMapping("/leave/{playerId}")
+    public ResponseEntity<Boolean> leaveGame(@PathVariable UUID playerId) {
+        return gameService.leaveGame(playerId)
+                ? ResponseEntity.ok(true)
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

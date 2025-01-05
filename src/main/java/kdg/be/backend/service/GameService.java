@@ -3,7 +3,6 @@ package kdg.be.backend.service;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.domain.enums.LobbyStatus;
-import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +15,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class GameService {
-    // repositories
     private final TileRepository tileRepository;
     private final LobbyRepository lobbyRepository;
     private final PlayingFieldRepository playingFieldRepository;
     private final GameRepository gameRepository;
     private final TilePoolRepository tilePoolRepository;
-
-    // services
     private final TileService tileService;
     private final PlayerService playerService;
     private final GameTurnService gameTurnService;
 
-    // other
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
     public GameService(TileRepository tileRepository, LobbyRepository lobbyRepository, PlayingFieldRepository playingFieldRepository, GameRepository gameRepository, TilePoolRepository tilePoolRepository, TileService tileService, PlayerService playerService, GameTurnService gameTurnService) {
@@ -162,4 +157,39 @@ public class GameService {
 
         return game.getPlayerLeaderboard();
     }
+
+    @Transactional
+    public Boolean leaveGame(UUID playerId) {
+        Game game = gameRepository.findGameByPlayerId(playerId)
+                .orElseThrow(() -> new IllegalArgumentException(""));
+
+        if (!removePlayerFromGame(game.getId(), playerId)) {
+            throw new IllegalArgumentException("Player is not in this game");
+        }
+        return true;
+    }
+
+    @Transactional
+    public boolean removePlayerFromGame(UUID gameId, UUID playerId) {
+        Game game = gameRepository.findByGameIdAndIsActive(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("game does not exist"));
+
+        List<Player> playersInGame = game.getPlayers();
+        boolean isPlayerPresent = playersInGame.stream()
+                .anyMatch(playerInGame -> playerInGame.getId().equals(playerId));
+
+        if (!isPlayerPresent) {
+            throw new IllegalArgumentException("Player Not in This Game");
+        }
+
+        playersInGame.removeIf(player -> player.getId().equals(playerId));
+
+        if (!playersInGame.isEmpty()) {
+            game.setPlayers(playersInGame);
+            gameRepository.save(game);
+        }
+        return true;
+    }
+
+
 }
