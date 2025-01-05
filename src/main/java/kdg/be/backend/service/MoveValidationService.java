@@ -1,6 +1,5 @@
 package kdg.be.backend.service;
 
-import kdg.be.backend.controller.dto.requests.PlayerMoveDeckDto;
 import kdg.be.backend.controller.dto.requests.PlayerMoveTileDto;
 import kdg.be.backend.domain.Player;
 import kdg.be.backend.domain.Tile;
