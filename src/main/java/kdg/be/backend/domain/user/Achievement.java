@@ -16,6 +16,7 @@ public class Achievement {
     private long id;
     private String title;
     private String description;
+    private int points;
 
     @OneToMany(mappedBy = "achievement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameUserAchievement> users = new ArrayList<>();
@@ -23,8 +24,9 @@ public class Achievement {
     public Achievement() {
     }  // jpa
 
-    public Achievement(String title, String description) {
+    public Achievement(String title, String description, int points) {
         this.title = title;
         this.description = description;
+        this.points = points;
     }
 }

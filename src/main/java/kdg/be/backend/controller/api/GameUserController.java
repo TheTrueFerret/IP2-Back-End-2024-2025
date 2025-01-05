@@ -1,10 +1,12 @@
 package kdg.be.backend.controller.api;
 
+import kdg.be.backend.controller.dto.customization.CustomizableDto;
 import kdg.be.backend.controller.dto.game.GameUserAchievementDto;
 import kdg.be.backend.controller.dto.user.FriendRequestDto;
 import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.controller.dto.user.UserFriendDto;
 import kdg.be.backend.domain.user.GameUserAchievement;
+import kdg.be.backend.service.CustomizableService;
 import kdg.be.backend.service.GameUserAchievementService;
 import kdg.be.backend.service.GameUserService;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +26,14 @@ public class GameUserController {
 
     private final GameUserService gameUserService;
     private final GameUserAchievementService gameUserAchievementService;
+    private final CustomizableService customizableService;
     private final Logger logger = Logger.getLogger(GameUserController.class.getName());
 
-    public GameUserController(GameUserService gameUserService, GameUserAchievementService gameUserAchievementService) {
+    public GameUserController(GameUserService gameUserService, GameUserAchievementService gameUserAchievementService, CustomizableService customizableService) {
         this.gameUserService = gameUserService;
         this.gameUserAchievementService = gameUserAchievementService;
+        this.customizableService = customizableService;
+
     }
 
     @PostMapping("/user")
@@ -161,4 +166,21 @@ public class GameUserController {
         }
         return ResponseEntity.ok(gameUserService.getFriendRequests(userId));
     }
+
+    //Get all customizables from single user
+    @GetMapping("/userCustomizables")
+    public ResponseEntity<List<CustomizableDto>> getUserCustomizables(@RequestParam UUID userId) {
+        if (userId == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(gameUserService.getCustomizables(userId));
+    }
+
+    //Get all customizables
+    @GetMapping("/customizables")
+    public ResponseEntity<List<CustomizableDto>> getCustomizables() {
+        return ResponseEntity.ok(customizableService.getAllCustomizables());
+    }
 }
+

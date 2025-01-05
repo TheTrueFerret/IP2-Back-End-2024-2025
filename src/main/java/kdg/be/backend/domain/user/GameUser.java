@@ -2,6 +2,7 @@ package kdg.be.backend.domain.user;
 
 import jakarta.persistence.*;
 import kdg.be.backend.domain.chatting.Chat;
+import kdg.be.backend.domain.customization.Customizable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +18,7 @@ public class GameUser {
     private UUID id;
     private String username;
     private String avatar;
+    private int points;
 
     // relaties
     @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -28,6 +30,9 @@ public class GameUser {
     @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chat> chats;
 
+    @OneToMany(mappedBy = "gameUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Customizable> customizables;
+
     public GameUser() {
     }  // jpa
 
@@ -38,13 +43,15 @@ public class GameUser {
         this.chats = chats;
     }
 
-    public GameUser(UUID  id, String username) {
+    public GameUser(UUID id, String username) {
         this.id = id;
         this.username = username;
         this.avatar = "default.png";
         this.achievements = new ArrayList<>();
         this.friendList = new ArrayList<>();
         this.chats = new ArrayList<>();
+        this.customizables = new ArrayList<>();
+        this.points = 0;
     }
 
     public int getAchievementLevel() {

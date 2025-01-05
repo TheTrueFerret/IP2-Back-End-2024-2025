@@ -2,6 +2,7 @@ package kdg.be.backend.controller.api;
 
 import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.InvalidMoveException;
+import kdg.be.backend.exception.PredictionException;
 import kdg.be.backend.exception.UserDoesNotExistException;
 import kdg.be.backend.exception.UsersDoNotExistsException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -80,6 +81,14 @@ public class GlobalExceptionHandler {
         if (response.get("message").equals("Error creating friend request: Friend request already exists")) {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(PredictionException.class)
+    public ResponseEntity<?> handlePredictionException(PredictionException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", NullPointerException.class.getSimpleName());
+        response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

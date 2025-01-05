@@ -42,4 +42,9 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
             "LEFT JOIN FETCH g.achievements " +
             "WHERE g.id = :id")
     Optional<GameUser> findGameUserWithAchievementsById(@Param("id") UUID id);
+
+    @Query("SELECT g FROM GameUser g " +
+            "LEFT JOIN FETCH g.customizables " +
+            "WHERE g.id = :id")
+    Optional<GameUser> findGameUserByIdWithCustomizables(UUID id);
 }
