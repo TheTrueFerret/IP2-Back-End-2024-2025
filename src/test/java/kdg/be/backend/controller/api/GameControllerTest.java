@@ -30,9 +30,6 @@ class GameControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private GameService gameService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Test
