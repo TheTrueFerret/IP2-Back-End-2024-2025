@@ -2,6 +2,7 @@ package kdg.be.backend.controller.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import kdg.be.backend.TestContainerIPConfiguration;
 import kdg.be.backend.service.GameService;
 import org.junit.jupiter.api.Test;
@@ -173,5 +174,50 @@ class GameControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void getGameLeaderboard_ShouldBeOk() throws Exception {
+        UUID gameId = UUID.fromString("00000000-0000-0000-0000-000000000030");
+
+        mockMvc.perform(get("/api/games/{gameId}/leaderboard", gameId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test", roles = "USER")
+    void getGameLeaderboard_GameHasNotEndedYet_ShouldReturnBadRequest() throws Exception {
+        UUID lobbyId = UUID.fromString("ef673b41-d76d-4b96-99d8-41beef0c3707");
+
+        String requestBody = """
+                {
+                    "turnTime": 60,
+                    "startTileAmount": 14,
+                    "hostUserId": "d61e872f-7784-4e27-996b-cad743916105"
+                }
+                """;
+
+        MvcResult startGameResult = mockMvc.perform(post("/api/games/start/{lobbyId}", lobbyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    String jsonResponsePretty = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readTree(jsonResponse));
+                    System.out.println("Start game Response: " + jsonResponsePretty);
+                })
+                .andReturn();
+
+
+        String startGameResponse = startGameResult.getResponse().getContentAsString();
+        String gameIdString = JsonPath.parse(startGameResponse).read("$.players[0].gameId", String.class);
+        UUID gameId = UUID.fromString(gameIdString);
+
+        mockMvc.perform(get("/api/games/{gameId}/leaderboard", gameId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Game is not finished yet"));
     }
 }

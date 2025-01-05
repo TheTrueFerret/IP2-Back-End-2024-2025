@@ -56,7 +56,10 @@ VALUES ('00000000-0000-0000-0000-000000000008', 'Player1', 'avatar1.png'),
        ('11111111-1111-1111-1111-111111111114', 'Player13', 'avatar9.png'),
        ('11111111-1111-1111-1111-111111111115', 'Player14', 'avatar8.png'),
        ('11111111-1111-1111-1111-111111111116', 'Player15', 'avatar9.png'),
-       ('00000000-0000-0000-0000-000000000010', 'Player16', 'avatar10.png');
+       ('00000000-0000-0000-0000-000000000010', 'Player16', 'avatar10.png'),
+       ('33333333-3333-3333-3333-333333333333', 'NewPlayer1', 'avatar11.png'),
+       ('44444444-4444-4444-4444-444444444444', 'NewPlayer2', 'avatar12.png');
+
 
 
 ----------------------------------------------------------------------------------------------------------------------
@@ -71,7 +74,11 @@ VALUES ('a1e4c8d3-9f3b-4c8e-85ba-7fcf1eb8d006', 'READY', 'fbe4a1d1-1c44-49b8-911
        ('31111111-1111-1111-1111-111111111111', 'READY', '11111111-1111-1111-1111-111111111113', 2, 2,
         'JOIN1235'),
        ('41111111-1111-1111-1111-111111111111', 'READY', '11111111-1111-1111-1111-111111111115', 2, 2,
-        'JOIN1234');
+        'JOIN1234'),
+        ('55555555-5555-5555-5555-555555555555', 'WAITING', '33333333-3333-3333-3333-333333333333', 2, 4, 'JOINNEW');
+
+
+
 
 INSERT INTO game (id, turn_time, start_tile_amount, date_time, playing_field_id,
                   tile_pool_id, lobby_id)
@@ -107,11 +114,22 @@ VALUES
 
 -- Gebruikers voor Lobby 5
 ('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111115'), -- Player5 (host)
-('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111116'); -- Player8
+('41111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111116'), -- Player8
+
+-- Test lobby voor matchmaking
+('55555555-5555-5555-5555-555555555555', '33333333-3333-3333-3333-333333333333'); -- NewPlayer1 (host)
 
 INSERT INTO achievement (id, title, description)
 VALUES (1, 'First Move', 'Complete your first move'),
        (2, 'Participation', 'Play 10 games');
+
+INSERT INTO game_user_achievement (id, gameuser_id, achievement_id)
+VALUES ('00000000-0000-0000-0000-000000000001','33333333-3333-3333-3333-333333333333', 1), -- NewPlayer1 gets 'First Move' achievement
+       ('00000000-0000-0000-0000-000000000002','33333333-3333-3333-3333-333333333333', 2), -- NewPlayer1 gets 'Participation' achievement
+       ('00000000-0000-0000-0000-000000000003','44444444-4444-4444-4444-444444444444', 1), -- NewPlayer2 gets 'First Move' achievement
+       ('00000000-0000-0000-0000-000000000004','44444444-4444-4444-4444-444444444444', 2); -- NewPlayer2 gets 'Participation' achievement
+
+
 
 -- Insert friend requests
 INSERT INTO friend_request (id, sender_id, receiver_id, status)
@@ -126,3 +144,51 @@ VALUES
 INSERT INTO game_user_friend_list (friend_list_id, game_user_id)
 VALUES ('fbe4a1d1-1c44-49b8-911f-7bc77a78b001', '87afee3d-2c6b-4876-8f2b-9e1d6f41c503'),
        ('87afee3d-2c6b-4876-8f2b-9e1d6f41c503', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001');
+
+-- Maak een game aan die al is afgelopen
+-- Insert a new playing field
+INSERT INTO playing_field (id)
+VALUES ('00000000-0000-0000-0000-000000000020');
+
+-- Insert a new tile pool
+INSERT INTO tile_pool (id)
+VALUES ('00000000-0000-0000-0000-000000000021');
+
+-- Insert new decks
+INSERT INTO deck (id)
+VALUES ('00000000-0000-0000-0000-000000000022'),
+       ('00000000-0000-0000-0000-000000000023');
+
+-- Insert new tiles
+INSERT INTO tile (id, number_value, tile_color, tile_set_id, tile_pool_id, grid_column, grid_row, deck_id)
+VALUES ('00000000-0000-0000-0000-000000000024', 1, 'BLUE', NULL, '00000000-0000-0000-0000-000000000021', 0, 0, '00000000-0000-0000-0000-000000000022'),
+       ('00000000-0000-0000-0000-000000000025', 2, 'RED', NULL, '00000000-0000-0000-0000-000000000021', 1, 0, '00000000-0000-0000-0000-000000000022'),
+       ('00000000-0000-0000-0000-000000000026', 3, 'BLACK', NULL, '00000000-0000-0000-0000-000000000021', 2, 0, '00000000-0000-0000-0000-000000000023'),
+       ('00000000-0000-0000-0000-000000000027', 4, 'ORANGE', NULL, '00000000-0000-0000-0000-000000000021', 3, 0, '00000000-0000-0000-0000-000000000023');
+
+-- Insert new game users
+INSERT INTO game_user (id, username, avatar)
+VALUES ('00000000-0000-0000-0000-000000000032', 'Player17', 'avatar17.png'),
+       ('00000000-0000-0000-0000-000000000034', 'Player18', 'avatar18.png');
+
+-- Insert a new lobby
+INSERT INTO lobby (id, status, host_user_id, minimum_players, maximum_players, join_code)
+VALUES ('00000000-0000-0000-0000-000000000028', 'READY', '00000000-0000-0000-0000-000000000032', 2, 4, 'JOIN999');
+
+-- Insert a new game
+INSERT INTO game (id, turn_time, start_tile_amount, date_time, playing_field_id, tile_pool_id, lobby_id, game_state)
+VALUES ('00000000-0000-0000-0000-000000000030', 60, 14, now(), '00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000028', 1);
+
+-- Insert new players
+INSERT INTO player (id, game_user_id, deck_id, game_id, score)
+VALUES ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000022', '00000000-0000-0000-0000-000000000030', 50),
+       ('00000000-0000-0000-0000-000000000033', '00000000-0000-0000-0000-000000000034', '00000000-0000-0000-0000-000000000023', '00000000-0000-0000-0000-000000000030', 75);
+
+-- Insert new lobby users
+INSERT INTO lobby_users (lobby_id, users_id)
+VALUES ('00000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-000000000032'),
+       ('00000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-000000000034');
+
+INSERT INTO game_player_leaderboard(game_id, player_leaderboard)
+VALUES ('00000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000031'),
+       ('00000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000033');

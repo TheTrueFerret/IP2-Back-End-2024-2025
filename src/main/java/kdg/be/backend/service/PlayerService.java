@@ -1,6 +1,7 @@
 package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
+import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.DeckRepository;
 import kdg.be.backend.repository.GameRepository;
@@ -9,11 +10,11 @@ import kdg.be.backend.repository.TileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -112,5 +113,89 @@ public class PlayerService {
                     , player.getGameUser().getUsername(), player.getTurnStartTime(), player.getTurnEndTime(), LocalTime.now());
         }
         return (int) Duration.between(LocalTime.now(), player.getTurnEndTime()).toSeconds();
+    }
+}
+
+    /**
+     * Check if the player has won the game
+     * (= if the player has no tiles left in his deck)
+     * TODO add achievement for winning the game
+     */
+    public void checkPlayerTiles(Player winner) {
+        if (winner.getDeck().getTiles().isEmpty()) {
+            Game game = winner.getGame();
+            game.setGameState(GameState.ENDED);
+            gameRepository.save(game);
+
+            log.info("Game has ended, {} is the first player to place all their tiles on the playing field!", winner.getGameUser().getUsername());
+            calculatePlayerScores(game, winner);
+        }
+    }
+
+    /*
+     * Calculate the scores of the players at the end of the game
+     * (If player wins = the game ends so calculate all the players their scores)
+     */
+    public void calculatePlayerScores(Game game, Player winner) {
+        int winnerScore = 0;
+
+        if (game.getGameState() == GameState.ENDED) {
+            for (Player player : game.getPlayers()) {
+                if (!winner.equals(player)) {
+                    int score = player.getDeck().getTiles().stream()
+                            .mapToInt(Tile::getNumberValue)
+                            .sum();
+
+                    player.setScore(-score);
+                    winnerScore += score;
+
+                    playerRepository.save(player);
+                }
+            }
+
+            winner.setScore(winnerScore);
+            playerRepository.save(winner);
+            setGameLeaderboard(game);
+        }
+    }
+
+    public void calculateNoTilesInTilePoolPlayerScores(Game game) {
+        if (game.getTilePool().isEmpty()) {
+
+            game.setGameState(GameState.ENDED);
+            gameRepository.save(game);
+            log.info("Game has ended, no tiles left in the tilepool!");
+
+            for (Player playerScore : game.getPlayers()) {
+                int score = playerScore.getDeck().getTiles().stream()
+                        .mapToInt(Tile::getNumberValue)
+                        .sum();
+
+                playerScore.setScore(-score);
+                playerRepository.save(playerScore);
+            }
+
+            setGameLeaderboard(game);
+        }
+
+    }
+
+    public void setGameLeaderboard(Game game) {
+        if (game.getGameState() != GameState.ENDED) {
+            throw new IllegalStateException("Game is not finished yet, cannot create leaderboard");
+        }
+
+        List<Player> players = game.getPlayers();
+        players.sort(Comparator.comparingInt(Player::getScore).reversed());
+
+        List<UUID> playerIds = players.stream()
+                .map(Player::getId)
+                .collect(Collectors.toList());
+        game.setPlayerLeaderboard(playerIds);
+        gameRepository.save(game);
+
+        log.info("Leaderboard for game with id: {}", game.getId());
+        players.forEach(player -> log.info("Player: {} has {} tiles left with a score of {}",
+                player.getGameUser().getUsername(), player.getDeck().getTiles().size(), player.getScore()));
     }
 }

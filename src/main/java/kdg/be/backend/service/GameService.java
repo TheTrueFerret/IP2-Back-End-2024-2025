@@ -2,7 +2,6 @@ package kdg.be.backend.service;
 
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.LobbyStatus;
-import kdg.be.backend.domain.user.GameUser;
 import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,6 +74,7 @@ public class GameService {
                     // Save the tile pool
                     tiles.forEach(tile -> tile.setTilePool(tilePool));
                     tileRepository.saveAll(tiles);
+                    tilePoolRepository.save(tilePool);
 
                     // Create a playing field
                     PlayingField playingField = new PlayingField(new ArrayList<>());
@@ -102,7 +101,6 @@ public class GameService {
                             .collect(Collectors.joining(", "));
                     log.info("The tilepool has the following tiles left: {}", tilesInfo);
 
-                    tilePoolRepository.save(tilePool);
                     game.setPlayers(players);
 
                     // Validate if all players have the same amount of tiles
@@ -116,7 +114,6 @@ public class GameService {
                     return game;
                 });
     }
-
 
     public Optional<UUID> getGameIdByLobbyIdAndUserId(UUID lobbyId, UUID userId) {
         Lobby lobby = lobbyRepository.findLobbyById(lobbyId)
@@ -147,6 +144,17 @@ public class GameService {
             throw new IllegalArgumentException("No Game Found for the PlayerId: " + playerId);
         }
         return gameId;
+    }
+
+    public List<UUID> getGameLeaderboard(UUID gameId) {
+        Game game = gameRepository.findGameWithLeaderboardById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("No game found with id: " + gameId));
+
+        if (game.getGameState() != GameState.ENDED) {
+            throw new IllegalStateException("Game is not finished yet");
+        }
+
+        return game.getPlayerLeaderboard();
     }
 
     @Transactional

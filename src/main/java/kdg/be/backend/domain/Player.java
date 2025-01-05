@@ -5,7 +5,7 @@ import kdg.be.backend.domain.user.GameUser;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,11 +15,10 @@ public class Player {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private LocalTime turnStartTime;
-    private LocalTime turnEndTime;
-    private LocalTime turnMoveTime;
+    private LocalDateTime turnStartTime;
+    private LocalDateTime turnEndTime;
+    private LocalDateTime turnMoveTime;
     private int score;
-
 
     // relaties
     @ManyToOne(fetch = FetchType.LAZY)
