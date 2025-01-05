@@ -202,3 +202,14 @@ VALUES ('00000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-0000000
 INSERT INTO game_player_leaderboard(game_id, player_leaderboard)
 VALUES ('00000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000031'),
        ('00000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000033');
+
+
+-- Insert into GameStat
+INSERT INTO game_stat (game_id, game_name, year_published, min_players, max_players, play_time, min_age, board_game_honor, mechanics)
+VALUES ('00000000-0000-0000-0000-000000000020', 'Rummikub', 2023, 2, 6, 60, 8, 12, 'Tile Placement,Strategy');
+
+-- Insert into Prediction
+INSERT INTO prediction (id, game_stat_id, prediction_date, rating_average, complexity_average, owned_users)
+VALUES ('00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000020', '2023-10-01T12:00:00', 8.5, 3.2, 1000),
+       ('00000000-0000-0000-0000-000000000022', '00000000-0000-0000-0000-000000000020', '2023-09-02T12:00:00', 7.8, 2.9, 850),
+       ('00000000-0000-0000-0000-000000000023', '00000000-0000-0000-0000-000000000020', '2023-08-03T12:00:00', 9.0, 4.1, 700);

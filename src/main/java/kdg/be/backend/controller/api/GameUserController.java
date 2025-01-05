@@ -198,7 +198,7 @@ public class GameUserController {
         Map<String, String> response = new HashMap<>();
         response.put("error", FriendRequestException.class.getSimpleName());
         response.put("message", ex.getMessage());
-        if (response.get("message").equals("Error creating friend request: Friend request already exists")) {
+        if (response.get("message").equals("Error creating friend request: Friend request already exists") || response.get("message").equals("Friend request error : No friend requests found")) {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

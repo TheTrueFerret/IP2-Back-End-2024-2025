@@ -36,9 +36,6 @@ class GameUserControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private GameUserRepository repo;
-
-    @Autowired
     private PlayerRepository playerRepository;
 
     @Autowired
@@ -235,7 +232,7 @@ class GameUserControllerTest {
     void unHappyFriendRequests() throws Exception {
         mockMvc.perform(get("/api/gameuser/friendRequests?userId=1c14c66a-b034-4531-a1e2-dfb07e7f5707")
                         .contentType("application/json"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test
