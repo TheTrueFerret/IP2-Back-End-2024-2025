@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -153,6 +154,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testJoinFullLobbyShouldReturnBadRequest() throws Exception {
         String requestBody = """
@@ -191,6 +193,7 @@ class LobbyControllerTest {
     }
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testStartLobbyShouldReturnOk() throws Exception {
         mockMvc.perform(patch("/api/lobby/ready/ef673b41-d76d-4b96-99d8-41beef0c3707?userId=d61e872f-7784-4e27-996b-cad743916105")
