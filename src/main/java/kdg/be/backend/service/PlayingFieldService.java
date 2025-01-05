@@ -145,32 +145,4 @@ public class PlayingFieldService {
         playerRepository.save(player);
         log.info("Score of player: {}, updated to {}", playerId, player.getScore());
     }
-
-
-    public TileSet addTileToTileSet(UUID playingFieldId, UUID tileSetId, UUID tileId) {
-        // Get the playing field and tile set
-        PlayingField playingField = playingFieldRepository.findByIdWithTileSets(playingFieldId)
-                .orElseThrow(() -> new IllegalArgumentException("PlayingField not found"));
-        TileSet tileSet = tileSetRepository.findByIdWithTiles(tileSetId)
-                .orElseThrow(() -> new IllegalArgumentException("TileSet not found"));
-
-        // Ensure the tileSet belongs to the playingField
-        if (!playingField.getTileSets().contains(tileSet)) {
-            throw new IllegalArgumentException("TileSet does not belong to this PlayingField");
-        }
-
-        // Retrieve the tile by its ID
-        Tile tile = tileRepository.findById(tileId)
-                .orElseThrow(() -> new IllegalArgumentException("Tile not found"));
-
-        // Add the tile to the tile set
-        tileSet.getTiles().add(tile);
-        tile.setTileSet(tileSet);
-
-        tileRepository.save(tile);
-        tileSetRepository.save(tileSet);
-
-
-        return tileSet; // Return the updated TileSet entity
-    }
 }

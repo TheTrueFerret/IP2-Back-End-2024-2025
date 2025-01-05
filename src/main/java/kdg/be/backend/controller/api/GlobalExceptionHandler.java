@@ -1,8 +1,10 @@
 package kdg.be.backend.controller.api;
 
+import kdg.be.backend.exception.FriendRequestException;
 import kdg.be.backend.exception.InvalidMoveException;
 import kdg.be.backend.exception.PredictionException;
 import kdg.be.backend.exception.UserDoesNotExistException;
+import kdg.be.backend.exception.UsersDoNotExistsException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +62,26 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("error", UserDoesNotExistException.class.getSimpleName());
         response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(UsersDoNotExistsException.class)
+    public ResponseEntity<Map<String, String>> handleUsersDoNotExistsException(UsersDoNotExistsException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", UsersDoNotExistsException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(FriendRequestException.class)
+    public ResponseEntity<Map<String, String>> handleFriendRequestException(FriendRequestException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", FriendRequestException.class.getSimpleName());
+        response.put("message", ex.getMessage());
+        if (response.get("message").equals("Error creating friend request: Friend request already exists")) {
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(PredictionException.class)

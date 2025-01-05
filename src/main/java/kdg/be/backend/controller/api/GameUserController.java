@@ -1,21 +1,15 @@
 package kdg.be.backend.controller.api;
 
-import kdg.be.backend.controller.dto.customization.CustomizableDto;
-import kdg.be.backend.controller.dto.game.AchievementDto;
+import kdg.be.backend.controller.dto.game.GameUserAchievementDto;
 import kdg.be.backend.controller.dto.user.FriendRequestDto;
 import kdg.be.backend.controller.dto.user.GameUserDto;
 import kdg.be.backend.controller.dto.user.UserFriendDto;
 import kdg.be.backend.domain.user.GameUserAchievement;
-import kdg.be.backend.exception.FriendRequestException;
-import kdg.be.backend.exception.UserDoesNotExistException;
-import kdg.be.backend.exception.UsersDoNotExistsException;
 import kdg.be.backend.service.GameUserAchievementService;
 import kdg.be.backend.service.GameUserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -67,18 +61,17 @@ public class GameUserController {
     }
 
     @GetMapping("/achievements/{userId}")
-    public ResponseEntity<List<AchievementDto>> getUserAchievements(@PathVariable UUID userId) {
+    public ResponseEntity<List<GameUserAchievementDto>> getUserAchievements(@PathVariable UUID userId) {
         List<GameUserAchievement> achievements = gameUserAchievementService.getAchievementsForUser(userId);
-        List<AchievementDto> achievementDtos = achievements.stream().map(achievement -> {
-            return new AchievementDto(
+        List<GameUserAchievementDto> gameUserAchievementDtos = achievements.stream().map(achievement -> {
+            return new GameUserAchievementDto(
                     achievement.getAchievement().getTitle(),
                     achievement.getAchievement().getDescription(),
                     achievement.getDateAchieved()
             );
         }).collect(Collectors.toList());
-        return ResponseEntity.ok(achievementDtos);
+        return ResponseEntity.ok(gameUserAchievementDtos);
     }
-
 
     //Get all game users
     @GetMapping("/users")
@@ -167,51 +160,5 @@ public class GameUserController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(gameUserService.getFriendRequests(userId));
-    }
-
-    //Get all customizables from single user
-    @GetMapping("/customizables")
-    public ResponseEntity<List<CustomizableDto>> getCustomizables(@RequestParam UUID userId) {
-        if (userId == null) {
-            logger.warning("Invalid  data");
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(gameUserService.getCustomizables(userId));
-    }
-
-    // Exception handling
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", NullPointerException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @ExceptionHandler(UserDoesNotExistException.class)
-    public ResponseEntity<Map<String, String>> handleUserDoesNotExistException(UserDoesNotExistException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", UserDoesNotExistException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    @ExceptionHandler(UsersDoNotExistsException.class)
-    public ResponseEntity<Map<String, String>> handleUsersDoNotExistsException(UsersDoNotExistsException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", UsersDoNotExistsException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    @ExceptionHandler(FriendRequestException.class)
-    public ResponseEntity<Map<String, String>> handleFriendRequestException(FriendRequestException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", FriendRequestException.class.getSimpleName());
-        response.put("message", ex.getMessage());
-        if (response.get("message").equals("Error creating friend request: Friend request already exists") || response.get("message").equals("Friend request error : No friend requests found")) {
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

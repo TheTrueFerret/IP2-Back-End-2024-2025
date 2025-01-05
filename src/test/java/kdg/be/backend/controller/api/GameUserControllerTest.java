@@ -231,10 +231,11 @@ class GameUserControllerTest {
     void happyNoFriendRequests() throws Exception {
         mockMvc.perform(get("/api/gameuser/friendRequests?userId=1c14c66a-b034-4531-a1e2-dfb07e7f5707")
                         .contentType("application/json"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotFound());
     }
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testGameUserReceivesAwardsAfterMove() throws Exception {
         String startGameRequest = """
@@ -345,6 +346,7 @@ class GameUserControllerTest {
 
 
     @Test
+    @DirtiesContext
     @WithMockUser(username = "test", password = "test", roles = "USER")
     void testGameUserReceivesParticipationAward() throws Exception {
         // Step 1: Start the game
