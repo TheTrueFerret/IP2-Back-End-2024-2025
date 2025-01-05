@@ -55,6 +55,12 @@ public class PlayerService {
     }
 
     public Player getCurrentTurnPlayer(UUID gameId) {
+        Game game = gameRepository.findByGameId(gameId).orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
+
+        if (game.getGameState() == GameState.ENDED) {
+            throw new IllegalStateException("Game has ended");
+        }
+
         List<UUID> playerTurnOrders = gameRepository.findPlayerTurnOrdersByGameId(gameId)
                 .filter(orderList -> !orderList.isEmpty())
                 .orElseThrow(() -> new NullPointerException("Player turn orders not found"));
