@@ -157,6 +157,22 @@ public class GameUserController {
         }
     }
 
+    //Remove friend
+    @PostMapping("/friend/remove/{userId}")
+    public ResponseEntity<String> removeFriend(@PathVariable UUID userId, @RequestParam String friendId) {
+        if (userId == null) {
+            logger.warning("Invalid  data");
+            return ResponseEntity.badRequest().build();
+        }
+        if (gameUserService.removeFriend(userId, friendId)) {
+            logger.info("Friend " + friendId + " removed");
+            return ResponseEntity.ok("Friend " + friendId + " removed");
+        } else {
+            logger.warning("Friend " + friendId + " not removed");
+            return ResponseEntity.badRequest().body("Friend " + friendId + " not removed");
+        }
+    }
+
     //Get friend requests from single user
     @GetMapping("/friendRequests")
     public ResponseEntity<List<FriendRequestDto>> friendRequests(@RequestParam UUID userId) {

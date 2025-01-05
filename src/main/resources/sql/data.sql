@@ -165,8 +165,9 @@ VALUES
 
 INSERT INTO game_user_friend_list (friend_list_id, game_user_id)
 VALUES ('fbe4a1d1-1c44-49b8-911f-7bc77a78b001', '87afee3d-2c6b-4876-8f2b-9e1d6f41c503'),
-       ('87afee3d-2c6b-4876-8f2b-9e1d6f41c503', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001');
-
+       ('87afee3d-2c6b-4876-8f2b-9e1d6f41c503', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001'),
+       ('fbe4a1d1-1c44-49b8-911f-7bc77a78b001', '4e861d2e-5f89-47b1-91e4-a3aef9c97b02'),
+       ('4e861d2e-5f89-47b1-91e4-a3aef9c97b02', 'fbe4a1d1-1c44-49b8-911f-7bc77a78b001');
 -- Maak een game aan die al is afgelopen
 -- Insert a new playing field
 INSERT INTO playing_field (id)
