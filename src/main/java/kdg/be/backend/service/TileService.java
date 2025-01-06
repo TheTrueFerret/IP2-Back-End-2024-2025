@@ -65,10 +65,12 @@ public class TileService {
         List<Tile> tiles = new ArrayList<>();
         TileColor[] colors = TileColor.values();
 
-        for (int number = 1; number <= 13; number++) {
+        for (int number = 5; number <= 13; number++) {
             for (TileColor color : colors) {
-                tiles.add(new Tile(number, color));
-                tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
+                if (!color.equals(TileColor.ORANGE)) {
+                    tiles.add(new Tile(number, color));
+                    tiles.add(new Tile(number, color)); // Dubbele set per kleur en nummer
+                }
             }
         }
         tiles.add(new Tile(0, TileColor.BLACK)); // Joker 1

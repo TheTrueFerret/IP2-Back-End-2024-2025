@@ -46,6 +46,7 @@ public class PlayingFieldService {
 
     @Transactional
     public void handlePlayerMoves(UUID gameId, List<PlayerMoveTileSetDto> playerMoveTileSetDtos) {
+        List<TileSet> existingTileSets = tileSetRepository.findTileSetsByGameId(gameId);
         for (PlayerMoveTileSetDto playerMoveTileSetDto : playerMoveTileSetDtos) {
             // Extract tile IDs from the DTO
             List<UUID> tileIds = playerMoveTileSetDto.tiles().stream()
@@ -85,6 +86,23 @@ public class PlayingFieldService {
 
             tileSet.setTiles(new HashSet<>(tiles));
             tileSetRepository.save(tileSet);
+            existingTileSets.remove(tileSet);
+        }
+        tileSetRepository.flush();
+        if (!existingTileSets.isEmpty()) {
+            Set<UUID> incomingTileSetIds = playerMoveTileSetDtos.stream()
+                    .map(PlayerMoveTileSetDto::id)
+                    .filter(Objects::nonNull) // Excluding new TileSets that don't have an ID
+                    .collect(Collectors.toSet());
+
+
+            // Finding TileSets that are missing from the incoming DTOs
+            List<TileSet> tileSetsToRemove = existingTileSets.stream()
+                    .filter(tileSet -> !incomingTileSetIds.contains(tileSet.getId()))
+                    .collect(Collectors.toList());
+
+            // Removing the missing TileSets
+            tileSetRepository.deleteAll(tileSetsToRemove);
         }
     }
 
