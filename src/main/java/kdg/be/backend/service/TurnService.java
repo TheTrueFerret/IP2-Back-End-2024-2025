@@ -226,6 +226,7 @@ public class TurnService {
 
                 // Assign tile to the player's deck
                 managedTile.setDeck(playerDeck);
+                managedTile.setTilePool(null);
                 playerDeck.getTiles().add(managedTile);
 
                 // Save the tile and the deck

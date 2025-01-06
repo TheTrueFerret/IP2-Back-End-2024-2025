@@ -3,10 +3,7 @@ package kdg.be.backend.service;
 import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.enums.GameState;
 import kdg.be.backend.domain.user.GameUser;
-import kdg.be.backend.repository.DeckRepository;
-import kdg.be.backend.repository.GameRepository;
-import kdg.be.backend.repository.PlayerRepository;
-import kdg.be.backend.repository.TileRepository;
+import kdg.be.backend.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,12 +25,14 @@ public class PlayerService {
     private final DeckRepository deckRepository;
 
     private static final Logger log = LoggerFactory.getLogger(PlayerService.class);
+    private final TilePoolRepository tilePoolRepository;
 
-    public PlayerService(PlayerRepository playerRepository, TileRepository tileRepository, GameRepository gameRepository, DeckRepository deckRepository) {
+    public PlayerService(PlayerRepository playerRepository, TileRepository tileRepository, GameRepository gameRepository, DeckRepository deckRepository, TilePoolRepository tilePoolRepository) {
         this.playerRepository = playerRepository;
         this.tileRepository = tileRepository;
         this.gameRepository = gameRepository;
         this.deckRepository = deckRepository;
+        this.tilePoolRepository = tilePoolRepository;
     }
 
     public UUID getPlayerIdByUserId(UUID userId) {
@@ -94,6 +93,7 @@ public class PlayerService {
 
             // Set the deck for each tile
             playerDeck.getTiles().forEach(tile -> tile.setDeck(playerDeck));
+            playerDeck.getTiles().forEach(tile -> tile.setTilePool(null));
             tileRepository.saveAll(tiles);
 
             // Create a player and save it and add it to the list of players
