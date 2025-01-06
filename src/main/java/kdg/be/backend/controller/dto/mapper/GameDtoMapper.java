@@ -10,6 +10,7 @@ import kdg.be.backend.domain.*;
 import kdg.be.backend.domain.user.GameUser;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class GameDtoMapper {
@@ -52,6 +53,7 @@ public class GameDtoMapper {
                 tileSet.getGridRow(),
                 tileSet.getTiles().stream()
                         .map(GameDtoMapper::mapToTileDto)
+                        .sorted(Comparator.comparingInt(TileDto::gridColumn))
                         .toList()
         );
     }
